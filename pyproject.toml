@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "building-natural-language-pipelines"
+version = "0.1.0"
+description = "Complementary material for book building nlp pipelines"
+authors = ["Laura Gutierrez Funderburk <lgutierrwr@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
