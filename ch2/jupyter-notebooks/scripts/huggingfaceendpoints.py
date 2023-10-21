@@ -6,32 +6,33 @@ from haystack.preview import component
 @component
 class HuggingFaceModelQuery:
     
-    def __init__(self, api_url:str,  api_key: str):
+    def __init__(self, api_url:str,  api_key: str, parameters:dict):
         self.api_url = api_url
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"}
+        self.parameters = parameters
 
-        
-    def run(self, inputs: dict, parameters: dict = None) -> dict:
+    def run(self, prompt:str) -> dict:
         """
-        Query the model with inputs and optional parameters.
+        Query the model with a prompt and optional parameters.
 
-        :param inputs: A dictionary containing the input data for the query.
+        :param prompt: A string containing the input prompt for the query.
         :param parameters: Optional dictionary containing additional parameters for the query.
         :return: A dictionary containing the model's response.
         """
+        
         data = {
-            "inputs": inputs
+            "inputs": prompt  # directly using the string prompt
         }
         
-        if parameters:
-            data['parameters'] = parameters
+        
+        data['parameters'] = self.parameters
             
         response = requests.post(self.api_url, headers=self.headers, json=data)
+        generated_text = [item['generated_text'] for item in response.json()]
         
         if response.status_code == 200:
-            return response.json()
+            return {"replies": generated_text}  # ensuring output is a dict
         else:
             raise Exception(f"Query failed with status code {response.status_code}: {response.text}")
-
