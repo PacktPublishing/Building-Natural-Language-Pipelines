@@ -5,7 +5,7 @@ from haystack.preview import component
 from typing import Any, Dict, List
 
 @component
-class HuggingFaceModelQuery:
+class InferenceEndpointAPI:
     
     def __init__(self, api_url:str,  api_key: str, parameters:dict):
         self.api_url = api_url
