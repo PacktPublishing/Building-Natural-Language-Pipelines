@@ -1,0 +1,1 @@
+from ch2.scripts.pipelines import initialize_simple_pipeline

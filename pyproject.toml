@@ -23,6 +23,7 @@ haystack-ai = "^0.93.0"
 openai = "^0.28.1"
 skypilot = "^0.4.0"
 boto3 = "^1.28.68"
+pytest = "^7.4.2"
 
 
 [build-system]
