@@ -24,7 +24,7 @@ openai = "^0.28.1"
 skypilot = "^0.4.0"
 boto3 = "^1.28.68"
 pytest = "^7.4.2"
-
+torch = ">=2.0.0, !=2.0.1, !=2.1.0"
 
 [build-system]
 requires = ["poetry-core"]
