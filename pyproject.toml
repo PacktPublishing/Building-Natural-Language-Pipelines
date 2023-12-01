@@ -8,7 +8,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-farm-haystack = {extras = ["inference"], version = "^1.20.1"}
 ipykernel = "^6.25.2"
 ipywidgets = "^8.1.1"
 python-dotenv = "^1.0.0"
@@ -19,12 +18,17 @@ bitsandbytes = "^0.41.1"
 accelerate = "^0.23.0"
 loralib = "^0.1.2"
 datasets = "^2.14.5"
-haystack-ai = "^0.93.0"
 openai = "^0.28.1"
 skypilot = "^0.4.0"
 boto3 = "^1.28.68"
 pytest = "^7.4.2"
 torch = ">=2.0.0, !=2.0.1, !=2.1.0"
+ffmpeg = "^1.4"
+ffmpeg-python = "^0.2.0"
+pip = "^23.3.1"
+tiktoken = "^0.5.1"
+farm-haystack = "^1.22.1"
+haystack-ai = "^2.0.0a3"
 
 [build-system]
 requires = ["poetry-core"]
