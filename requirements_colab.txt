@@ -1,0 +1,5 @@
+transformers==4.34.1
+haystack-ai==0.93.0
+cohere==4.31
+tiktoken==0.5.1
+python-dotenv
