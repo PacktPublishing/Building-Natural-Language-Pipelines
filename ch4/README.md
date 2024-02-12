@@ -41,3 +41,4 @@ Exercises for Chapter 4. "Bringing components together: Haystack pipelines for d
 ## Directory of notebooks
 
 1. [Notebook 1: Data extraction and preprocessing pipelines](./jupyter-notebooks/data-extraction-preprocessing-pipelines.ipynb)
+2. [Notebook 2: Indexing pipelines](./jupyter-notebooks/indexing-pipelines.ipynb)
