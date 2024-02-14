@@ -1,4 +1,4 @@
-transformers==4.34.1
+transformers==4.36.0
 haystack-ai==0.93.0
 cohere==4.31
 tiktoken==0.5.1
