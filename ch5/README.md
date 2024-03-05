@@ -9,7 +9,7 @@ Exercises for Chapter 5. "Haystack pipeline development with custom components"
 * Advanced Custom Component Feature implementation 
 * Testing and Debugging Custom Components 
 
-## Chapter topics covered
+## Directory of notebooks
 
 1. [Introduction to custom components](./jupyter-notebooks/custom-components.ipynb)
 2. [Custom components with global state management](./jupyter-notebooks/custom-component-logging-threading.ipynb)
