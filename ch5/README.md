@@ -2,6 +2,13 @@
 
 Exercises for Chapter 5. "Haystack pipeline development with custom components"
 
+## Topics covered
+
+* How to define Haystack custom components 
+* Integrating your custom component into a pipeline 
+* Advanced Custom Component Feature implementation 
+* Testing and Debugging Custom Components 
+
 ## Chapter topics covered
 
 1. [Introduction to custom components](./jupyter-notebooks/custom-components.ipynb)
