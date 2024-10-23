@@ -1,0 +1,73 @@
+[project]
+name = "rag-with-haystack"
+version = "0.1"
+description = "Reproducible RAG system with Python"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE.md"}
+keywords = ["llm", "rag", "nlp", "pipelines"]
+authors = [
+  {name = "Laura Funderburk"}
+]
+
+classifiers = [
+  "Development Status :: 1 - Beta",
+
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+dependencies = [
+  "haystack-ai>=0.2",
+  "elasticsearch-haystack",
+  "python-dotenv",
+  "bs4"
+]
+
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "-v"
+testpaths = [
+  "pytests"
+]
+
+[tool.mypy]
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.ruff.lint]
+select = [
+    "A",
+    "B",
+    "D",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "I",
+    "PL",
+    "W",
+]
+ignore = [
+    "D105",
+    "E731",
+    "PLR",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.per-file-ignores]
+"examples/*.py" = ["D"]
+"test_*.py" = ["D"]
