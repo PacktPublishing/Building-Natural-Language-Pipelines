@@ -80,3 +80,11 @@ docker compose up
 ```
 
 To run an image for an Elastic Search instance
+
+To add new dependencies, modify the dependencies in the [pyproject.toml](./pyproject.toml) file then run
+
+```bash
+just develop
+```
+
+to update. 
