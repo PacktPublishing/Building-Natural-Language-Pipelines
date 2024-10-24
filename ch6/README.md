@@ -6,7 +6,7 @@ Exercises for Chapter 6. "Setting up a reproducible project: question and answer
 
 * Reproducible workflow building blocks  
 
-* Setting up a Q&A Pipeline: 
+* Setting up a Q&A System: 
 
 1. Case I: Q&A system for small collection of text 
 
@@ -56,3 +56,27 @@ The project requires several Python libraries, which will be installed through t
 We will add these as part of a `pyproject.toml` file found [here](./pyproject.toml). 
 
 By ensuring these requirements are met, you'll be able to set up a reproducible and scalable environment for the Q&A pipeline project. 
+
+### Executing with `just` 
+
+In this folder, we have prepared a `justfile` to ensure this process is as smooth as possible. To get started, and once you have installed all requirements, run
+
+```bash
+just get-started
+```
+
+This will create a `venvs` folder. Activate
+
+```bash
+. venvs/bin/dev activate
+```
+
+### Execute Elastic Search
+
+Enable Docker and run
+
+```bash
+docker compose up
+```
+
+To run an image for an Elastic Search instance
