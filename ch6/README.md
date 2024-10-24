@@ -1,4 +1,24 @@
-# Technical requirements
+# Description
+
+Exercises for Chapter 6. "Setting up a reproducible project: question and answer pipeline "
+
+## Topics covered
+
+* Reproducible workflow building blocks with Python  
+
+* Setting up a Q&A Pipeline: 
+
+1. Case I: Q&A system for small collection of text 
+
+2. Case II: Q&A system for complex knowledge bases 
+
+* Incorporating observability and evaluation of results 
+
+* Optimizing performance through a feedback loop 
+
+* Bringing all pieces together 
+
+## Technical requirements
 
 To follow along and successfully implement the concepts discussed in this chapter, you need to set up a proper development environment. The main technical requirement is Python, which will be used to manage the dependencies and run the necessary code for the project. Specifically, you need: 
 
@@ -6,7 +26,7 @@ Python 3.12 or Higher
 
 The project is designed to work with Python 3.12, so ensure you have this version installed. If not, consider using a tool like pyenv to manage and install the correct Python version. 
 
-## Dependency Management 
+### Dependency Management 
 
 We will use just scripts and uv for managing dependencies efficiently. These tools allow us to handle virtual environments and package installation seamlessly. For more information, visit https://github.com/casey/just and https://astral.sh/blog/uv  to perform installation. Installation guide for just can be found here https://github.com/casey/just?tab=readme-ov-file#installation 
 
@@ -24,7 +44,7 @@ $ pyenv global system 3.12
 
 * Docker desktop installed: We will be using a Docker image for Elastic Search to populate our vector database. https://www.docker.com/products/docker-desktop/. 
 
-## Libraries and Packages 
+### Libraries and Packages 
 
 The project requires several Python libraries, which will be installed through the provided justfile. The main libraries include: 
 

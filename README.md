@@ -5,7 +5,7 @@ Building Natural Language Pipelines published by Packt
 
 Set up a virtual environment and install the required packages:
 
-### Set up
+### Set up - for Jupyter notebook usage
 
 If you have completed the following, you may discard this information. Otherwise, as a reminder and to ease installation, you can follow the instructions below.  
 
@@ -30,7 +30,7 @@ $ git clone https://github.com/PacktPublishing/Building-Natural-Language-Pipelin
 
 $ cd building-natural-language-pipelines/ 
 
-$ conda create –-name llm-pipelines python==3.10 
+$ conda create –-name llm-pipelines python==3.12
 
 $ conda activate llm-pipelines 
 
@@ -40,4 +40,16 @@ $ poetry install
 ```
 
 Enable the Jupyter Notebook extension on VSCode through the extension marketplace. When you open a notebook, press on ‘Select Kernel’ and click on `llm-pipeline` as our environment. 
+
+### Advanced set up - for chapters 6 and higher
+
+Please refer to the instructions in this [README](./ch6/README.md) for how to set up for advanced chapters
+
+## Chapter breakdown
+
+* [ch2](./ch2/) - "Diving deep into Large Language Models (LLMs)"
+* [ch3](./ch3/) - "Introduction to Haystack by deepset"
+* [ch4](./ch4/) - "Bringing components together: Haystack pipelines for different use cases"
+* [ch5](./ch5/) - "Haystack pipeline development with custom components"
+* [ch6](./ch6/) - "Setting up a reproducible project: question and answer pipeline"
 
