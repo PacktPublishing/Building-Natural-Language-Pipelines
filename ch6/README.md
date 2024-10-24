@@ -4,7 +4,7 @@ Exercises for Chapter 6. "Setting up a reproducible project: question and answer
 
 ## Topics covered
 
-* Reproducible workflow building blocks with Python  
+* Reproducible workflow building blocks  
 
 * Setting up a Q&A Pipeline: 
 
