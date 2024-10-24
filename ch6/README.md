@@ -18,11 +18,11 @@ You can set Python 3.12 globally as follows:
 $ pyenv global system 3.12 
 ```
 
-Virtual Environment: We recommend creating a virtual environment to isolate the project dependencies and avoid conflicts with other Python installations. 
+* Virtual Environment: We recommend creating a virtual environment to isolate the project dependencies and avoid conflicts with other Python installations. 
 
-pipx: While optional, using pipx for managing command-line tools like uv can simplify dependency installation and management. 
+* `pipx`: While optional, using pipx for managing command-line tools like uv can simplify dependency installation and management. 
 
-Docker desktop installed: We will be using a Docker image for Elastic Search to populate our vector database. https://www.docker.com/products/docker-desktop/. 
+* Docker desktop installed: We will be using a Docker image for Elastic Search to populate our vector database. https://www.docker.com/products/docker-desktop/. 
 
 ## Libraries and Packages 
 
