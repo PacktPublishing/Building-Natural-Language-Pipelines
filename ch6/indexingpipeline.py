@@ -64,69 +64,92 @@ class BenzingaNews:
     
     @component.output_types(documents=List[Document])
     def run(self, sources: Dict[str, Any]) -> None:
-             
+        logger.info("Starting BenzingaNews.run with sources")
         documents = []
-        for source in sources:
-        
-            for key in source:
-                if type(source[key]) == str:
-                    source[key] = self.clean_text(source[key])
-                    
-            if source['content'] == "":
-                continue
+        try:
+            for source in sources:
+                logger.debug(f"Processing source: {source.get('headline', 'Unknown headline')}")
+                for key in source:
+                    if isinstance(source[key], str):
+                        source[key] = self.clean_text(source[key])
+                
+                if source['content'] == "":
+                    logger.warning(f"Skipping source due to empty content: {source.get('headline', 'Unknown headline')}")
+                    continue
 
-            #drop content from source dictionary
-            content = source['content']
-            document = Document(content=content, meta=source) 
+                # Create a Document with the cleaned content and metadata
+                content = source['content']
+                document = Document(content=content, meta=source)
+                documents.append(document)
             
-            documents.append(document)
-         
+            logger.info(f"Successfully processed {len(documents)} documents.")
+        
+        except Exception as e:
+            logger.error(f"Error during BenzingaNews.run: {e}")
+        
         return {"documents": documents}
                
     def clean_text(self, text):
-        # Remove HTML tags using BeautifulSoup
-        soup = BeautifulSoup(text, "html.parser")
-        text = soup.get_text()
-        # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        logger.debug("Cleaning text content.")
+        try:
+            # Remove HTML tags using BeautifulSoup
+            soup = BeautifulSoup(text, "html.parser")
+            text = soup.get_text()
+            # Remove extra whitespace
+            text = re.sub(r'\s+', ' ', text).strip()
+            logger.debug("Text cleaned successfully.")
+        except Exception as e:
+            logger.error(f"Error during text cleaning: {e}")
+            raise
         return text
-    
+
+
 @component
 class BenzingaEmbeder:
     
     def __init__(self):
-        get_news = BenzingaNews()
-        document_store = ElasticsearchDocumentStore(embedding_similarity_function="cosine", hosts = "http://localhost:9200")
-        document_cleaner = DocumentCleaner(
-                            remove_empty_lines=True,
-                            remove_extra_whitespaces=True,
-                            remove_repeated_substrings=False
-                        )
-        document_splitter = DocumentSplitter(split_by="passage", split_length=5)
-        document_writer = DocumentWriter(document_store=document_store,
-                                        policy = DuplicatePolicy.OVERWRITE)
-        embedding = OpenAIDocumentEmbedder(api_key=Secret.from_token(open_ai_key))
+        logger.info("Initializing BenzingaEmbeder pipeline.")
+        try:
+            get_news = BenzingaNews()
+            document_store = ElasticsearchDocumentStore(embedding_similarity_function="cosine", hosts="http://localhost:9200")
+            document_cleaner = DocumentCleaner(
+                                remove_empty_lines=True,
+                                remove_extra_whitespaces=True,
+                                remove_repeated_substrings=False
+                            )
+            document_splitter = DocumentSplitter(split_by="passage", split_length=5)
+            document_writer = DocumentWriter(document_store=document_store,
+                                             policy=DuplicatePolicy.OVERWRITE)
+            embedding = OpenAIDocumentEmbedder(api_key=Secret.from_token(open_ai_key))
 
-        self.pipeline = Pipeline()
-        self.pipeline.add_component("get_news", get_news)
-        self.pipeline.add_component("document_cleaner", document_cleaner)
-        self.pipeline.add_component("document_splitter", document_splitter)
-        self.pipeline.add_component("embedding", embedding)
-        self.pipeline.add_component("document_writer", document_writer)
+            self.pipeline = Pipeline()
+            self.pipeline.add_component("get_news", get_news)
+            self.pipeline.add_component("document_cleaner", document_cleaner)
+            self.pipeline.add_component("document_splitter", document_splitter)
+            self.pipeline.add_component("embedding", embedding)
+            self.pipeline.add_component("document_writer", document_writer)
 
-        self.pipeline.connect("get_news", "document_cleaner")
-        self.pipeline.connect("document_cleaner", "document_splitter")
-        self.pipeline.connect("document_splitter", "embedding")
-        self.pipeline.connect("embedding", "document_writer")
-        
-        
+            self.pipeline.connect("get_news", "document_cleaner")
+            self.pipeline.connect("document_cleaner", "document_splitter")
+            self.pipeline.connect("document_splitter", "embedding")
+            self.pipeline.connect("embedding", "document_writer")
+
+            logger.info("Pipeline initialized successfully.")
+        except Exception as e:
+            logger.error(f"Error during BenzingaEmbeder initialization: {e}")
+            raise
+
     @component.output_types(documents=List[Document])
     def run(self, event: List[Union[str, Path, ByteStream]]):
-        
-        documents = self.pipeline.run({"get_news": {"sources": [event]}})
-        
-        self.pipeline.draw("benzinga_pipeline.png")
-        return documents
+        logger.info(f"Running BenzingaEmbeder with event: {event}")
+        try:
+            documents = self.pipeline.run({"get_news": {"sources": [event]}})
+            self.pipeline.draw("benzinga_pipeline.png")
+            logger.info("Pipeline executed successfully, drawing pipeline graph.")
+            return documents
+        except Exception as e:
+            logger.error(f"Error during pipeline execution: {e}")
+            raise
     
 
 document_embedder = BenzingaEmbeder()
