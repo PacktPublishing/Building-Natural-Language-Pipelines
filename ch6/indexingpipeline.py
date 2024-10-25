@@ -51,10 +51,10 @@ def read_jsonl_file(file_path):
                     json_data = json.loads(line)
                     data.append(json_data)
                 except json.JSONDecodeError as e:
-                    # Print an error message for any lines that can't be decoded
-                    print(f"Error decoding JSON on line: {line[:30]}... - {e}")
+                    # Log an error message for any lines that can't be decoded
+                    logger.error(f"Error decoding JSON on line: {line[:30]}... - {e}")
     except FileNotFoundError as e:
-        print(f"File not found: {e}")
+        logger.error(f"File not found: {e}")
     
     return data
 
