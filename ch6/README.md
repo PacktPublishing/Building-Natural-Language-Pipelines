@@ -88,3 +88,26 @@ just develop
 ```
 
 to update. 
+
+## Pipelines
+
+### Case I: Q&A for simple text with custom components
+
+The pipelines can be found here:
+
+1. [Indexing pipeline with custom components to extract, chunk and embed information from a JSONL file](./indexingpipeline.py)
+2. [Querying pipeline with prompt templating to retrieve information](./query_pipeline.png)
+
+[](./benzinga_pipeline.png)
+
+Indexing pipeline
+
+[](./query_pipeline.png)
+
+Query pipeline
+
+### Case II: Q&A for a complex knowledge base
+
+The notebook includes an indexing pipeline to extract, chunk and embed information from the Haystack tutorials as well as a querying pipeline with a specific role (software engineer) to build code from the tutorials.
+
+[Notebook](./bonus-build-from-tutorials/rag-tutorials.ipynb)
