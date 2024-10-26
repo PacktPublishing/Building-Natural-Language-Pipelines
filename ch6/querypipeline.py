@@ -12,9 +12,6 @@ import os
 load_dotenv(".env")
 open_ai_key = os.environ.get("OPENAI_API_KEY")
 
-from haystack.components.embedders import SentenceTransformersTextEmbedder
-
-
 # Initialize ElasticsearchDocumentStore
 document_store = ElasticsearchDocumentStore(hosts = "http://localhost:9200")
 
