@@ -26,7 +26,11 @@ dependencies = [
   "haystack-ai>=0.2",
   "elasticsearch-haystack",
   "python-dotenv",
-  "bs4"
+  "bs4",
+  "sentence-transformers>=3.0.0",
+  "ipykernel",
+  "ipython",
+  "trafilatura"
 ]
 
 [build-system]
