@@ -47,7 +47,10 @@ query_pipeline.connect("text_embedder.embedding", "retriever.query_embedding")
 query_pipeline.connect("retriever", "prompt_builder.documents")
 query_pipeline.connect("prompt_builder", "llm")
 
-# Running the pipeline
-question = "Tell me about what you know"
-response = query_pipeline.run({"text_embedder": {"text": question}, "prompt_builder": {"question": question}})
-print(response["llm"]["replies"][0])
+if __name__ == "__main__":
+    query_pipeline.draw(path="query_pipeline.png")
+
+    # Running the pipeline
+    question = "Tell me about what you know"
+    response = query_pipeline.run({"text_embedder": {"text": question}, "prompt_builder": {"question": question}})
+    print(response["llm"]["replies"][0])

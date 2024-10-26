@@ -151,10 +151,10 @@ class BenzingaEmbeder:
             logger.error(f"Error during pipeline execution: {e}")
             raise
     
+if __name__ == "__main__":
+    document_embedder = BenzingaEmbeder()
+    data = read_jsonl_file("./news_out.jsonl")
 
-document_embedder = BenzingaEmbeder()
-data = read_jsonl_file("./news_out.jsonl")
 
-
-for ite in data:
-    print(document_embedder.run(ite))
+    for ite in data:
+        print(document_embedder.run(ite))
