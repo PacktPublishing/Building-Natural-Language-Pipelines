@@ -95,8 +95,8 @@ to update.
 
 The pipelines can be found here:
 
-1. [Indexing pipeline with custom components to extract, chunk and embed information from a JSONL file](./indexingpipeline.py)
-2. [Querying pipeline with prompt templating to retrieve information](./query_pipeline.png)
+1. [Indexing pipeline with custom components to extract, chunk and embed information from a JSONL file](./case-I-q-and-a-dataset/indexingpipeline.py)
+2. [Querying pipeline with prompt templating to retrieve information](./case-I-q-and-a-dataset/query_pipeline.png)
 
 ![](./case-I-q-and-a-dataset/benzinga_pipeline.png)
 
