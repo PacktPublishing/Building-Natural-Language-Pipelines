@@ -98,11 +98,11 @@ The pipelines can be found here:
 1. [Indexing pipeline with custom components to extract, chunk and embed information from a JSONL file](./indexingpipeline.py)
 2. [Querying pipeline with prompt templating to retrieve information](./query_pipeline.png)
 
-![](./benzinga_pipeline.png)
+![](./case-I-q-and-a-dataset/benzinga_pipeline.png)
 
 Indexing pipeline
 
-![](./query_pipeline.png)
+![](./case-II-q-and-a-complex/answer_generation_pipeline.png)
 
 Query pipeline
 
@@ -110,4 +110,4 @@ Query pipeline
 
 The notebook includes an indexing pipeline to extract, chunk and embed information from the Haystack tutorials as well as a querying pipeline with a specific role (software engineer) to build code from the tutorials.
 
-[Notebook](./bonus-build-from-tutorials/rag-tutorials.ipynb)
+[Notebook](./case-II-q-and-a-complex/rag-tutorials.ipynb)
