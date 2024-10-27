@@ -34,15 +34,6 @@ wandb.init(project="haystack-indexing", config={"task": "Indexing Pipeline"})
 # Load OpenAI API key
 open_ai_key = os.environ.get("OPENAI_API_KEY")
 
-# Initialize ElasticsearchDocumentStore and embedder
-document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
-text_embedder = OpenAITextEmbedder(api_key=Secret.from_token(open_ai_key))
-
-# Load dataset and log dataset metadata
-with open("news_out.jsonl", 'r') as file:
-    data = [json.loads(line) for line in file]
-wandb.config.update({"dataset_size": len(data)})
-
 def read_jsonl_file(file_path):
     """
     Reads a JSONL (JSON Lines) file and returns a list of dictionaries representing each valid JSON object.
@@ -164,6 +155,7 @@ class BenzingaEmbeder:
 if __name__ == "__main__":
     document_embedder = BenzingaEmbeder()
     data = read_jsonl_file("./news_out.jsonl")
+    wandb.config.update({"dataset_size": len(data)})
 
     for ite in data:
         try:

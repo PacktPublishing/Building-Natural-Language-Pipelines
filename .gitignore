@@ -190,3 +190,4 @@ uci-marketing-data
 *.bkp
 *.dtmp
 ch6/wandb/*
+ch6/adding-observability/wandb/*

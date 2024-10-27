@@ -16,8 +16,6 @@ Exercises for Chapter 6. "Setting up a reproducible project: question and answer
 
 * Optimizing performance through a feedback loop 
 
-* Bringing all pieces together 
-
 ## Technical requirements
 
 To follow along and successfully implement the concepts discussed in this chapter, you need to set up a proper development environment. The main technical requirement is Python, which will be used to manage the dependencies and run the necessary code for the project. Specifically, you need: 
