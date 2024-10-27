@@ -1,18 +1,14 @@
-from haystack.components.preprocessors import DocumentCleaner
+from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.embedders import OpenAIDocumentEmbedder
 from haystack import Pipeline
-from haystack.components.embedders import OpenAIDocumentEmbedder
-from haystack.components.preprocessors import DocumentCleaner
-from haystack.components.preprocessors import DocumentSplitter
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.types import DuplicatePolicy
-from haystack.document_stores.in_memory import InMemoryDocumentStore
 from haystack.utils import Secret
 from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
 
 
 from haystack import component, Document
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 from haystack.dataclasses import ByteStream
 
 import json
@@ -30,8 +26,6 @@ open_ai_key = os.environ.get("OPENAI_API_KEY")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-import json
 
 def read_jsonl_file(file_path):
     """

@@ -189,3 +189,4 @@ uci-marketing-data
 *.duckdb*
 *.bkp
 *.dtmp
+ch6/wandb/*
