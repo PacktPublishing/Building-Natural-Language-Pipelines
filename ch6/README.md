@@ -111,3 +111,5 @@ Query pipeline
 The notebook includes an indexing pipeline to extract, chunk and embed information from the Haystack tutorials as well as a querying pipeline with a specific role (software engineer) to build code from the tutorials.
 
 [Notebook](./case-II-q-and-a-complex/rag-tutorials.ipynb)
+
+### Adding evaluation and observability 
