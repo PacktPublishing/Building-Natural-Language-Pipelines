@@ -91,6 +91,8 @@ to update.
 
 ### Case I: Q&A for simple text with custom components
 
+Ensure you have an OpenAI key and have stored it into a `.env` file under a variable name such as `OPENAI_API_KEY`
+
 The pipelines can be found here:
 
 1. [Indexing pipeline with custom components to extract, chunk and embed information from a JSONL file](./case-I-q-and-a-dataset/indexingpipeline.py)
@@ -106,8 +108,23 @@ Query pipeline
 
 ### Case II: Q&A for a complex knowledge base
 
+Ensure you have an OpenAI key and have stored it into a `.env` file under a variable name such as `OPENAI_API_KEY`
+
 The notebook includes an indexing pipeline to extract, chunk and embed information from the Haystack tutorials as well as a querying pipeline with a specific role (software engineer) to build code from the tutorials.
 
 [Notebook](./case-II-q-and-a-complex/rag-tutorials.ipynb)
 
 ### Adding evaluation and observability 
+
+We included two examples. You can get started with a simple example that logs token usage and time to perform embedding. 
+
+* [Add logging with Weights and Biases - indexing](./adding-observability/indexing_pipeline.py)
+* [Add logging with Weights and Biases - querying](./adding-observability/query_pipeline.py)
+
+This assumes you have created a Weights and Biases account, and that you have an API key, ensure to store it as part of an `.env` file under a variable name such as `WANDB_API_KEY`. 
+
+* [Add evaluation with RAGAS - query pipeline](./adding-evaluation/query_pipeline.py)
+
+The complete RAGAS query pipeline can be visualized as follows
+
+![](./adding-evaluation/query_pipeline_ragas.png)
