@@ -31,7 +31,8 @@ dependencies = [
   "ipykernel",
   "ipython",
   "trafilatura",
-  "wandb"
+  "wandb",
+  "ragas-haystack",
 ]
 
 [build-system]
