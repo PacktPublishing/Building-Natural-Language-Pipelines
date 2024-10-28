@@ -1,5 +1,6 @@
-# Building-Natural-Language-Pipelines
-Building Natural Language Pipelines published by Packt
+# Building RAG Applications
+Supplementary material for the book "Building Natural Language Pipelines published by Packt"
+Author: Laura Funderburk
 
 ## Setting up
 
