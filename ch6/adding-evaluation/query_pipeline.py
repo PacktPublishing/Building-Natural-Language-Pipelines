@@ -57,6 +57,7 @@ query_pipeline.connect("retriever", "prompt_builder.documents")
 query_pipeline.connect("prompt_builder", "llm")
 # To use aspect critique evaluation, uncomment the following lines
 # query_pipeline.add_component("evaluator_aspect", evaluator_aspect)
+# remove or comment out the following line
 query_pipeline.connect("llm.replies", "evaluator_context.ground_truths")
 
 query_pipeline.draw(path="query_pipeline_ragas.png")
@@ -96,7 +97,7 @@ for example in EVALUATION_DATA:
     wandb.log({
         "query_time": end_time - start_time,
         "context_precision_score": results["evaluator_context"]["results"][0][0]["score"],
-        # "aspect_critique_score": results["evaluator_aspect"]["results"][0]["score"],
+        # "aspect_critique_score": results["evaluator_aspect"]["results"][0][0]["score"],
         "embedding_token_usage": results['text_embedder']['meta']['usage']['total_tokens'],
         "llm_prompt_token_usage": results['llm']['meta'][0]['usage']['prompt_tokens'],
         "llm_completion_token_usage": results['llm']['meta'][0]['usage']['completion_tokens'],
@@ -105,6 +106,6 @@ for example in EVALUATION_DATA:
 
     # Print evaluation results
     print(f"Context Precision Score: {results['evaluator_context']['results'][0][0]['score']}")
-    # print(f"Aspect Critique Score: {results['evaluator_aspect']['results'][0]['score']}")
+    # print(f"Aspect Critique Score: {results['evaluator_aspect']['results'][0][0]['score']}")
 
 wandb.finish()
