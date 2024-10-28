@@ -650,9 +650,9 @@ justext==3.0.1 \
     --hash=sha256:b6ed2fb6c5d21618e2e34b2295c4edfc0bcece3bd549ed5c8ef5a8d20f0b3451 \
     --hash=sha256:e0fb882dd7285415709f4b7466aed23d6b98b7b89404c36e8a2e730facfed02b
     # via trafilatura
-langchain==0.0.27 \
-    --hash=sha256:a39260732b877b223869151db677c08b4b78fb4611c59fc5918f314d0a9d4227 \
-    --hash=sha256:cdaca3a61eb57a76bef990ce3c4615ac06873e83f100bf9c485f6c36e29ed95c
+langchain==0.2.10 \
+    --hash=sha256:1f861c1b59ac9c91b02bb0fa58d3adad1c1d0686636872b5b357bbce3ce41d06 \
+    --hash=sha256:b4fb58c7faf4f4999cfe3325474979a7121a1737dd101655a723a1d957ef0617
     # via ragas
 lazy-imports==0.3.1 \
     --hash=sha256:149500cb1015726f5148155989386b30b425dfd7e48fd156385eb1c9e23887dd \
