@@ -7,6 +7,9 @@ from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
 from haystack_integrations.components.evaluators.ragas import RagasEvaluator, RagasMetric
 
+from haystack import component, Document
+
+
 from dotenv import load_dotenv
 import os
 import wandb
@@ -74,7 +77,7 @@ query_pipeline.add_component("feedback_validator", feedback_validator)
 query_pipeline.connect("text_embedder.embedding", "retriever.query_embedding")
 query_pipeline.connect("retriever", "prompt_builder.documents")
 query_pipeline.connect("prompt_builder", "llm")
-query_pipeline.connect("llm.replies", "evaluator_context.responses")
+query_pipeline.connect("llm.replies", "evaluator_context.ground_truths")
 query_pipeline.connect("retriever", "evaluator_context.contexts")
 query_pipeline.connect("evaluator_context.results", "feedback_validator.context_precision_score")
 query_pipeline.connect("llm.replies", "feedback_validator.replies")
@@ -82,6 +85,7 @@ query_pipeline.connect("llm.replies", "feedback_validator.replies")
 # Connect feedback loop to retry prompt if the score is low
 query_pipeline.connect("feedback_validator.regenerate_flag", "prompt_builder.regenerate_flag")
 
+query_pipeline.draw("query_pipeline_feedback_loop.png")
 # Example evaluation data
 EVALUATION_DATA = [
     {
