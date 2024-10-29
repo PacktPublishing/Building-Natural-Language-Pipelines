@@ -1,5 +1,6 @@
-# Building RAG Applications
+# Building RAG Applications with Haystack 2.0
 Supplementary material for the book "Building Natural Language Pipelines published by Packt"
+
 Author: Laura Funderburk
 
 ## Chapter breakdown
