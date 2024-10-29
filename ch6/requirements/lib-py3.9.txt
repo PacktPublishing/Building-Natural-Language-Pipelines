@@ -650,9 +650,9 @@ justext==3.0.1 \
     --hash=sha256:b6ed2fb6c5d21618e2e34b2295c4edfc0bcece3bd549ed5c8ef5a8d20f0b3451 \
     --hash=sha256:e0fb882dd7285415709f4b7466aed23d6b98b7b89404c36e8a2e730facfed02b
     # via trafilatura
-langchain==0.2.16 \
-    --hash=sha256:8f59ee8b45f268df4b924ea3b9c63e49286efa756d16b3f6a9de5c6e502c36e1 \
-    --hash=sha256:ffb426a76a703b73ac69abad77cd16eaf03dda76b42cff55572f592d74944166
+langchain==0.3.0 \
+    --hash=sha256:59a75a6a1eb7bfd2a6bf0c7a5816409a8fdc9046187b07af287b23b9899617af \
+    --hash=sha256:a7c23892440bd1f5b9e029ff0dd709dd881ae927c4c0a3210ac64dba9bbf3f7f
     # via
     #   langchain-community
     #   ragas
