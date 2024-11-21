@@ -33,6 +33,7 @@ dependencies = [
   "trafilatura",
   "wandb",
   "ragas-haystack",
+  "bytewax>=0.21"
 ]
 
 [build-system]
