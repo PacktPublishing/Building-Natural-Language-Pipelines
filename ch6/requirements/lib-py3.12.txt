@@ -949,9 +949,9 @@ lxml==5.3.0 \
     #   justext
     #   lxml-html-clean
     #   trafilatura
-lxml-html-clean==0.3.1 \
-    --hash=sha256:081e6378c68ebb4113940ed82a3534c99e24ba1ca5ad5ce8868c7c4d264618f1 \
-    --hash=sha256:d9f7d8ae36092f4ed5079cfbf95ff06d3c6fd04f4a861422ce251ece72d3c4b5
+lxml-html-clean==0.4.0 \
+    --hash=sha256:3b5aedb6c2b4b684c0fbc8d4f1b901aae0a92c1ce525de84e71cc6dd1d9d4e3d \
+    --hash=sha256:a8b517d3f46c19e9303eafb2a1b4b422fe724ad42ae53793637a8e5cc36ffbc1
     # via lxml
 markupsafe==3.0.2 \
     --hash=sha256:0bff5e0ae4ef2e1ae4fdf2dfd5b76c75e5c2fa4132d05fc1b0dabcd20c7e28c4 \
