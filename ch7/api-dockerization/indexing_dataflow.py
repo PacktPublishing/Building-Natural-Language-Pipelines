@@ -1,3 +1,9 @@
+from bytewax import operators as op
+from bytewax.dataflow import Dataflow
+from bytewax import operators as op
+from bytewax.connectors.stdio import StdOutSink
+from bytewax.connectors.files import FileSource
+
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.embedders import OpenAIDocumentEmbedder
 from haystack import Pipeline
@@ -27,30 +33,42 @@ open_ai_key = os.environ.get("OPENAI_API_KEY")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def read_jsonl_file(file_path):
-    """
-    Reads a JSONL (JSON Lines) file and returns a list of dictionaries representing each valid JSON object.
-    Lines with JSON decoding errors are skipped.
-    
-    :param file_path: The path to the JSONL file.
-    :return: A list of dictionaries, each representing a parsed JSON object.
-    """
-    data = []
-    
-    try:
-        with open(file_path, 'r') as file:
-            for line in file:
-                try:
-                    # Attempt to load the JSON data from the current line
-                    json_data = json.loads(line)
-                    data.append(json_data)
-                except json.JSONDecodeError as e:
-                    # Log an error message for any lines that can't be decoded
-                    logger.error(f"Error decoding JSON on line: {line[:30]}... - {e}")
-    except FileNotFoundError as e:
-        logger.error(f"File not found: {e}")
-    
-    return data
+def safe_deserialize(data):
+        """
+        Safely deserialize JSON data, handling various formats.
+        
+        :param data: JSON data to deserialize.
+        :return: Deserialized data or None if an error occurs.
+        """
+        try:
+            parsed_data = json.loads(data)
+            if isinstance(parsed_data, list):
+                if len(parsed_data) == 2 and (parsed_data[0] is None or isinstance(parsed_data[0], str)):
+                    event = parsed_data[1]
+                else:
+                    logger.info(f"Skipping unexpected list format: {data}")
+                    return None
+            elif isinstance(parsed_data, dict):
+                event = parsed_data
+            else:
+                logger.info(f"Skipping unexpected data type: {data}")
+                return None
+            
+            if 'link' in event:
+                event['url'] = event.pop('link')
+            
+            if "url" in event:
+                return event
+            else:
+                logger.info(f"Missing 'url' key in data: {data}")
+                return None
+
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error ({e}) for data: {data}")
+            return None
+        except Exception as e:
+            logger.error(f"Error processing data ({e}): {data}")
+            return None
 
         
 @component
@@ -144,3 +162,19 @@ class BenzingaEmbeder:
         except Exception as e:
             logger.error(f"Error during pipeline execution: {e}")
             raise
+        
+embed_benzinga = BenzingaEmbeder()
+
+def process_event(event):
+    """Wrapper to handle the processing of each event."""
+    if event:
+        document = embed_benzinga.run(event)
+        return document
+    return None
+
+
+flow = Dataflow("rag-pipeline")
+input_data = op.input("input", flow, FileSource("news_out.jsonl"))
+deserialize_data = op.map("deserialize", input_data, safe_deserialize)
+get_content = op.map("embed_content", deserialize_data, process_event)
+op.output("output", get_content, StdOutSink())
