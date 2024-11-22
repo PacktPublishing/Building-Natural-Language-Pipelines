@@ -767,9 +767,9 @@ justext==3.0.1 \
     --hash=sha256:b6ed2fb6c5d21618e2e34b2295c4edfc0bcece3bd549ed5c8ef5a8d20f0b3451 \
     --hash=sha256:e0fb882dd7285415709f4b7466aed23d6b98b7b89404c36e8a2e730facfed02b
     # via trafilatura
-langchain==0.2.16 \
-    --hash=sha256:8f59ee8b45f268df4b924ea3b9c63e49286efa756d16b3f6a9de5c6e502c36e1 \
-    --hash=sha256:ffb426a76a703b73ac69abad77cd16eaf03dda76b42cff55572f592d74944166
+langchain==0.3.7 \
+    --hash=sha256:2e4f83bf794ba38562f7ba0ede8171d7e28a583c0cec6f8595cfe72147d336b2 \
+    --hash=sha256:cf4af1d5751dacdc278df3de1ff3cbbd8ca7eb55d39deadccdd7fb3d3ee02ac0
     # via
     #   langchain-community
     #   ragas
