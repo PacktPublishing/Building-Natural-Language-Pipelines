@@ -4,7 +4,7 @@ version = "0.1"
 description = "Reproducible RAG system with Python"
 readme = "README.md"
 requires-python = ">=3.9"
-license = {file = "LICENSE.md"}
+license = {file = "LICENSE"}
 keywords = ["llm", "rag", "nlp", "pipelines"]
 authors = [
   {name = "Laura Funderburk"}
@@ -12,7 +12,6 @@ authors = [
 
 classifiers = [
   "Development Status :: 1 - Beta",
-
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -39,6 +38,9 @@ dependencies = [
 [build-system]
 requires = ["setuptools>=43.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = {find = {exclude = ["ch*", "venvs", "tests", "docs"]}}
 
 [tool.pytest.ini_options]
 addopts = "-v"

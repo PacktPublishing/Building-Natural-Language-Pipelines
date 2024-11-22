@@ -57,3 +57,36 @@ venv-compile-all:
     uv pip compile --generate-hashes -p 3.11 --all-extras pyproject.toml -o requirements/lib-py3.11.txt
     uv pip compile --generate-hashes -p 3.12 --all-extras pyproject.toml -o requirements/lib-py3.12.txt
 
+# Lint the code in the repo; runs in CI
+lint: _assert-venv
+    vermin --config-file vermin-lib.ini src/ pytests/
+    vermin --config-file vermin-dev.ini docs/ *.py
+    ruff check src/ pytests/ docs/
+    mypy -p bytewax.duckdb
+    mypy pytests/ docs/
+
+
+pytests := 'pytests/'
+
+# Run the Python tests; runs in CI
+test-py tests=pytests: _assert-venv
+    pytest {{tests}}
+
+# Run all the checks that will be run in CI locally
+ci-pre: lint test-py
+
+# Build the package
+build: _assert-venv
+    @echo 'Installing build tools'
+    uv pip install build
+    @echo 'Cleaning old build artifacts'
+    rm -rf dist/
+    @echo 'Building the package'
+    python -m build
+
+# Upload the package to PyPI
+upload: _assert-venv build
+    @echo 'Installing twine'
+    uv pip install twine
+    @echo 'Uploading the package to PyPI'
+    twine upload dist/*

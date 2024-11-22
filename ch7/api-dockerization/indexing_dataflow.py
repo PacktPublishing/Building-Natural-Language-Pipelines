@@ -1,8 +1,8 @@
 from bytewax import operators as op
 from bytewax.dataflow import Dataflow
 from bytewax import operators as op
-from bytewax.connectors.stdio import StdOutSink
 from bytewax.connectors.files import FileSource
+from bytewax.bytewax_redis import RedisStreamSink
 
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.embedders import OpenAIDocumentEmbedder
@@ -29,6 +29,11 @@ import logging
 
 load_dotenv(".env")
 open_ai_key = os.environ.get("OPENAI_API_KEY")
+
+REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
+REDIS_DB = int(os.environ.get("REDIS_DB", 0))
+REDIS_STREAM_NAME = os.environ.get("REDIS_STREAM_NAME", "indexing-stream")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -156,8 +161,7 @@ class BenzingaEmbeder:
         logger.info(f"Running BenzingaEmbeder with event: {event}")
         try:
             documents = self.pipeline.run({"get_news": {"sources": [event]}})
-            self.pipeline.draw("benzinga_pipeline.png")
-            logger.info("Pipeline executed successfully, drawing pipeline graph.")
+            logger.info("Pipeline executed successfully")
             return documents
         except Exception as e:
             logger.error(f"Error during pipeline execution: {e}")
@@ -177,4 +181,8 @@ flow = Dataflow("rag-pipeline")
 input_data = op.input("input", flow, FileSource("news_out.jsonl"))
 deserialize_data = op.map("deserialize", input_data, safe_deserialize)
 get_content = op.map("embed_content", deserialize_data, process_event)
-op.output("output", get_content, StdOutSink())
+op.output("output", get_content,
+          RedisStreamSink(REDIS_STREAM_NAME,
+                          REDIS_HOST,
+                          REDIS_PORT,
+                          REDIS_DB))
