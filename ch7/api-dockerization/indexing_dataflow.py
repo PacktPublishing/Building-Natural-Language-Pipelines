@@ -1,8 +1,7 @@
-from bytewax import operators as op
 from bytewax.dataflow import Dataflow
 from bytewax import operators as op
-from bytewax.connectors.stdio import StdOutSink
 from bytewax.connectors.files import FileSource
+from bytewax.connectors.stdio import StdOutSink
 
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.embedders import OpenAIDocumentEmbedder
@@ -184,4 +183,5 @@ def run_pipeline_with_symbol(symbol, document_store, open_ai_key):
     # Use a lambda to pass the symbol to the filter_data function
     filtered_data = op.filter("filter_data", deserialize_data, lambda event: filter_data(event, symbol))
     embed_data = op.map("embed_data", filtered_data, process_event)
+    op.output("output", embed_data, StdOutSink())
     return flow
