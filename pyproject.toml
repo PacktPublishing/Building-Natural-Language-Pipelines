@@ -32,7 +32,9 @@ dependencies = [
   "wandb",
   "ragas-haystack",
   "bytewax>=0.21",
-  "bytewax-redis"
+  "bytewax-redis",
+  "fastapi>=0.115",
+  "uvicorn"
 ]
 
 [build-system]

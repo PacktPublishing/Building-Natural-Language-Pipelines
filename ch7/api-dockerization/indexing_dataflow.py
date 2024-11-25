@@ -1,8 +1,8 @@
 from bytewax import operators as op
 from bytewax.dataflow import Dataflow
 from bytewax import operators as op
+from bytewax.connectors.stdio import StdOutSink
 from bytewax.connectors.files import FileSource
-from bytewax.bytewax_redis import RedisStreamSink
 
 from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
 from haystack.components.embedders import OpenAIDocumentEmbedder
@@ -10,7 +10,6 @@ from haystack import Pipeline
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.types import DuplicatePolicy
 from haystack.utils import Secret
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
 
 
 from haystack import component, Document
@@ -27,13 +26,7 @@ from pathlib import Path
 
 import logging
 
-load_dotenv(".env")
-open_ai_key = os.environ.get("OPENAI_API_KEY")
 
-REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
-REDIS_DB = int(os.environ.get("REDIS_DB", 0))
-REDIS_STREAM_NAME = os.environ.get("REDIS_STREAM_NAME", "indexing-stream")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -124,11 +117,10 @@ class BenzingaNews:
 @component
 class BenzingaEmbeder:
     
-    def __init__(self):
+    def __init__(self, document_store, open_ai_key):
         logger.info("Initializing BenzingaEmbeder pipeline.")
         try:
             get_news = BenzingaNews()
-            document_store = ElasticsearchDocumentStore(embedding_similarity_function="cosine", hosts="http://localhost:9200")
             document_cleaner = DocumentCleaner(
                                 remove_empty_lines=True,
                                 remove_extra_whitespaces=True,
@@ -161,28 +153,35 @@ class BenzingaEmbeder:
         logger.info(f"Running BenzingaEmbeder with event: {event}")
         try:
             documents = self.pipeline.run({"get_news": {"sources": [event]}})
-            logger.info("Pipeline executed successfully")
+            self.pipeline.draw("benzinga_pipeline.png")
+            logger.info("Pipeline executed successfully, drawing pipeline graph.")
             return documents
         except Exception as e:
             logger.error(f"Error during pipeline execution: {e}")
             raise
         
-embed_benzinga = BenzingaEmbeder()
 
-def process_event(event):
-    """Wrapper to handle the processing of each event."""
-    if event:
-        document = embed_benzinga.run(event)
-        return document
-    return None
+def filter_data(event, symbol):
+    """Filter the data based on the symbol."""
+    return event and "symbols" in event and symbol in event["symbols"]
+    
 
-
-flow = Dataflow("rag-pipeline")
-input_data = op.input("input", flow, FileSource("news_out.jsonl"))
-deserialize_data = op.map("deserialize", input_data, safe_deserialize)
-get_content = op.map("embed_content", deserialize_data, process_event)
-op.output("output", get_content,
-          RedisStreamSink(REDIS_STREAM_NAME,
-                          REDIS_HOST,
-                          REDIS_PORT,
-                          REDIS_DB))
+# Modified flow to include symbol filtering
+def run_pipeline_with_symbol(symbol, document_store, open_ai_key):
+    embed_benzinga = BenzingaEmbeder(document_store, open_ai_key)
+    
+    def process_event(event):
+        """Wrapper to handle the processing of each event."""
+        if event:
+            document = embed_benzinga.run(event)
+            return document
+        return None
+    
+    flow = Dataflow("rag-pipeline")
+    input_data = op.input("input", flow, FileSource("news_out.jsonl"))
+    deserialize_data = op.map("deserialize", input_data, safe_deserialize)
+    
+    # Use a lambda to pass the symbol to the filter_data function
+    filtered_data = op.filter("filter_data", deserialize_data, lambda event: filter_data(event, symbol))
+    embed_data = op.map("embed_data", filtered_data, process_event)
+    return flow
