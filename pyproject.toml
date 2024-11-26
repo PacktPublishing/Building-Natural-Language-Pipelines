@@ -35,7 +35,8 @@ dependencies = [
   "bytewax-redis",
   "fastapi>=0.115",
   "uvicorn",
-  "transformers[torch,sentencepiece]"
+  "transformers[torch,sentencepiece]",
+  "pip-tools"
 ]
 
 [build-system]

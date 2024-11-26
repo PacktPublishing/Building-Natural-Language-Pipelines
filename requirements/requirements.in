@@ -1,0 +1,15 @@
+haystack-ai>=0.2
+elasticsearch-haystack
+python-dotenv
+bs4
+sentence-transformers>=3.0.0
+ipykernel
+ipython
+trafilatura
+wandb
+ragas-haystack
+bytewax>=0.21
+bytewax-redis
+fastapi>=0.115
+uvicorn
+transformers[torch,sentencepiece]
