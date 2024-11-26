@@ -8,8 +8,10 @@ import asyncio
 import logging
 import os
 
-from indexing_dataflow import run_pipeline_with_symbol  # Your Bytewax indexing pipeline
-from querying import RetrieveDocuments  # Your query pipeline logic
+from prometheus_client import make_asgi_app, CollectorRegistry, multiprocess
+
+from indexing_dataflow import run_pipeline_with_symbol 
+from querying import RetrieveDocuments  
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -17,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI()
+
+# Add prometheus asgi middleware to route /metrics requests
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 # OpenAI API key from environment
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -75,3 +81,10 @@ async def process_query(request: QueryRequest):
 def health_check():
     """Health check endpoint."""
     return {"status": "API is running"}
+
+# Function to create a Prometheus ASGI app with multiprocessing support
+def make_metrics_app():
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)  # Collect metrics from multiple processes
+    return make_asgi_app(registry=registry)
+

@@ -285,7 +285,9 @@ platformdirs==4.3.6
 posthog==3.7.3
     # via haystack-ai
 prometheus-client==0.21.0
-    # via bytewax
+    # via
+    #   -r requirements.in
+    #   bytewax
 prompt-toolkit==3.0.48
     # via ipython
 propcache==0.2.0

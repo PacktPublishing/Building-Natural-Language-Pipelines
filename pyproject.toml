@@ -36,7 +36,9 @@ dependencies = [
   "fastapi>=0.115",
   "uvicorn",
   "transformers[torch,sentencepiece]",
-  "pip-tools"
+  "pip-tools",
+  "prometheus-client>=0.21",
+  "gunicorn"
 ]
 
 [build-system]

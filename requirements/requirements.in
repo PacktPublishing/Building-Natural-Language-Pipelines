@@ -13,3 +13,4 @@ bytewax-redis
 fastapi>=0.115
 uvicorn
 transformers[torch,sentencepiece]
+prometheus-client>=0.21

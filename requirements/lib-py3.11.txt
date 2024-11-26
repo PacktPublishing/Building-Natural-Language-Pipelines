@@ -513,6 +513,10 @@ gitpython==3.1.43 \
     --hash=sha256:35f314a9f878467f5453cc1fee295c3e18e52f1b99f10f6cf5b1682e968a9e7c \
     --hash=sha256:eec7ec56b92aad751f9912a73404bc02ba212a23adb2c7098ee668417051a1ff
     # via wandb
+gunicorn==23.0.0 \
+    --hash=sha256:ec400d38950de4dfd418cff8328b2c8faed0edb0d517d3394e457c317908ca4d \
+    --hash=sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec
+    # via rag-with-haystack (pyproject.toml)
 h11==0.14.0 \
     --hash=sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d \
     --hash=sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761
@@ -1306,6 +1310,7 @@ packaging==24.2 \
     #   accelerate
     #   build
     #   datasets
+    #   gunicorn
     #   huggingface-hub
     #   ipykernel
     #   langchain-core
@@ -1463,7 +1468,9 @@ posthog==3.7.2 \
 prometheus-client==0.21.0 \
     --hash=sha256:4fa6b4dd0ac16d58bb587c04b1caae65b8c5043e85f778f42f5f632f6af2e166 \
     --hash=sha256:96c83c606b71ff2b0a433c98889d275f51ffec6c5e267de37c7a2b5c9aa9233e
-    # via bytewax
+    # via
+    #   rag-with-haystack (pyproject.toml)
+    #   bytewax
 prompt-toolkit==3.0.48 \
     --hash=sha256:d6623ab0477a80df74e646bdbc93621143f5caf104206aa29294d53de1a03d90 \
     --hash=sha256:f49a827f90062e411f1ce1f854f2aedb3c23353244f8108b89283587397ac10e
