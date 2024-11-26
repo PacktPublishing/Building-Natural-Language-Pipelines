@@ -88,8 +88,9 @@ class BenzingaNews:
 
                 # Create a Document with the cleaned content and metadata
                 content = source['content']
-                document = Document(content=content, meta=source)
+                document = Document(content=content, meta={"symbols": source.get("symbols", ""), **source})
                 documents.append(document)
+                logger.info(f"DOCUMENT {document}")
             
             logger.info(f"Successfully processed {len(documents)} documents.")
         
@@ -114,7 +115,7 @@ class BenzingaNews:
 
 
 @component
-class BenzingaEmbeder:
+class BenzingaEmbedder:
     
     def __init__(self, document_store, open_ai_key):
         logger.info("Initializing BenzingaEmbeder pipeline.")
@@ -151,6 +152,7 @@ class BenzingaEmbeder:
     def run(self, event: List[Union[str, Path, ByteStream]]):
         logger.info(f"Running BenzingaEmbeder with event: {event}")
         try:
+            
             documents = self.pipeline.run({"get_news": {"sources": [event]}})
             self.pipeline.draw("benzinga_pipeline.png")
             logger.info("Pipeline executed successfully, drawing pipeline graph.")
@@ -164,10 +166,8 @@ def filter_data(event, symbol):
     """Filter the data based on the symbol."""
     return event and "symbols" in event and symbol in event["symbols"]
     
-
-# Modified flow to include symbol filtering
 def run_pipeline_with_symbol(symbol, document_store, open_ai_key):
-    embed_benzinga = BenzingaEmbeder(document_store, open_ai_key)
+    embed_benzinga = BenzingaEmbedder(document_store, open_ai_key)
     
     def process_event(event):
         """Wrapper to handle the processing of each event."""

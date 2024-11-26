@@ -65,12 +65,11 @@ async def process_query(request: QueryRequest):
 
     # Use the pipeline to query
     try:
-        response = query_pipeline.run({"text_embedder": {"text": request.question}, "prompt_builder": {"question": request.question}})
-        return {"answer": response["llm"]["replies"][0]}
+        response = query_pipeline.run(request.question, symbols)
+        return {"answer": response}
     except Exception as e:
         logger.error(f"Error querying the pipeline: {e}")
         raise HTTPException(status_code=500, detail="Error querying the pipeline.")
-
 
 @app.get("/")
 def health_check():
