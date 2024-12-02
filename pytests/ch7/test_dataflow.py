@@ -1,0 +1,1 @@
+from ch7.api_dockerization.indexing_dataflow import run_pipeline_with_symbol

@@ -1,0 +1,110 @@
+.
+├── LICENSE
+├── README.md
+├── __init__.py
+├── ch2
+│   ├── README.md
+│   ├── __init__.py
+│   ├── jupyter-notebooks
+│   │   ├── images
+│   │   ├── interacting-with-llms-haystack2.0.ipynb
+│   │   ├── interacting-with-llms-hugging-face.ipynb
+│   │   ├── interacting-with-llms-openai.ipynb
+│   │   ├── llm-augmentation.ipynb
+│   │   ├── llm-overview.ipynb
+│   │   └── pipeline-diagrams
+│   └── scripts
+│       ├── __init__.py
+│       ├── huggingfaceendpoints.py
+│       └── pipelines.py
+├── ch3
+│   ├── README.md
+│   └── jupyter-notebooks
+│       ├── audio-files
+│       ├── components.ipynb
+│       ├── data-processing-components.ipynb
+│       ├── data_classes.ipynb
+│       ├── embedding-components.ipynb
+│       ├── images
+│       └── writing-components.ipynb
+├── ch4
+│   ├── README.md
+│   └── jupyter-notebooks
+│       ├── extraction-and-processing-pipelines.ipynb
+│       ├── images
+│       ├── indexing-pipelines.ipynb
+│       ├── markdown_pages
+│       ├── retriever-pipelines-with-llm.ipynb
+│       ├── retriever-pipelines.ipynb
+│       └── textfile-pages
+├── ch5
+│   ├── README.md
+│   └── jupyter-notebooks
+│       ├── custom-component-error-handling.ipynb
+│       ├── custom-component-logging-threading.ipynb
+│       ├── custom-component-logging.ipynb
+│       ├── custom-component-scalability.ipynb
+│       ├── custom-components.ipynb
+│       ├── images
+│       └── tests
+├── ch6
+│   ├── README.md
+│   ├── adding-evaluation
+│   │   ├── query_pipeline.py
+│   │   ├── query_pipeline_ragas.png
+│   │   └── wandb
+│   ├── adding-observability
+│   │   ├── indexing_pipeline.py
+│   │   ├── query_pipeline.png
+│   │   ├── query_pipeline.py
+│   │   └── wandb
+│   ├── benzinga_pipeline.png
+│   ├── case-I-q-and-a-dataset
+│   │   ├── benzinga_pipeline.png
+│   │   ├── indexingpipeline.py
+│   │   ├── query_pipeline.png
+│   │   └── querypipeline.py
+│   ├── case-II-q-and-a-complex
+│   │   ├── answer_generation_pipeline.png
+│   │   ├── indexing_complex_knowledge.png
+│   │   └── rag-tutorials.ipynb
+│   ├── docker-compose.yml
+│   ├── feedback-loop-guardrails
+│   │   └── query_pipeline.py
+│   ├── news_out.jsonl
+│   ├── query_pipeline.png
+│   └── query_pipeline_ragas.png
+├── ch7
+│   ├── api_dockerization
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   ├── app.py
+│   │   ├── benzinga_pipeline.png
+│   │   ├── config.yaml
+│   │   ├── dataflow-dag.png
+│   │   ├── indexing_dataflow.py
+│   │   ├── news_out.jsonl
+│   │   ├── querying.py
+│   │   └── requirements.txt
+│   ├── benzinga_pipeline.png
+│   └── pipeline-serialization
+├── just
+├── justfile
+├── mistral-7b-v1.0.yaml
+├── pyproject.toml
+├── repo_structure.txt
+├── requirements
+│   ├── dev.in
+│   ├── dev.txt
+│   ├── doc.txt
+│   ├── lib-py3.10.txt
+│   ├── lib-py3.11.txt
+│   ├── lib-py3.12.txt
+│   ├── lib-py3.9.txt
+│   ├── requirements.in
+│   └── requirements.txt
+├── tests
+└── venvs
+    └── dev
+
+34 directories, 74 files

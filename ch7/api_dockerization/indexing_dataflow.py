@@ -9,6 +9,7 @@ from haystack import Pipeline
 from haystack.components.writers import DocumentWriter
 from haystack.document_stores.types import DuplicatePolicy
 from haystack.utils import Secret
+from haystack.document_stores.in_memory import InMemoryDocumentStore
 
 
 from haystack import component, Document
@@ -24,8 +25,6 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 
 import logging
-
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -185,3 +184,11 @@ def run_pipeline_with_symbol(symbol, document_store, open_ai_key):
     embed_data = op.map("embed_data", filtered_data, process_event)
     op.output("output", embed_data, StdOutSink())
     return flow
+
+## sample usage
+# symbol = "AAPL"
+# load_dotenv(".env")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# document_store = InMemoryDocumentStore()
+# flow = run_pipeline_with_symbol(symbol, document_store, OPENAI_API_KEY)

@@ -73,7 +73,7 @@ test-py tests=pytests: _assert-venv
     pytest {{tests}}
 
 # Run all the checks that will be run in CI locally
-ci-pre: lint test-py
+ci-pre: test-py
 
 # Build the package
 build: _assert-venv

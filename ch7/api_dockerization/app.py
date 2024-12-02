@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from bytewax.dataflow import Dataflow
 from bytewax.run import cli_main
 from haystack.document_stores.in_memory import InMemoryDocumentStore
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
 import asyncio
 import logging
 import os
