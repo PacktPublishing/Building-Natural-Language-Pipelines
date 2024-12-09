@@ -39,7 +39,9 @@ dependencies = [
   "pip-tools",
   "prometheus-client>=0.21",
   "gunicorn",
-  "spacy"
+  "spacy",
+  "langgraph",
+  "websockets"
 ]
 
 [build-system]

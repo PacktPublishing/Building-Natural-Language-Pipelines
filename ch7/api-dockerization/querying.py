@@ -6,6 +6,7 @@ from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
 from haystack.components.readers import ExtractiveReader
+from haystack.document_stores.in_memory import InMemoryDocumentStore
 
 from dotenv import load_dotenv
 import os
@@ -42,7 +43,7 @@ class RetrieveDocuments:
     def run(self, query, symbols):
     
         logger.info(f"Running query pipeline with query: {query}")
-
+        self.query_pipeline.draw("query_pipeline.png")
         # Pass query through the pipeline
         response = self.query_pipeline.run(
             data={"embedder": {"text": query}, 
@@ -53,14 +54,14 @@ class RetrieveDocuments:
         return response #["llm"]["replies"][0]
 
 
-# query_pipeline = RetrieveDocuments()
+# load_dotenv(".env")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# document_store = InMemoryDocumentStore()
+# query_pipeline = RetrieveDocuments(doc_store=document_store, open_ai_key=OPENAI_API_KEY)
 
 
 # # Running the pipeline
 # question = "Tell me about what you know"
-# start_time = time.time()
-# response = query_pipeline.run({"text_embedder": {"text": question}, "prompt_builder": {"question": question}})
-# end_time = time.time()
+# response = query_pipeline.run(question, "AAPL")
 
-        
-# print(response["llm"]["replies"][0])

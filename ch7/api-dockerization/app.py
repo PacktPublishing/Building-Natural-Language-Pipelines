@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from bytewax.dataflow import Dataflow
 from bytewax.run import cli_main
 from haystack.document_stores.in_memory import InMemoryDocumentStore
 import asyncio
