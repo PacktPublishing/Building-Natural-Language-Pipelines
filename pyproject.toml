@@ -41,7 +41,10 @@ dependencies = [
   "gunicorn",
   "spacy",
   "langgraph",
-  "websockets"
+  "websockets",
+  "certifi",
+  "matplotlib",
+  "langchain"
 ]
 
 [build-system]
