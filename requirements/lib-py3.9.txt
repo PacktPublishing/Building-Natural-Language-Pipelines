@@ -1123,8 +1123,13 @@ langchain-core==0.3.22 \
     --hash=sha256:b40b036b3bd4abc1dfc820e149f5a3c4abef2fee83eb807c4310a41a064580e0 \
     --hash=sha256:c61c6d62f137dff2a1ec785473a3225e4fa237e53eac88f5359fda664dc5d91c
     # via
+    #   langchain-openai
     #   langgraph
     #   langgraph-checkpoint
+langchain-openai==0.2.12 \
+    --hash=sha256:8b92096623065a2820e89aa5fb0a262fb109d56c346e3b09ba319af424c45cd1 \
+    --hash=sha256:916965c45584d9ea565825ad3bb7629b1ff57f12f36d4b937e5b7d65903839d6
+    # via rag-with-haystack (pyproject.toml)
 langcodes==3.5.0 \
     --hash=sha256:1eef8168d07e51e131a2497ffecad4b663f6208e7c3ae3b8dc15c51734a6f801 \
     --hash=sha256:853c69d1a35e0e13da2f427bb68fb2fa4a8f4fb899e0c62ad8df8d073dcfed33
@@ -1795,11 +1800,12 @@ numpy==2.0.2 \
     #   spacy
     #   thinc
     #   transformers
-openai==1.55.0 \
-    --hash=sha256:446e08918f8dd70d8723274be860404c8c7cc46b91b93bbc0ef051f57eb503c1 \
-    --hash=sha256:6c0975ac8540fe639d12b4ff5a8e0bf1424c844c4a4251148f59f06c4b2bd5db
+openai==1.57.1 \
+    --hash=sha256:3865686c927e93492d1145938d4a24b634951531c4b2769d43ca5dbd4b25d8fd \
+    --hash=sha256:a95f22e04ab3df26e64a15d958342265e802314131275908b3b3e36f8c5d4377
     # via
     #   haystack-ai
+    #   langchain-openai
     #   ragas
 orjson==3.10.12 \
     --hash=sha256:0000758ae7c7853e0a4a6063f534c61656ebff644391e1f81698c1b2d2fc8cd2 \
@@ -3320,7 +3326,9 @@ tiktoken==0.8.0 \
     --hash=sha256:d8f3192733ac4d77977432947d563d7e1b310b96497acd3c196c9bddb36ed9db \
     --hash=sha256:f13d13c981511331eac0d01a59b5df7c0d4060a8be1e378672822213da51e0a2 \
     --hash=sha256:fe9399bdc3f29d428f16a2f86c3c8ec20be3eac5f53693ce4980371c3245729b
-    # via ragas
+    # via
+    #   langchain-openai
+    #   ragas
 tld==0.13 \
     --hash=sha256:93dde5e1c04bdf1844976eae440706379d21f4ab235b73c05d7483e074fb5629 \
     --hash=sha256:f75b2be080f767ed17c2338a339eaa4fab5792586319ca819119da252f9f3749

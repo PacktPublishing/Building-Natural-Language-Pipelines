@@ -1128,7 +1128,9 @@ langchain-core==0.3.20 \
 langchain-openai==0.2.9 \
     --hash=sha256:2723015e56879f9e5edfcb175fdbec6c296c1b3bf65caad28579ce9c4d1bd652 \
     --hash=sha256:38a0f2004f17cdad622d46d4dcfb92d75adbf51909dadc76d0360dd94b0d4f70
-    # via ragas
+    # via
+    #   rag-with-haystack (pyproject.toml)
+    #   ragas
 langchain-text-splitters==0.3.2 \
     --hash=sha256:0db28c53f41d1bc024cdb3b1646741f6d46d5371e90f31e7e7c9fbe75d01c726 \
     --hash=sha256:81e6515d9901d6dd8e35fb31ccd4f30f76d44b771890c789dc835ef9f16204df

@@ -12,8 +12,9 @@ from dataclasses import dataclass, field
 from datetime import timedelta, datetime
 from typing import Dict, List, Optional
 import ssl
-
-import ssl
+import threading
+import time
+import sys 
 
 async def _ws_agen(product_id):
     """Connect to websocket and yield messages as they arrive."""
@@ -153,7 +154,6 @@ def create_dataflow(init_name, percentage):
         state.update(value)
         return (state, state.summarize())
 
-
     stats = op.stateful_map("orderbook", inp, mapper)
     
     def just_large_spread(prod_summary):
@@ -162,10 +162,12 @@ def create_dataflow(init_name, percentage):
         return summary.spread / summary.ask_price > percentage
         
     filter = op.filter("big_spread", stats, just_large_spread)
-
     op.output("out", filter, StdOutSink())
-    return flow 
+    
+    return flow
 
+# Example usage
 percentage = 0.0001
+timer = 5  # Run for 5 seconds
 flow = create_dataflow("coinbase", percentage)
-cli_main(flow)
+cli_main(flow)  # Use run_main to handle Bytewax's lifecycle
