@@ -32,5 +32,5 @@ Exercises for Chapter 4. "Bringing components together: Haystack pipelines for d
 
 1. [Notebook 1: Data extraction and preprocessing pipelines](./jupyter-notebooks/data-extraction-preprocessing-pipelines.ipynb)
 2. [Notebook 2: Indexing pipelines](./jupyter-notebooks/indexing-pipelines.ipynb)
-3. [Notebook 3: Retriever pipelines - try different retriever methods](./jupyter-notebooks/retriever-pipelines.ipynb)
-4. [Notebook 4: Retriever pipelines with an LLM](./jupyter-notebooks/retriever-pipelines-with-llm.ipynb)
+3. [Notebook 3: Retriever pipelines with an LLM (RAG pipeline)](./jupyter-notebooks/retriever-pipelines-with-llm.ipynb)
+4. [Notebook 4: Pipelines with routing](./jupyter-notebooks/pipelines-with-routing.ipynb)
