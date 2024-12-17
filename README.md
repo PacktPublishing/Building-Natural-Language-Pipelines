@@ -45,7 +45,7 @@ $ conda create –-name llm-pipelines python==3.12
 
 $ conda activate llm-pipelines 
 
-$ pip install poetry, haystack-ai, ipykernel, ipytthon
+$ pip install haystack-ai, ipykernel, ipytthon
 ```
 
 Enable the Jupyter Notebook extension on VSCode through the extension marketplace. When you open a notebook, press on ‘Select Kernel’ and click on `llm-pipeline` as our environment. 

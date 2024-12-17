@@ -51,7 +51,7 @@ The project requires several Python libraries, which will be installed through t
 * Additional utilities like BeautifulSoup, dotenv, and more for pre-processing and environment management. 
 * Bonus: Bytewax for real time processing 
 
-We will add these as part of a `pyproject.toml` file found [here](./pyproject.toml). 
+We will add these as part of a `pyproject.toml` file found [here](../pyproject.toml). 
 
 By ensuring these requirements are met, you'll be able to set up a reproducible and scalable environment for the Q&A pipeline project. 
 
