@@ -5,11 +5,13 @@ Author: Laura Funderburk
 
 ## Chapter breakdown
 
+* [ch1](./ch1/) - "Introduction to Natural Language Processing (NLP) pipelines"
 * [ch2](./ch2/) - "Diving deep into Large Language Models (LLMs)"
 * [ch3](./ch3/) - "Introduction to Haystack by deepset"
 * [ch4](./ch4/) - "Bringing components together: Haystack pipelines for different use cases"
 * [ch5](./ch5/) - "Haystack pipeline development with custom components"
 * [ch6](./ch6/) - "Setting up a reproducible project: question and answer pipeline"
+* [ch7](./ch7/) - "Deploying Haystack-based applications"
 
 ## Setting up
 
