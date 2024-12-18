@@ -1,7 +1,7 @@
-##vDataset
+##Dataset
 
-Source: https://www.kaggle.com/datasets/tanishqdublish/text-classification-documentation
-License: [Licence Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+* Source: https://www.kaggle.com/datasets/tanishqdublish/text-classification-documentation
+* License: [Licence Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 This is text document classification dataset which contains 2225 text data and five categories of documents. Five categories are politics, sport, tech, entertainment and business. We can use this dataset for documents classification and document clustering.
 
