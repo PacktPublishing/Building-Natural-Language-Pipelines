@@ -69,6 +69,21 @@ This will create a `venvs` folder. Activate
 . venvs/bin/dev activate
 ```
 
+To add new dependencies, modify the dependencies in the [pyproject.toml](./pyproject.toml) file then run
+
+```bash
+just develop
+```
+
+to update. 
+
+To create a kernel using the virtual environment, run
+
+
+```bash
+python -m ipykernel install --user --name=venv --display-name "NLP pipelines"
+```
+
 ### Execute Elastic Search
 
 Enable Docker and run
@@ -79,13 +94,7 @@ docker compose up
 
 To run an image for an Elastic Search instance
 
-To add new dependencies, modify the dependencies in the [pyproject.toml](./pyproject.toml) file then run
 
-```bash
-just develop
-```
-
-to update. 
 
 ## Pipelines
 
