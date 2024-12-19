@@ -12,6 +12,7 @@ Author: Laura Funderburk
 * [ch5](./ch5/) - "Haystack pipeline development with custom components"
 * [ch6](./ch6/) - "Setting up a reproducible project: question and answer pipeline"
 * [ch7](./ch7/) - "Deploying Haystack-based applications"
+* [ch8](./ch8/) - "Hands-on projects"
 
 ## Setting up
 

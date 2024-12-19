@@ -13,3 +13,5 @@ Dataset used
 
 * [London Weather Data](https://www.kaggle.com/datasets/zongaobian/london-weather-data-from-1979-to-2023)
 * [License CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/)
+
+2. [Notebook 2. Exploring spaCy and Hugging Face transformers](./spacy-transformers.ipynb)
