@@ -17,11 +17,6 @@ load_dotenv(".env")
 open_ai_key = os.getenv("OPENAI_API_KEY")
 serper_api_key = os.getenv("SERPERDEV_API_KEY")
 
-
-# %% [markdown]
-# ### Define custom component
-
-# %%
 @component
 class NERPopulator():
     """This function extracts named entities from a list of
@@ -82,11 +77,6 @@ class NERPopulator():
         return {"documents": extracted_data}
 
 
-# %% [markdown]
-# ### Build Haystack pipeline with custom component
-
-# %%
-
 # Initialize pipeline
 pipeline = Pipeline()
 web_search = SerperDevWebSearch(top_k=5,
@@ -121,20 +111,10 @@ pipeline.connect("cleaner", "extractor")
 pipeline.connect("extractor", "ner")
 
 
-# %% [markdown]
-# ### Use pipeline to search Encyclopedia Britannica for all articles related to Elon Musk and extract entities
-
-# %%
-query = "Elon Musk"
-output = pipeline.run(data={"search":{"query":query}})
-
-# %%
-extracted_documents = output['ner']['documents']
-
-# %%
-extracted_documents
-
-# %%
+if __name__ == "__main__":
+    query = "Elon Musk"
+    output = pipeline.run(data={"search":{"query":query}})
+    extracted_documents = output['ner']['documents']
 
 
 
