@@ -92,9 +92,6 @@ Enable Docker and run
 docker compose up
 ```
 
-To run an image for an Elastic Search instance
-
-
 
 ## Pipelines
 
