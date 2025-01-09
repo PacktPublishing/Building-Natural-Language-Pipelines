@@ -6,40 +6,51 @@ from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
 from haystack import Pipeline 
 
+class RAGPipeline:
+    def __init__(self):
+        """Initialize RAG Pipeline reading data from ElasticSearch instance"""
+        
+        # Initialize prompt template to read the documents in document store
+        template = [ChatMessage.from_system("""
+                            Answer the questions based on the given context.
 
-template = [ChatMessage.from_system("""
-Answer the questions based on the given context.
+                            Context:
+                            {% for document in documents %}
+                                {{ document.content }}
+                            {% endfor %}
+                            Question: {{ question }}
+                            Answer:
+                """)]
+        # Initialize document store
+        document_store = ElasticsearchDocumentStore(hosts = "http://localhost:9200",
+                                            embedding_similarity_function='cosine')
+        # Initialize components
+        query_embedder = SentenceTransformersTextEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
+        query_retriever = ElasticsearchEmbeddingRetriever(document_store=document_store)
+        prompt_builder = ChatPromptBuilder(template=template)
+        llm = OpenAIChatGenerator(model="gpt-4o-mini")
 
-Context:
-{% for document in documents %}
-    {{ document.content }}
-{% endfor %}
-Question: {{ question }}
-Answer:
-""")]
-document_store = ElasticsearchDocumentStore(hosts = "http://localhost:9200",
-                                    embedding_similarity_function='cosine')
+        # Inititalize pipeline
+        self.rag_pipe = Pipeline()
+        # Add components
+        self.rag_pipe.add_component(instance= query_embedder, name = "embedder" )
+        self.rag_pipe.add_component(instance=query_retriever, name="retriever")
+        self.rag_pipe.add_component(instance=prompt_builder, name="prompt_builder")
+        self.rag_pipe.add_component(instance=llm, name="llm" )
+        # Connect components
+        self.rag_pipe.connect("embedder.embedding", "retriever.query_embedding")
+        self.rag_pipe.connect("retriever", "prompt_builder.documents")
+        self.rag_pipe.connect("prompt_builder.prompt", "llm.messages")
 
-query_embedder = SentenceTransformersTextEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
-query_retriever = ElasticsearchEmbeddingRetriever(document_store=document_store)
-prompt_builder = ChatPromptBuilder(template=template)
-llm = OpenAIChatGenerator(model="gpt-4o-mini")
-
-
-rag_pipe = Pipeline()
-rag_pipe.add_component(instance= query_embedder, name = "embedder" )
-rag_pipe.add_component(instance=query_retriever, name="retriever")
-rag_pipe.add_component(instance=prompt_builder, name="prompt_builder")
-rag_pipe.add_component(instance=llm, name="llm" )
-
-rag_pipe.connect("embedder.embedding", "retriever.query_embedding")
-rag_pipe.connect("retriever", "prompt_builder.documents")
-rag_pipe.connect("prompt_builder.prompt", "llm.messages")
-
+    def run(self, query):
+        """Add execution method and return response"""
+        return self.rag_pipe.run({"embedder": {"text": query}, "prompt_builder": {"question": query}})
 
     
 def rag_pipeline_func(query: str): 
-    result = rag_pipe.run({"embedder": {"text": query}, "prompt_builder": {"question": query}})
+    """Convert pipeline into tool"""
+    rag_pipeline = RAGPipeline()
+    result = rag_pipeline.run(query=query)
 
     return {"reply": result["llm"]["replies"][0].content}
 
