@@ -26,20 +26,25 @@ async def main(message: str):
     # Execute RAG pipeline tool against user query
     chat_generator = OpenAIChatGenerator(model="gpt-4o-mini", streaming_callback=print_streaming_chunk)
     response = chat_generator.run(messages=messages, generation_kwargs={"tools": tools})
-    function_call = json.loads(response["replies"][0].text)[0]
-    function_name = function_call["function"]["name"]
-    function_args = json.loads(function_call["function"]["arguments"])
+    if response and response["replies"][0].meta["finish_reason"] == "tool_calls":
+        function_call = json.loads(response["replies"][0].text)[0]
+        function_name = function_call["function"]["name"]
+        function_args = json.loads(function_call["function"]["arguments"])
 
-    ## Find the correspoding function and call it with the given arguments
-    available_functions = {"rag_pipeline_func": rag_pipeline_func}
-    function_to_call = available_functions[function_name]
-    function_response = function_to_call(**function_args)
-    print(function_response)
-    answer = function_response['reply']
+        ## Find the correspoding function and call it with the given arguments
+        available_functions = {"rag_pipeline_func": rag_pipeline_func}
+        function_to_call = available_functions[function_name]
+        function_response = function_to_call(**function_args)
+        print(function_response)
+        answer = function_response['reply']
 
-    # Return answer to user
-    msg_content = str(answer) if isinstance(answer, str) else getattr(answer, "text", None) or json.dumps(answer)
-    msg = cl.Message(content=msg_content)
+        # Return answer to user
+        msg_content = str(answer) if isinstance(answer, str) else getattr(answer, "text", None) or json.dumps(answer)
+        msg = cl.Message(content=msg_content)
+    else:
+        answer = response['replies'][0]
+        msg_content = str(answer) if isinstance(answer, str) else getattr(answer, "text", None) or json.dumps(answer)
+        msg = cl.Message(content=msg_content)
 
     # Send the message to the user
     await msg.send()
