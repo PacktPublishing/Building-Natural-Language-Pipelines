@@ -15,6 +15,7 @@ open_ai_key = os.getenv("OPENAI_API_KEY")
 
 @cl.on_message
 async def main(message: str):
+    """This function creates application with chatbot UI using our RAG pipeline tool in the backend"""
 
     messages = [
     ChatMessage.from_system(
@@ -22,7 +23,7 @@ async def main(message: str):
     ),
     ChatMessage.from_user(message.content),
 ]
-
+    # Execute RAG pipeline tool against user query
     chat_generator = OpenAIChatGenerator(model="gpt-4o-mini", streaming_callback=print_streaming_chunk)
     response = chat_generator.run(messages=messages, generation_kwargs={"tools": tools})
     function_call = json.loads(response["replies"][0].text)[0]
@@ -36,6 +37,7 @@ async def main(message: str):
     print(function_response)
     answer = function_response['reply']
 
+    # Return answer to user
     msg_content = str(answer) if isinstance(answer, str) else getattr(answer, "text", None) or json.dumps(answer)
     msg = cl.Message(content=msg_content)
 
