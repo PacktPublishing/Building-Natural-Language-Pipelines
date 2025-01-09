@@ -45,7 +45,8 @@ dependencies = [
   "certifi",
   "matplotlib",
   "langchain",
-  "langchain-openai"
+  "langchain-openai",
+  "numpy<2"
 ]
 
 [build-system]
