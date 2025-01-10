@@ -1,20 +1,16 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.4 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.4">
   <diagram name="Page-1" id="M_GFc16mToV7xNV-H_1n">
-    <mxGraphModel dx="1714" dy="1188" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1173" dy="813" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="-oIOArTZsbpl34OEU4rh-20" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;" vertex="1" parent="1">
-          <mxGeometry width="850" height="650" as="geometry" />
+          <mxGeometry width="850" height="560" as="geometry" />
         </mxCell>
-        <mxCell id="-oIOArTZsbpl34OEU4rh-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.479;exitY=0.007;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="-oIOArTZsbpl34OEU4rh-2" target="-oIOArTZsbpl34OEU4rh-14">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="-oIOArTZsbpl34OEU4rh-2" value="" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#000000;shape=mxgraph.mscae.intune.computer_inventory" vertex="1" parent="1">
-          <mxGeometry x="445.5" y="492" width="160" height="120" as="geometry" />
-        </mxCell>
-        <mxCell id="-oIOArTZsbpl34OEU4rh-3" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Chat UI&lt;/h1&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="475.5" y="622" width="105" height="40" as="geometry" />
+        <mxCell id="-oIOArTZsbpl34OEU4rh-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="-oIOArTZsbpl34OEU4rh-21" target="-oIOArTZsbpl34OEU4rh-14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="522.1399999999999" y="492.8399999999999" as="sourcePoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="-oIOArTZsbpl34OEU4rh-14" target="-oIOArTZsbpl34OEU4rh-15">
           <mxGeometry relative="1" as="geometry" />
@@ -37,23 +33,25 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="-oIOArTZsbpl34OEU4rh-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="-oIOArTZsbpl34OEU4rh-17" target="-oIOArTZsbpl34OEU4rh-2">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="-oIOArTZsbpl34OEU4rh-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.523;entryY=0.012;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="-oIOArTZsbpl34OEU4rh-17" target="-oIOArTZsbpl34OEU4rh-22">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="525.5384615384614" y="492" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-9" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://logosandtypes.com/wp-content/uploads/2022/07/OpenAI.png;" vertex="1" parent="1">
           <mxGeometry x="740.5" y="349.5" width="85" height="85" as="geometry" />
         </mxCell>
-        <mxCell id="-oIOArTZsbpl34OEU4rh-10" value="OpenAI GPT Generator" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="-oIOArTZsbpl34OEU4rh-10" value="OpenAI GPT" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="740.5" y="427" width="85" height="30" as="geometry" />
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-11" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo-with-title.png;" vertex="1" parent="1">
           <mxGeometry y="357" width="300.5" height="79.89" as="geometry" />
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-12" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://ai-infrastructure.org/wp-content/uploads/2023/08/Haystack-Logo_deepset.png;" vertex="1" parent="1">
-          <mxGeometry x="410.5" y="302" width="210.5" height="74.51" as="geometry" />
+          <mxGeometry x="420.5" y="347.49" width="210.5" height="74.51" as="geometry" />
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-13" value="&lt;div&gt;Prompt builder receives relevant embedded documents and embedded question&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=top;strokeColor=#000000;rounded=1;labelBackgroundColor=#ffffff;strokeWidth=2;shadow=0;dashed=0;" vertex="1" parent="1">
-          <mxGeometry x="590.5" y="257" width="170" height="60" as="geometry" />
+          <mxGeometry x="590.5" y="262" width="170" height="60" as="geometry" />
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-14" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Embed query into vector&lt;div&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=top;strokeColor=#000000;rounded=1;labelBackgroundColor=#ffffff;strokeWidth=2;shadow=0;dashed=0;" vertex="1" parent="1">
           <mxGeometry x="300.5" y="362" width="120" height="60" as="geometry" />
@@ -62,7 +60,7 @@
           <mxGeometry x="300.5" y="262" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-16" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;RAG pipeline&lt;/h1&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="433.5" y="272" width="164.5" height="70" as="geometry" />
+          <mxGeometry x="451" y="322" width="164.5" height="70" as="geometry" />
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-17" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;LLM generates response" style="whiteSpace=wrap;html=1;verticalAlign=top;strokeColor=#000000;rounded=1;labelBackgroundColor=#ffffff;strokeWidth=2;shadow=0;dashed=0;" vertex="1" parent="1">
           <mxGeometry x="615.5" y="362" width="120" height="60" as="geometry" />
@@ -72,6 +70,12 @@
         </mxCell>
         <mxCell id="-oIOArTZsbpl34OEU4rh-19" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Elasticsearch_logo.svg/1024px-Elasticsearch_logo.svg.png;" vertex="1" parent="1">
           <mxGeometry x="475.6399999999999" y="96.28" width="130.72" height="28.72" as="geometry" />
+        </mxCell>
+        <mxCell id="-oIOArTZsbpl34OEU4rh-21" value="Question in natural language&lt;div&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=top;strokeColor=#000000;rounded=1;labelBackgroundColor=#ffffff;strokeWidth=2;shadow=0;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="400" y="470" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-oIOArTZsbpl34OEU4rh-22" value="Answer in natural language&lt;div&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=top;strokeColor=#000000;rounded=1;labelBackgroundColor=#ffffff;strokeWidth=2;shadow=0;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="530" y="470" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
