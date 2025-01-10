@@ -41,12 +41,15 @@ class RAGPipeline:
         self.rag_pipe.connect("embedder.embedding", "retriever.query_embedding")
         self.rag_pipe.connect("retriever", "prompt_builder.documents")
         self.rag_pipe.connect("prompt_builder.prompt", "llm.messages")
+        
 
     def run(self, query):
         """Add execution method and return response"""
+        print("Drawing mermaid graph")
+        self.rag_pipe.draw("rag_pipeline.png")
         return self.rag_pipe.run({"embedder": {"text": query}, "prompt_builder": {"question": query}})
 
-    
+
 def rag_pipeline_func(query: str): 
     """Convert pipeline into tool"""
     rag_pipeline = RAGPipeline()

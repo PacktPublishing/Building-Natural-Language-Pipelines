@@ -59,9 +59,11 @@ class IndexingPipeline:
     def run(self, documents):
         """Execute indexing pipeline on a list of documents"""
         self.indexing_pipeline.run({"doc_cleaner": {"documents": documents}})
+        self.indexing_pipeline.draw("indexing_pipeline.png")
 
 
 if __name__=="__main__":
+    # Dataset obtained from https://www.kaggle.com/datasets/tanishqdublish/text-classification-documentation
     documents = preprocess_documents("df_file.csv")
     indexing_pipeline = IndexingPipeline()
     indexing_pipeline.run(documents)
