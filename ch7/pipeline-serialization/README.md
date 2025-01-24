@@ -35,3 +35,9 @@ curl -X 'GET' \
 This pipeline can be visualized as follows 
 
 ![](./serialized-chat-pipeline.png)
+
+To undeploy the pipeline, run
+
+```bash
+hayhooks undeploy chat_pipeline
+```
