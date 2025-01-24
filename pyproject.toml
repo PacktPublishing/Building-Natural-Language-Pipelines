@@ -47,7 +47,8 @@ dependencies = [
   "langchain",
   "langchain-openai",
   "numpy<2",
-  "chainlit==2.0.0"
+  "chainlit==2.0.0",
+  "hayhooks"
 ]
 
 [build-system]

@@ -1,0 +1,36 @@
+components:
+  llm:
+    init_parameters:
+      generation_kwargs:
+        max_new_tokens: 150
+        return_full_text: false
+        stop_sequences: []
+      huggingface_pipeline_kwargs:
+        device: mps
+        model: Qwen/Qwen2.5-1.5B-Instruct
+        task: text-generation
+      streaming_callback: null
+      token:
+        env_vars:
+        - HF_API_TOKEN
+        - HF_TOKEN
+        strict: false
+        type: env_var
+    type: haystack.components.generators.chat.hugging_face_local.HuggingFaceLocalChatGenerator
+  prompt_builder:
+    init_parameters:
+      required_variables: null
+      template:
+      - content: "\n                            Please create a summary about the\
+          \ following topic:\n                            {{ topic }}\n          \
+          \      "
+        meta: {}
+        name: null
+        role: system
+      variables: null
+    type: haystack.components.builders.chat_prompt_builder.ChatPromptBuilder
+connections:
+- receiver: llm.messages
+  sender: prompt_builder.prompt
+max_runs_per_component: 100
+metadata: {}
