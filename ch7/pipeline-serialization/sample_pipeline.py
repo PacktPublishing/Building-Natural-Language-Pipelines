@@ -5,10 +5,7 @@ from haystack import Pipeline
 from dotenv import load_dotenv
 import os
 
-template = [ChatMessage.from_system("""
-                            Please create a summary about the following topic:
-                            {{ topic }}
-                """)]
+template = [ChatMessage.from_user("""Please create a summary about the following topic:{{ topic }}""")]
 prompt_builder = ChatPromptBuilder(template=template)
 llm = HuggingFaceLocalChatGenerator(model="Qwen/Qwen2.5-1.5B-Instruct", generation_kwargs={"max_new_tokens": 150})
 

@@ -21,7 +21,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "haystack-ai>=0.2",
+  "haystack-ai>=0.2.9",
   "elasticsearch-haystack",
   "python-dotenv",
   "bs4",

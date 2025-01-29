@@ -21,12 +21,10 @@ components:
     init_parameters:
       required_variables: null
       template:
-      - content: "\n                            Please create a summary about the\
-          \ following topic:\n                            {{ topic }}\n          \
-          \      "
+      - content: Please create a summary about the following topic:{{ topic }}
         meta: {}
         name: null
-        role: system
+        role: user
       variables: null
     type: haystack.components.builders.chat_prompt_builder.ChatPromptBuilder
 connections:
