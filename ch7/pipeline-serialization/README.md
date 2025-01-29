@@ -46,6 +46,10 @@ hayhooks undeploy chat_pipeline
 
 ### Executing the pipeline
 
+Visiting the documentation on `localhost:1416/docs` let's us see the following information for Chat pipeline run request.
+
+![](./chat-documentation.png)
+
 You can make a post request to the pipeline as follows (simply replace the topic with a topic you're seeking to summarize)
 
 ```bash
@@ -63,3 +67,4 @@ curl -X 'POST' \
   }
 }'
 ```
+
