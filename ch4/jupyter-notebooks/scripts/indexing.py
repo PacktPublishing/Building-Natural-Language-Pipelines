@@ -33,39 +33,9 @@ from haystack.components.preprocessors import (
 # Import components for embedding
 from haystack.components.embedders import SentenceTransformersDocumentEmbedder
 
-# --- 1. Create Sample Data Files ---
-# Create a directory to hold our source files
-data_dir = Path("data_for_indexing")
-data_dir.mkdir(exist_ok=True)
+# Assumes dummy data creation script has been run
 
-# Create a sample text file
-text_file_path = data_dir / "haystack_intro.txt"
-text_file_path.write_text(
-    "Haystack is an open-source framework by deepset for building production-ready LLM applications. "
-    "It enables developers to create retrieval-augmented generative pipelines and state-of-the-art search systems."
-)
-
-# Create a sample PDF file (requires PyPDF installation: pip install pypdf)
-# For this example, we'll skip the actual PDF creation and assume one exists.
-# You can place any PDF file in the 'data_for_indexing' directory and name it 'sample.pdf'.
-# For a runnable example, we will simulate its path.
-pdf_file_path = data_dir / "sample.pdf"
-# In a real scenario, you would have this file. For this script to run, we'll check for it.
-if not pdf_file_path.exists():
-    print(f"Warning: PDF file not found at {pdf_file_path}. The PDF processing branch will not run.")
-    # Create a dummy file to avoid path errors, but it won't be processed as PDF
-    pdf_file_path.touch()
-
-
-# Create a sample CSV file with some empty rows/columns for cleaning
-csv_content = """Company,Model,Release Year,,Notes
-OpenAI,GPT-4,2023,,Generative Pre-trained Transformer 4
-,,,
-Google,Gemini,2023,,A family of multimodal models
-Anthropic,Claude 3,2024,,Includes Opus, Sonnet, and Haiku models
-"""
-csv_file_path = data_dir / "llm_models.csv"
-csv_file_path.write_text(csv_content)
+from .dummy_data import text_file_path, pdf_file_path, csv_file_path
 
 # Define a sample URL to fetch
 web_url = "https://haystack.deepset.ai/blog/haystack-2-release"
@@ -149,8 +119,6 @@ indexing_pipeline.connect("cleaner", "text_splitter")
 indexing_pipeline.connect("text_splitter", "doc_embedder")
 indexing_pipeline.connect("doc_embedder", "writer")
 
-# --- 5. Run the Pipeline ---
-
 print("Running indexing pipeline for web and local files...")
 # Note: The PDF path will be ignored if the file doesn't exist.
 file_paths_to_process = [text_file_path]
@@ -164,21 +132,3 @@ indexing_pipeline.run({
     "file_type_router": {"sources": file_paths_to_process}
 })
 
-# --- 6. Process Tabular (CSV) Data Separately ---
-print("\nProcessing tabular (CSV) data...")
-# Read CSV into a Haystack Document
-with open(csv_file_path, "r") as f:
-    csv_doc = Document(content=f.read())
-
-# Clean, split, embed, and write the CSV data
-cleaned_csv_docs = csv_cleaner.run(documents=[csv_doc])
-split_csv_docs = csv_splitter.run(documents=cleaned_csv_docs["documents"])
-embedded_csv_docs = doc_embedder.run(documents=split_csv_docs["documents"])
-writer.run(documents=embedded_csv_docs["documents"])
-
-
-# --- 7. Verify the DocumentStore ---
-doc_count = document_store.count_documents()
-print(f"\nTotal documents in DocumentStore: {doc_count}")
-print("Sample document from the store:")
-print(document_store.filter_documents())
