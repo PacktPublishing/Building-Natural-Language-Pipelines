@@ -1,0 +1,1 @@
+Haystack is an open-source framework by deepset for building production-ready LLM applications. It enables developers to create retrieval-augmented generative pipelines and state-of-the-art search systems.
