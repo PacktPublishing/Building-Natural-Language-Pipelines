@@ -16,7 +16,7 @@ text_file_path.write_text(
 # For this example, we'll skip the actual PDF creation and assume one exists.
 # You can place any PDF file in the 'data_for_indexing' directory and name it 'sample.pdf'.
 # For a runnable example, we will simulate its path.
-pdf_file_path = data_dir / "sample.pdf"
+pdf_file_path = data_dir / "howpeopleuseai.pdf"
 # In a real scenario, you would have this file. For this script to run, we'll check for it.
 if not pdf_file_path.exists():
     print(f"Warning: PDF file not found at {pdf_file_path}. The PDF processing branch will not run.")
