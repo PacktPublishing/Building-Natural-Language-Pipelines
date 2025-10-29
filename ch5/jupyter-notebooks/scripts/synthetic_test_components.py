@@ -296,8 +296,7 @@ class SyntheticTestGenerator:
         
         # Create basic test cases from document content
         test_data = []
-        num_tests_to_create = min(self.testset_size, len(documents))
-        
+  
         # If we have fewer documents than requested tests, cycle through documents
         for i in range(self.testset_size):
             doc_index = i % len(documents)
