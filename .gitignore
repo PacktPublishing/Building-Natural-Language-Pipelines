@@ -192,5 +192,5 @@ uci-marketing-data
 ch6/wandb/*
 ch6/adding-observability/wandb/*
 ch6/adding-evaluation/wandb/*
-*.pdf
+.pdf
 *.txt
