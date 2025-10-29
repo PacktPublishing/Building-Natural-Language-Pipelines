@@ -2,6 +2,17 @@
 
 Exercises for Chapter 5. "Haystack pipeline development with custom components"
 
+### Execute Elastic Search
+
+Enable Docker and run
+
+```bash
+brew install docker
+brew install docker-compose
+brew install --cask docker
+docker-compose up
+```
+
 ## Topics covered
 
 * How to define Haystack custom components 
