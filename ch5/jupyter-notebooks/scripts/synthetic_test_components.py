@@ -121,21 +121,11 @@ class SyntheticTestGenerator:
             if not api_key:
                 raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
             
-            try:
-                self.llm = llm_factory(self.llm_model)
-                self.embeddings = embedding_factory('openai', model='text-embedding-3-small')
-                logger.info(f"Using modern Ragas API with model: {self.llm_model}")
-            except Exception as e:
-                logger.warning(f"Modern Ragas API failed, falling back to deprecated API: {e}")
-                # Fall back to deprecated API
-                from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-                chat_kwargs = {"model": self.llm_model}
-                if self.openai_api_key:
-                    chat_kwargs["openai_api_key"] = self.openai_api_key
-                self.llm = LangchainLLMWrapper(ChatOpenAI(**chat_kwargs))
-                self.embeddings = LangchainEmbeddingsWrapper(OpenAIEmbeddings())
-
             
+            self.llm = llm_factory(self.llm_model)
+            self.embeddings = embedding_factory('openai', model='text-embedding-3-small')
+            logger.info(f"Using modern Ragas API with model: {self.llm_model}")
+                
             logger.info(f"Initialized SyntheticTestGenerator with model: {self.llm_model}")
             
         except Exception as e:

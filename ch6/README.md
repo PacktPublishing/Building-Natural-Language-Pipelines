@@ -89,7 +89,10 @@ python -m ipykernel install --user --name=venv --display-name "NLP pipelines"
 Enable Docker and run
 
 ```bash
-docker compose up
+brew install docker
+brew install docker-compose
+brew install --cask docker
+docker-compose up
 ```
 
 
