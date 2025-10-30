@@ -5,7 +5,7 @@ Author: Laura Funderburk
 
 ## What You'll Learn to Build
 
-This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** with evaluatuin using the Haystack 2.0 framework. Starting with NLP fundamentals, you'll progress through creating intelligent search systems, custom components, and production-ready applications. The journey culminates in deploying scalable RAG solutions with proper evaluation frameworks, containerized deployments, and real-world projects including financial document analysis, legal chatbots, and text classification systems.
+This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** with evaluation using the [Haystack 2.0](https://haystack.deepset.ai/) framework. Starting with NLP fundamentals, you'll progress through creating intelligent search systems, custom components, and production-ready applications. The journey culminates in deploying scalable RAG solutions with proper evaluation frameworks, containerized deployments, and real-world projects including financial document analysis, legal chatbots, and text classification systems.
 
 ## Key Techniques by Chapter
 
