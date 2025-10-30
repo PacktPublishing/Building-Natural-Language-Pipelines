@@ -5,36 +5,40 @@ Author: Laura Funderburk
 
 ## What You'll Learn to Build
 
-This book will guide you through building sophisticated **Retrieval-Augmented Generation (RAG) applications** using modern NLP techniques and the Haystack 2.0 framework. By the end of this journey, you'll have hands-on experience creating:
+This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** with evaluatuin using the Haystack 2.0 framework. Starting with NLP fundamentals, you'll progress through creating intelligent search systems, custom components, and production-ready applications. The journey culminates in deploying scalable RAG solutions with proper evaluation frameworks, containerized deployments, and real-world projects including financial document analysis, legal chatbots, and text classification systems.
 
-### 🔍 **Intelligent Search & Retrieval Systems**
-- **Semantic search pipelines** that understand context and meaning, not just keywords
-- **Hybrid search systems** combining traditional keyword search with vector-based semantic retrieval
-- **Multi-modal document processing** pipelines for PDFs, web content, and structured data
+## Key Techniques by Chapter
 
-### 🤖 **Advanced RAG Applications**
-- **Question-answering systems** that can intelligently retrieve and synthesize information from large document collections
-- **Conversational AI assistants** with memory and context awareness
-- **Knowledge graph-enhanced RAG** systems that leverage structured relationships in data
+### **Chapter 3: Introduction to Haystack**
+**Core Concepts & Foundation**
+- **Component Architecture**: Understanding Haystack's modular design patterns
+- **Pipeline Construction**: Building linear and branching data flow pipelines  
+- **Document Processing**: Text extraction, cleaning, and preprocessing workflows
+- **Basic Retrievers**: Implementing BM25 and TF-IDF keyword-based search
+- **Generator Integration**: Connecting retrieval with text generation models
+- **Error Handling**: Pipeline debugging and component validation techniques
 
-### 🛠️ **Custom NLP Components**
-- **Specialized text processors** for domain-specific content (legal, medical, technical documents)
-- **Quality control components** with automated evaluation and validation
-- **Synthetic data generators** for testing and augmenting your training datasets
+### **Chapter 4: Advanced Pipeline Patterns**
+**Scaling & Optimization**
+- **Vector Embeddings**: Semantic search using sentence transformers and embedding models
+- **Hybrid Retrieval**: Combining keyword (BM25) and semantic (vector) search strategies
+- **Document Stores**: Working with Elasticsearch, FAISS, and Weaviate for scalable storage
+- **Indexing Pipelines**: Automated document ingestion and preprocessing workflows
+- **Query Expansion**: Advanced retrieval techniques using query reformulation
+- **Pipeline Composition**: Building complex, multi-stage RAG architectures
+- **Performance Optimization**: Caching, batching, and parallel processing strategies
 
-### 🏗️ **Production-Ready Systems**
-- **Scalable pipeline architectures** with proper error handling and monitoring
-- **Dockerized applications** ready for cloud deployment
-- **Evaluation frameworks** using RAGAS and other metrics for continuous improvement
-- **API-based services** with FastAPI for serving your NLP models
+### **Chapter 5: Custom Component Development**
+**Extensibility & Testing**
+- **Component SDK**: Creating custom Haystack components with proper interfaces
+- **Knowledge Graph Integration**: Building components for structured knowledge representation
+- **Synthetic Data Generation**: Automated test data creation for pipeline validation
+- **Quality Control Systems**: Implementing automated evaluation and monitoring components
+- **Unit Testing Frameworks**: Comprehensive testing strategies for NLP components
+- **Component Lifecycle**: Initialization, serialization, and state management
+- **Advanced Transformations**: Custom document processors for domain-specific content
 
-### 🎯 **Real-World Projects**
-- **Financial document analysis** system for processing earnings reports and market data
-- **Legal document chatbot** for answering questions about contracts and regulations  
-- **Named entity recognition** system for extracting structured information from unstructured text
-- **Text classification** pipelines for content moderation and document categorization
 
-Each chapter builds upon the previous one, taking you from NLP fundamentals to deploying production-grade applications that can handle real-world complexity and scale.
 
 ## Chapter breakdown
 
@@ -49,44 +53,11 @@ Each chapter builds upon the previous one, taking you from NLP fundamentals to d
 
 ## Setting up
 
-Set up a virtual environment and install the required packages:
-
-### Set up - for Jupyter notebook usage
-
-If you have completed the following, you may discard this information. Otherwise, as a reminder and to ease installation, you can follow the instructions below.  
-
-Throughout this book we will be using `pip`, `conda` and `just` for package management. We will also create an isolated `conda` environment with Python 3.10.  
-
-We recommend that you install Miniconda and VSCode. We also recommend that you install GitHub (GitBash for Windows or Git for Linux and Mac) to make the process of accessing the material locally easier.   
-
-* Install Miniconda: https://docs.conda.io/projects/miniconda/en/latest/  
-
-* Install VSCode: https://code.visualstudio.com/docs/setup/setup-overview  
-
-To obtain the code and exercises, clone the repository: 
-
-Open VSCode, Click File-> New Window, then Terminal ->New Terminal. Ensure your terminal is of type “Bash” or “Command line”.  
-
-Within the terminal, type each of the commands (a command is identified by the $ sign) below, one by one. Then press enter.  
+Clone the repository
 
 ```bash
+git clone https://github.com/PacktPublishing/Building-Natural-Language-Pipelines.git
 
-$ git clone https://github.com/PacktPublishing/Building-Natural-Language-Pipelines.git 
+cd Building-Natural-Language-Pipelines/
 
-$ cd building-RAG-applications/ 
-
-$ conda create –-name llm-pipelines python==3.12
-
-$ conda activate llm-pipelines 
-
-$ pip install haystack-ai, ipykernel, ipytthon
 ```
-
-Enable the Jupyter Notebook extension on VSCode through the extension marketplace. When you open a notebook, press on ‘Select Kernel’ and click on `llm-pipeline` as our environment. 
-
-### Advanced set up - for chapters 6 and higher
-
-Please refer to the instructions in this [README](./ch6/README.md) for how to set up for advanced chapters
-
-
-
