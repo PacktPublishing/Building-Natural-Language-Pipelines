@@ -46,7 +46,7 @@ cd Building-Natural-Language-Pipelines/
 
 ```
 
-Each chapter contains a `pyproject.toml` file with the folder's dependencies.
+Each chapter contains a `pyproject.toml` file with the folder's dependencies. **(Recommended) Open each folder in a new VS Code window.**
 
 1. **Install [uv](https://github.com/astral-sh/uv):**
 	```sh
@@ -61,8 +61,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies.
 	```sh
 	source .venv/bin/activate
 	```
-5. **(Recommended) Open this `ch3` folder in a new VS Code window.**
-6. **Select the virtual environment as the Jupyter kernel:**
+5. **Select the virtual environment as the Jupyter kernel:**
 	- Open any notebook.
 	- Click the kernel picker (top right) and select the `.venv` environment.
 
