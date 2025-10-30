@@ -3,6 +3,39 @@ Supplementary material for the book "Building Natural Language Pipelines" publis
 
 Author: Laura Funderburk
 
+## What You'll Learn to Build
+
+This book will guide you through building sophisticated **Retrieval-Augmented Generation (RAG) applications** using modern NLP techniques and the Haystack 2.0 framework. By the end of this journey, you'll have hands-on experience creating:
+
+### 🔍 **Intelligent Search & Retrieval Systems**
+- **Semantic search pipelines** that understand context and meaning, not just keywords
+- **Hybrid search systems** combining traditional keyword search with vector-based semantic retrieval
+- **Multi-modal document processing** pipelines for PDFs, web content, and structured data
+
+### 🤖 **Advanced RAG Applications**
+- **Question-answering systems** that can intelligently retrieve and synthesize information from large document collections
+- **Conversational AI assistants** with memory and context awareness
+- **Knowledge graph-enhanced RAG** systems that leverage structured relationships in data
+
+### 🛠️ **Custom NLP Components**
+- **Specialized text processors** for domain-specific content (legal, medical, technical documents)
+- **Quality control components** with automated evaluation and validation
+- **Synthetic data generators** for testing and augmenting your training datasets
+
+### 🏗️ **Production-Ready Systems**
+- **Scalable pipeline architectures** with proper error handling and monitoring
+- **Dockerized applications** ready for cloud deployment
+- **Evaluation frameworks** using RAGAS and other metrics for continuous improvement
+- **API-based services** with FastAPI for serving your NLP models
+
+### 🎯 **Real-World Projects**
+- **Financial document analysis** system for processing earnings reports and market data
+- **Legal document chatbot** for answering questions about contracts and regulations  
+- **Named entity recognition** system for extracting structured information from unstructured text
+- **Text classification** pipelines for content moderation and document categorization
+
+Each chapter builds upon the previous one, taking you from NLP fundamentals to deploying production-grade applications that can handle real-world complexity and scale.
+
 ## Chapter breakdown
 
 * [ch1](./ch1/) - "Introduction to Natural Language Processing (NLP) pipelines"

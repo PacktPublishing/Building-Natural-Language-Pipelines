@@ -50,7 +50,7 @@ To obtain the API key:
 
 Images for component diagrams and pipeline visualizations are in `jupyter-notebooks/images/`.
 
-
+Testing scripts and execution can be found [in this folder](./tests/README_TESTS.md)
 
 ---
 
