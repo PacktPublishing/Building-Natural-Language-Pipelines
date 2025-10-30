@@ -38,6 +38,7 @@ To obtain the API key:
 | Notebook | Link | Description |
 |---|---|---|
 | Introduction to Custom Components | [prefixed_custom-component.ipynb](./jupyter-notebooks/prefixed_custom-component.ipynb) | Learn the fundamentals of creating custom Haystack components |
+| The Warmup method | [warmup_component.ipynb](./jupyter-notebooks/warmup_component.ipynb) | Learn the fundamentals of creating custom Haystack components |
 | Knowledge Graph & Synthetic Data | [knowledgegraph_sdg_pipelines.ipynb](./jupyter-notebooks/knowledgegraph_sdg_pipelines.ipynb) | Advanced pipeline for knowledge graphs and synthetic test generation |
 
 ### Component Scripts and Tests
