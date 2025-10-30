@@ -1,5 +1,9 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+#
+# Required secrets:
+# - OPENAI_API_KEY: OpenAI API key for running tests that use OpenAI models
+# - TAVILY_API_KEY: Tavily API key for web search functionality in tests
 
 name: Python package
 
@@ -18,17 +22,25 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
-    # steps:
-    # - uses: actions/checkout@v3
-    # - name: Set up Python ${{ matrix.python-version }}
-    #   uses: actions/setup-python@v3
-    #   with:
-    #     python-version: ${{ matrix.python-version }}
-    # - name: Install dependencies
-    #   run: |
-    #     python -m pip install --upgrade pip
-    #     python -m pip install flake8 pytest poetry
-    #     poetry install
-    # - name: Test with pytest
-    #   run: |
-    #     # poetry run pytest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+    - name: Install dependencies for ch5
+      run: |
+        python -m pip install --upgrade pip
+        cd ch5
+        uv pip install --system -e .
+    - name: Run ch5 tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      run: |
+        cd ch5
+        python tests/run_tests.py
