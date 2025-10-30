@@ -27,8 +27,6 @@ from ragas.testset.synthesizers import (
 
 from ragas.llms.base import llm_factory
 from ragas.embeddings import embedding_factory
-from ragas.llms import LangchainLLMWrapper
-from ragas.embeddings import LangchainEmbeddingsWrapper
 
 
 logger = logging.getLogger(__name__)
