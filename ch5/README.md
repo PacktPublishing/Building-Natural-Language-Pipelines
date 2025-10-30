@@ -38,10 +38,6 @@ To obtain the API key:
 | Notebook | Link | Description |
 |---|---|---|
 | Introduction to Custom Components | [prefixed_custom-component.ipynb](./jupyter-notebooks/prefixed_custom-component.ipynb) | Learn the fundamentals of creating custom Haystack components |
-| Error Handling | [custom-component-error-handling.ipynb](./jupyter-notebooks/custom-component-robustness/custom-component-error-handling.ipynb) | Build robust components with comprehensive error handling |
-| Logging Implementation | [custom-component-logging.ipynb](./jupyter-notebooks/custom-component-robustness/custom-component-logging.ipynb) | Add proper logging to custom components for debugging |
-| Global State Management | [custom-component-logging-threading.ipynb](./jupyter-notebooks/custom-component-robustness/custom-component-logging-threading.ipynb) | Implement custom components with threading and global state |
-| Scalability Considerations | [custom-component-scalability.ipynb](./jupyter-notebooks/custom-component-robustness/custom-component-scalability.ipynb) | Design components that scale efficiently in production |
 | Knowledge Graph & Synthetic Data | [knowledgegraph_sdg_pipelines.ipynb](./jupyter-notebooks/knowledgegraph_sdg_pipelines.ipynb) | Advanced pipeline for knowledge graphs and synthetic test generation |
 
 ### Component Scripts and Tests

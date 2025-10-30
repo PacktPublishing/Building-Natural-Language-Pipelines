@@ -2004,6 +2004,33 @@ wheels = [
 ]
 
 [[package]]
+name = "ollama"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d6/47/f9ee32467fe92744474a8c72e138113f3b529fc266eea76abfdec9a33f3b/ollama-0.6.0.tar.gz", hash = "sha256:da2b2d846b5944cfbcee1ca1e6ee0585f6c9d45a2fe9467cbcd096a37383da2f", size = 50811, upload-time = "2025-09-24T22:46:02.417Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b5/c1/edc9f41b425ca40b26b7c104c5f6841a4537bb2552bfa6ca66e81405bb95/ollama-0.6.0-py3-none-any.whl", hash = "sha256:534511b3ccea2dff419ae06c3b58d7f217c55be7897c8ce5868dfb6b219cf7a0", size = 14130, upload-time = "2025-09-24T22:46:01.19Z" },
+]
+
+[[package]]
+name = "ollama-haystack"
+version = "5.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "haystack-ai" },
+    { name = "ollama" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8c/23/98d30d814929b1ce76401bc305872e48b4b556a34332712cb27351e2acf8/ollama_haystack-5.3.0.tar.gz", hash = "sha256:c29d92471e25901e19d10a024d4cf17cd2ddcb8ba9366001bfa17260ed1bced2", size = 99590, upload-time = "2025-10-22T13:38:51.357Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/52/29/7b8fbf273a0ce812233b95e36532340f04779eee3cd2a072fb7fe30240a7/ollama_haystack-5.3.0-py3-none-any.whl", hash = "sha256:1e07a9b5b66765422ce5a73e8bb60f51f41e3bad8e740e370a3d2276a83bf0ae", size = 20736, upload-time = "2025-10-22T13:38:52.508Z" },
+]
+
+[[package]]
 name = "openai"
 version = "1.109.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2896,6 +2923,7 @@ dependencies = [
     { name = "langchain-community" },
     { name = "langchain-openai" },
     { name = "nltk" },
+    { name = "ollama-haystack" },
     { name = "pandas" },
     { name = "pymupdf" },
     { name = "pypdf" },
@@ -2916,6 +2944,7 @@ requires-dist = [
     { name = "langchain-community", specifier = ">=0.4" },
     { name = "langchain-openai", specifier = ">=1.0.1" },
     { name = "nltk", specifier = ">=3.9.1" },
+    { name = "ollama-haystack", specifier = ">=5.3.0" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "pymupdf", specifier = ">=1.26.5" },
     { name = "pypdf", specifier = ">=6.1.3" },
