@@ -166,7 +166,7 @@ course-material/_build
 
 # Data files
 *.asc
-*.csv
+.csv
 *.tsv
 *.json
 *.pkl
