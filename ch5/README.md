@@ -39,7 +39,9 @@ To obtain the API key:
 |---|---|---|
 | Introduction to Custom Components | [prefixed_custom-component.ipynb](./jupyter-notebooks/prefixed_custom-component.ipynb) | Learn the fundamentals of creating custom Haystack components |
 | The Warmup method | [warmup_component.ipynb](./jupyter-notebooks/warmup_component.ipynb) | Learn the fundamentals of creating custom Haystack components |
-| Knowledge Graph & Synthetic Data | [knowledgegraph_sdg_pipelines.ipynb](./jupyter-notebooks/knowledgegraph_sdg_pipelines.ipynb) | Advanced pipeline for knowledge graphs and synthetic test generation |
+| PDF Knowledge Graph Pipeline | [pdf_knowledge_graph_pipeline.ipynb](./jupyter-notebooks/pdf_knowledge_graph_pipeline.ipynb) | PDF processing pipeline for knowledge graphs and synthetic test generation |
+| Web Content Knowledge Graph Pipeline | [web_knowledge_graph_pipeline.ipynb](./jupyter-notebooks/web_knowledge_graph_pipeline.ipynb) | Web content processing pipeline for knowledge graphs and synthetic test generation |
+| Advanced Branching Pipeline | [advanced_branching_pipeline.ipynb](./jupyter-notebooks/advanced_branching_pipeline.ipynb) | Multi-source branching pipeline with FileTypeRouter and DocumentJoiner |
 
 ### Component Scripts and Tests
 
@@ -54,6 +56,30 @@ Testing scripts and execution can be found [in this folder](./tests/README_TESTS
 
 ---
 
+## Pipeline Progression
+
+The knowledge graph and synthetic data generation notebooks are organized in increasing complexity:
+
+### 1. PDF Knowledge Graph Pipeline
+- **Focus**: Single input type (PDF files)
+- **Components**: PyPDFToDocument → DocumentCleaner → DocumentSplitter → KnowledgeGraphGenerator → SyntheticTestGenerator
+- **Best for**: Learning the basics of knowledge graph generation from documents
+- **Output**: Synthetic test dataset from PDF content
+
+### 2. Web Content Knowledge Graph Pipeline  
+- **Focus**: Single input type (web URLs)
+- **Components**: LinkContentFetcher → HTMLToDocument → DocumentCleaner → DocumentSplitter → KnowledgeGraphGenerator → SyntheticTestGenerator
+- **Best for**: Understanding web content processing and comparing with PDF results
+- **Output**: Synthetic test dataset from web content
+
+### 3. Advanced Branching Pipeline
+- **Focus**: Multiple input types (PDFs + Web + Text files)
+- **Components**: FileTypeRouter + DocumentJoiner for intelligent multi-source processing
+- **Best for**: Production-ready pipelines that need to handle diverse document collections
+- **Output**: Unified synthetic test dataset from multiple sources
+
+---
+
 ## Chapter Topics Covered
 
 1. **How to define Haystack custom components**
@@ -64,5 +90,6 @@ Testing scripts and execution can be found [in this folder](./tests/README_TESTS
    - Knowledge graph generation components
    - Synthetic test data generation
    - Multi-format document processing
+   - Branching pipeline architectures with FileTypeRouter and DocumentJoiner
 
 4. **Testing and Debugging Custom Components**
