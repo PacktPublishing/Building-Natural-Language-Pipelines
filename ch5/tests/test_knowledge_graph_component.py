@@ -18,10 +18,15 @@ project_root = current_dir.parent    # ch5/
 scripts_dir = project_root / "jupyter-notebooks" / "scripts"
 sys.path.insert(0, str(scripts_dir))
 
+from haystack.dataclasses import Document as HaystackDocument
 from langchain_core.documents import Document as LangChainDocument
 from ragas.testset.graph import KnowledgeGraph, Node, NodeType
 
-from knowledge_graph_component import KnowledgeGraphGenerator, KnowledgeGraphSaver
+from knowledge_graph_component import (
+    KnowledgeGraphGenerator, 
+    KnowledgeGraphSaver,
+    DocumentToLangChainConverter
+)
 
 
 class TestKnowledgeGraphGenerator:
@@ -249,6 +254,73 @@ class TestKnowledgeGraphIntegration:
                 assert save_result['saved_path'] == output_path
 
 
+class TestDocumentToLangChainConverter:
+    """Test cases for the DocumentToLangChainConverter component."""
+
+    def test_successful_document_conversion(self):
+        """Test 1: Component converts Haystack documents to LangChain format correctly."""
+        # Create test Haystack documents
+        haystack_docs = [
+            HaystackDocument(
+                content="This is test content 1",
+                meta={"source": "test1.txt", "page": 1}
+            ),
+            HaystackDocument(
+                content="This is test content 2",
+                meta={"source": "test2.txt", "page": 2}
+            )
+        ]
+        
+        converter = DocumentToLangChainConverter()
+        result = converter.run(documents=haystack_docs)
+        
+        # Verify conversion results
+        assert result['document_count'] == 2
+        assert len(result['langchain_documents']) == 2
+        
+        # Check first document
+        first_doc = result['langchain_documents'][0]
+        assert isinstance(first_doc, LangChainDocument)
+        assert first_doc.page_content == "This is test content 1"
+        assert first_doc.metadata == {"source": "test1.txt", "page": 1}
+        
+        # Check second document
+        second_doc = result['langchain_documents'][1]
+        assert second_doc.page_content == "This is test content 2"
+        assert second_doc.metadata == {"source": "test2.txt", "page": 2}
+
+    def test_empty_document_list_handling(self):
+        """Test 2: Component handles empty document lists gracefully."""
+        converter = DocumentToLangChainConverter()
+        result = converter.run(documents=[])
+        
+        assert result['document_count'] == 0
+        assert len(result['langchain_documents']) == 0
+        assert result['langchain_documents'] == []
+
+    def test_documents_with_missing_metadata(self):
+        """Test 3: Component handles documents with missing or None metadata."""
+        # Create documents with various metadata scenarios
+        haystack_docs = [
+            HaystackDocument(content="Content with metadata", meta={"key": "value"}),
+            HaystackDocument(content="Content with None metadata", meta=None),
+            HaystackDocument(content="Content with empty metadata", meta={})
+        ]
+        
+        converter = DocumentToLangChainConverter()
+        result = converter.run(documents=haystack_docs)
+        
+        # Verify all documents are converted
+        assert result['document_count'] == 3
+        assert len(result['langchain_documents']) == 3
+        
+        # Check metadata handling
+        docs = result['langchain_documents']
+        assert docs[0].metadata == {"key": "value"}  # Normal metadata
+        assert docs[1].metadata == {}  # None converted to empty dict
+        assert docs[2].metadata == {}  # Empty dict preserved
+
+
 if __name__ == "__main__":
     # Run tests with pytest if available, otherwise run basic verification
     try:
@@ -264,6 +336,11 @@ if __name__ == "__main__":
         
         saver_test = TestKnowledgeGraphSaver()
         saver_test.test_component_initialization()
+        
+        converter_test = TestDocumentToLangChainConverter()
+        converter_test.test_successful_document_conversion()
+        converter_test.test_empty_document_list_handling()
+        converter_test.test_documents_with_missing_metadata()
         
         print("Basic tests completed successfully!")
         print("For comprehensive testing, please install pytest: pip install pytest")
