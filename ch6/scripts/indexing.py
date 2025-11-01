@@ -36,7 +36,7 @@ from haystack.components.embedders import SentenceTransformersDocumentEmbedder
 
 # Assumes dummy data creation script has been run
 
-from .dummy_data import text_file_path, pdf_file_path, csv_file_path
+from dummy_data import text_file_path, pdf_file_path, csv_file_path
 
 # Define a sample URL to fetch
 web_url = "https://haystack.deepset.ai/blog/haystack-2-release"
@@ -44,7 +44,7 @@ web_url = "https://haystack.deepset.ai/blog/haystack-2-release"
 # --- 2. Initialize Core Components ---
 
 # DocumentStore:
-document_store = InMemoryDocumentStore()
+document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
 
 # FileTypeRouter: Directs files to the correct converter based on their MIME type.
 file_type_router = FileTypeRouter(mime_types=["text/plain", "application/pdf", "text/html", "text/csv"])
@@ -80,7 +80,7 @@ csv_splitter = CSVDocumentSplitter(split_mode="row-wise")
 doc_embedder = SentenceTransformersDocumentEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
 
 # DocumentWriter:
-writer = DocumentWriter(document_store)
+writer = DocumentWriter(document_store, policy="overwrite")
 
 
 # --- 3. Build the Indexing Pipeline ---

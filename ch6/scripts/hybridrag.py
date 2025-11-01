@@ -1,26 +1,26 @@
-
-# Continue from the previous script, assuming 'document_store' is populated.
-from scripts.indexing import document_store #this runs our indexing pipeline
 # Import additional components for hybrid retrieval
-from haystack.components.retrievers.in_memory import InMemoryBM25Retriever
+from haystack_integrations.components.retrievers.elasticsearch import ElasticsearchBM25Retriever, ElasticsearchEmbeddingRetriever
 from haystack.components.joiners import DocumentJoiner
 from haystack.components.rankers import SentenceTransformersSimilarityRanker
 
 # Import necessary components for the query pipeline
 from haystack.components.embedders import SentenceTransformersTextEmbedder
-from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
 from haystack.utils import Secret
 from haystack import Pipeline, SuperComponent
+
+from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
+
+document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
 
 # --- 1. Initialize Query Pipeline Components ---
 
 # Text Embedder: To embed the user's query. Must be compatible with the document embedder.
 text_embedder = SentenceTransformersTextEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
 
-# Retriever: Fetches documents from the DocumentStore based on vector similarity.
-retriever = InMemoryEmbeddingRetriever(document_store=document_store, top_k=3)
+# Retriever: Fetches documents from the Elasticsearch DocumentStore based on vector similarity.
+retriever = ElasticsearchEmbeddingRetriever(document_store=document_store, top_k=3)
 
 # PromptBuilder: Creates a prompt using the retrieved documents and the query.
 # The Jinja2 template iterates through the documents and adds their content to the prompt.
@@ -42,9 +42,9 @@ llm_generator_inst = OpenAIGenerator(api_key=Secret.from_env_var("OPENAI_API_KEY
 
 
 
-# Sparse Retriever (BM25): For keyword-based search.
-# This retriever needs to be "warmed up" by calculating statistics on the documents in the store.
-bm25_retriever = InMemoryBM25Retriever(document_store=document_store, top_k=3)
+# Sparse Retriever (BM25): For keyword-based search using Elasticsearch.
+# Elasticsearch provides built-in BM25 scoring for text-based retrieval.
+bm25_retriever = ElasticsearchBM25Retriever(document_store=document_store, top_k=3)
 
 # DocumentJoiner: To merge the results from the two retrievers.
 # The default 'concatenate' mode works well here as the ranker will handle final ordering.

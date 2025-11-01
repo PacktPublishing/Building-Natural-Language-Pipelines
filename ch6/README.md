@@ -1,139 +1,181 @@
-# Description
+# Chapter 6: Setting up a Reproducible Q&A Pipeline
 
-Exercises for Chapter 6. "Setting up a reproducible project: question and answer pipeline "
+This chapter covers building reproducible workflows for question and answer systems using Elasticsearch, Haystack, and vector embeddings.
 
-## Topics covered
+## 🚀 Quick Start Guide
 
-* Reproducible workflow building blocks  
+Follow these steps to get up and running:
 
-* Setting up a Q&A System: 
+### Step 1: Install Prerequisites
 
-1. Case I: Q&A system for small collection of text 
-
-2. Case II: Q&A system for complex knowledge bases 
-
-* Incorporating observability and evaluation of results 
-
-* Optimizing performance through a feedback loop 
-
-## Technical requirements
-
-To follow along and successfully implement the concepts discussed in this chapter, you need to set up a proper development environment. The main technical requirement is Python, which will be used to manage the dependencies and run the necessary code for the project. Specifically, you need: 
-
-Python 3.12 or Higher 
-
-The project is designed to work with Python 3.12, so ensure you have this version installed. If not, consider using a tool like pyenv to manage and install the correct Python version. 
-
-### Dependency Management 
-
-We will use just scripts and uv for managing dependencies efficiently. These tools allow us to handle virtual environments and package installation seamlessly. For more information, visit https://github.com/casey/just and https://astral.sh/blog/uv  to perform installation. Installation guide for just can be found here https://github.com/casey/just?tab=readme-ov-file#installation 
-
-It is also suggested to use pyenv to manage Python versions https://github.com/pyenv/pyenv, installation instructions can be found here https://github.com/pyenv/pyenv?tab=readme-ov-file#installation  
-
-You can set Python 3.12 globally as follows: 
-
-```bash
-$ pyenv global system 3.12 
-```
-
-* Virtual Environment: We recommend creating a virtual environment to isolate the project dependencies and avoid conflicts with other Python installations. 
-
-* `pipx`: While optional, using pipx for managing command-line tools like uv can simplify dependency installation and management. 
-
-* Docker desktop installed: We will be using a Docker image for Elastic Search to populate our vector database. https://www.docker.com/products/docker-desktop/. 
-
-### Libraries and Packages 
-
-The project requires several Python libraries, which will be installed through the provided justfile. The main libraries include: 
-
-* Haystack for building the Q&A pipeline 
-* OpenAI for embedding generation 
-* Additional utilities like BeautifulSoup, dotenv, and more for pre-processing and environment management. 
-* Bonus: Bytewax for real time processing 
-
-We will add these as part of a `pyproject.toml` file found [here](../pyproject.toml). 
-
-By ensuring these requirements are met, you'll be able to set up a reproducible and scalable environment for the Q&A pipeline project. 
-
-### Executing with `just` 
-
-In this folder, we have prepared a `justfile` to ensure this process is as smooth as possible. To get started, and once you have installed all requirements, run
-
-```bash
-just get-started
-```
-
-This will create a `venvs` folder. Activate
-
-```bash
-. venvs/bin/dev activate
-```
-
-To add new dependencies, modify the dependencies in the [pyproject.toml](./pyproject.toml) file then run
-
-```bash
-just develop
-```
-
-to update. 
-
-To create a kernel using the virtual environment, run
-
-
-```bash
-python -m ipykernel install --user --name=venv --display-name "NLP pipelines"
-```
-
-### Execute Elastic Search
-
-Enable Docker and run
-
+**Install Docker:**
 ```bash
 brew install docker
 brew install docker-compose
 brew install --cask docker
-docker-compose up
 ```
 
+**Install uv (Python package manager):**
+```bash
+pip install uv
+```
 
-## Pipelines
+### Step 2: Set Up Python Environment
 
-### Case I: Q&A for simple text with custom components
+**Install dependencies and activate environment:**
+```bash
+# Install all dependencies
+uv sync
 
-Ensure you have an OpenAI key and have stored it into a `.env` file under a variable name such as `OPENAI_API_KEY`
+# Activate the virtual environment
+source .venv/bin/activate
+```
 
-The pipelines can be found here:
+### Step 3: Configure API Keys
 
-1. [Indexing pipeline with custom components to extract, chunk and embed information from a JSONL file](./case-I-q-and-a-dataset/indexingpipeline.py)
-2. [Querying pipeline with prompt templating to retrieve information](./case-I-q-and-a-dataset/query_pipeline.png)
+Create a `.env` file in the root directory:
+```bash
+OPENAI_API_KEY=your_openai_key_here
+```
 
-![](./case-I-q-and-a-dataset/benzinga_pipeline.png)
+Get your OpenAI API key at [OpenAI's platform](https://platform.openai.com)
 
-Indexing pipeline
+### Step 4: Set Up VS Code (Recommended)
 
-![](./case-II-q-and-a-complex/answer_generation_pipeline.png)
+**Open this chapter folder in VS Code:**
+- Open VS Code
+- File → Open Folder → Select this `ch6` folder
+- Select the `.venv` environment as your Python interpreter
 
-Query pipeline
+**For Jupyter notebooks:**
+- Open any `.ipynb` file
+- Click the kernel picker (top right)
+- Select the `.venv` environment
 
-### Case II: Q&A for a complex knowledge base
+### Step 5: Start Elasticsearch
 
-Ensure you have an OpenAI key and have stored it into a `.env` file under a variable name such as `OPENAI_API_KEY`
+**Start Elasticsearch container:**
+```bash
+# Start in detached mode
+docker-compose up -d
 
-The notebook includes an indexing pipeline to extract, chunk and embed information from the Haystack tutorials as well as a querying pipeline with a specific role (software engineer) to build code from the tutorials.
+# Verify it's running (should show cluster health)
+curl -X GET "localhost:9200/_cat/health?v"
+```
 
-[Notebook](./case-II-q-and-a-complex/rag-tutorials.ipynb)
+---
 
-### Adding evaluation and observability 
+## 📚 Elasticsearch Document Indexing Workflow
 
-We included two examples. You can get started with a simple example that logs token usage and time to perform embedding. 
+Now you'll index multiple data sources with vector embeddings for semantic search.
 
-* [Add logging with Weights and Biases - indexing](./adding-observability/indexing_pipeline.py)
-* [Add logging with Weights and Biases - querying](./adding-observability/query_pipeline.py)
+### Step 1: Prepare Data Sources
 
-This assumes you have created a Weights and Biases account, and that you have an API key, ensure to store it as part of an `.env` file under a variable name such as `WANDB_API_KEY`. 
+The indexing pipeline processes four types of data sources:
 
-* [Add evaluation with RAGAS - query pipeline](./adding-evaluation/query_pipeline.py)
+1. **Web content**: Fetches from `https://haystack.deepset.ai/blog/haystack-2-release`
+2. **Text file**: `data_for_indexing/haystack_intro.txt`
+3. **PDF file**: `data_for_indexing/howpeopleuseai.pdf` 
+4. **CSV file**: `data_for_indexing/llm_models.csv`
 
-The complete RAGAS query pipeline can be visualized as follows
+Create the sample data files by running:
 
-![](./adding-evaluation/query_pipeline_ragas.png)
+```bash
+cd scripts
+uv run python dummy_data.py
+```
+
+### Step 2: Run the Indexing Pipeline
+
+Execute the indexing script to process all data sources and store them in Elasticsearch:
+
+```bash
+cd scripts
+uv run python indexing.py
+```
+
+**Expected Output:**
+```
+Running unified indexing pipeline for web, local files, and CSV...
+Error processing document [...]. Keeping it, but skipping cleaning. Error: [...]
+Error processing document [...]. Keeping it, but skipping splitting. Error: [...]
+Batches: 100%|████████████████| 5/5 [00:00<00:00,  6.21it/s]
+```
+
+The pipeline will:
+- Fetch and process web content from the Haystack blog
+- Convert and chunk the PDF document into readable segments
+- Process text and CSV files
+- Generate 384-dimensional vector embeddings for all content
+- Store approximately 133 documents in Elasticsearch
+
+### Step 3: Verify Documents are Loaded
+
+Check that documents have been successfully indexed:
+
+```bash
+# Get total document count
+curl -X GET "localhost:9200/default/_count"
+
+# Expected output: {"count":133,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}
+
+# View document breakdown by source
+curl -X GET "localhost:9200/default/_search?size=0&pretty" -H "Content-Type: application/json" -d '{
+  "aggs": {
+    "sources": {
+      "terms": {
+        "field": "file_path.keyword", 
+        "size": 10,
+        "missing": "web_content"
+      }
+    }
+  }
+}'
+
+# Sample a document to verify embeddings
+curl -X GET "localhost:9200/default/_search?size=1&pretty"
+```
+
+**Expected Document Distribution:**
+- ~118 documents from `howpeopleuseai.pdf`
+- ~13 documents from web content  
+- 1 document from `haystack_intro.txt`
+- 1 document from `llm_models.csv`
+
+### Step 4: Clean Up (Optional)
+
+To stop the Elasticsearch container and clean up:
+
+```bash
+# Stop the container
+docker-compose down
+
+# Remove the index (if you want to start fresh)
+curl -X DELETE "localhost:9200/default"
+```
+
+### Troubleshooting
+
+**Issue: Duplicate document errors**
+```bash
+# Solution: Clear the index and recreate with proper mappings
+curl -X DELETE "localhost:9200/default"
+curl -X PUT "localhost:9200/default" -H "Content-Type: application/json" -d '{
+  "mappings": {
+    "properties": {
+      "content": {"type": "text"},
+      "content_type": {"type": "keyword"}, 
+      "id": {"type": "keyword"},
+      "embedding": {"type": "dense_vector", "dims": 384}
+    }
+  }
+}'
+```
+
+**Issue: PDF not found warnings**
+- Ensure you're running from the correct directory
+- Verify the PDF file exists in `data_for_indexing/howpeopleuseai.pdf`
+- Run `uv run python dummy_data.py` to set up correct file paths
+
+
+

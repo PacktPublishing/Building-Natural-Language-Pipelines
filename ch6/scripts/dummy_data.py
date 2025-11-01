@@ -2,7 +2,9 @@ from pathlib import Path
 
 # --- 1. Create Sample Data Files ---
 # Create a directory to hold our source files
-data_dir = Path("data_for_indexing")
+# Use parent directory to go up from scripts/ to the project root
+project_root = Path(__file__).parent.parent
+data_dir = project_root / "data_for_indexing"
 data_dir.mkdir(exist_ok=True)
 
 # Create a sample text file

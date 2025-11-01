@@ -1,17 +1,19 @@
 # Import necessary components for the query pipeline
 from haystack.components.embedders import SentenceTransformersTextEmbedder
-from haystack.components.retrievers.in_memory import InMemoryEmbeddingRetriever
+from haystack_integrations.components.retrievers.elasticsearch import ElasticsearchEmbeddingRetriever
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
 from haystack.utils import Secret
 from haystack import Pipeline, SuperComponent
-from scripts.indexing import document_store
+from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
+
+document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
 
 # Text Embedder: To embed the user's query. Must be compatible with the document embedder.
 text_embedder = SentenceTransformersTextEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
 
-# Retriever: Fetches documents from the DocumentStore based on vector similarity.
-retriever = InMemoryEmbeddingRetriever(document_store=document_store, top_k=3)
+# Retriever: Fetches documents from the Elasticsearch DocumentStore based on vector similarity.
+retriever = ElasticsearchEmbeddingRetriever(document_store=document_store, top_k=3)
 
 # PromptBuilder: Creates a prompt using the retrieved documents and the query.
 # The Jinja2 template iterates through the documents and adds their content to the prompt.
