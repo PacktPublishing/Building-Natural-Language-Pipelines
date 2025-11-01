@@ -25,10 +25,11 @@ from ragas.testset.synthesizers import (
     MultiHopSpecificQuerySynthesizer
 )
 
-from ragas.llms.base import llm_factory
-from ragas.embeddings import embedding_factory
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
+from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+  
 
 
 logger = logging.getLogger(__name__)
@@ -98,19 +99,6 @@ class SyntheticTestGenerator:
         if not api_key:
             raise ValueError("OPENAI_API_KEY not found in environment variables or parameters.")
         
-        # Check internet connectivity by testing a simple API call
-        try:
-            import requests
-            response = requests.get("https://api.openai.com/v1/models", 
-                                  headers={"Authorization": f"Bearer {api_key}"}, 
-                                  timeout=10)
-            if response.status_code == 401:
-                raise ConnectionError("Invalid OpenAI API key.")
-            elif response.status_code != 200:
-                raise ConnectionError(f"OpenAI API returned status code: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            raise ConnectionError(f"Cannot connect to OpenAI API: {e}")
-        
         logger.info("Environment validation successful")
     
     def _initialize_models(self):
@@ -121,10 +109,19 @@ class SyntheticTestGenerator:
             if not api_key:
                 raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
             
+            # Initialize using LangchainLLMWrapper for compatibility
+            chat_openai_kwargs = {"model": self.llm_model}
+            if api_key:
+                chat_openai_kwargs["openai_api_key"] = api_key
+                
+            self.llm = LangchainLLMWrapper(ChatOpenAI(**chat_openai_kwargs))
             
-            self.llm = llm_factory(self.llm_model)
-            self.embeddings = embedding_factory('openai', model='text-embedding-3-small')
-            logger.info(f"Using modern Ragas API with model: {self.llm_model}")
+            embeddings_kwargs = {}
+            if api_key:
+                embeddings_kwargs["openai_api_key"] = api_key
+                
+            self.embeddings = LangchainEmbeddingsWrapper(OpenAIEmbeddings(**embeddings_kwargs))
+            logger.info(f"Using LangchainLLMWrapper with model: {self.llm_model}")
                 
             logger.info(f"Initialized SyntheticTestGenerator with model: {self.llm_model}")
             
@@ -245,21 +242,37 @@ class SyntheticTestGenerator:
     
     def _generate_from_knowledge_graph(self, knowledge_graph: KnowledgeGraph):
         """Generate tests using a knowledge graph."""
-        generator = TestsetGenerator(
-            llm=self.llm,
-            embedding_model=self.embeddings,
-            knowledge_graph=knowledge_graph
-        )
-        
-        query_distribution = self._create_query_synthesizers()
-        
-        # Use max_testset_size if specified, otherwise use full testset_size
-        actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
-        
-        return generator.generate(
-            testset_size=actual_size,
-            query_distribution=query_distribution
-        )
+        try:
+            generator = TestsetGenerator(
+                llm=self.llm,
+                embedding_model=self.embeddings,
+                knowledge_graph=knowledge_graph
+            )
+            
+            query_distribution = self._create_query_synthesizers()
+            
+            # Use max_testset_size if specified, otherwise use full testset_size
+            actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
+            
+            logger.info(f"Attempting to generate {actual_size} test cases from knowledge graph")
+            
+            return generator.generate(
+                testset_size=actual_size,
+                query_distribution=query_distribution
+            )
+            
+        except ConnectionError as e:
+            logger.error(f"Connection error during knowledge graph generation: {e}")
+            raise ConnectionError(f"Network/API connection failed: {e}")
+        except AttributeError as e:
+            logger.error(f"Attribute error in knowledge graph generation: {e}")
+            raise AttributeError(f"API compatibility issue: {e}")
+        except ValueError as e:
+            logger.error(f"Value error in knowledge graph generation: {e}")
+            raise ValueError(f"Invalid parameters or data: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in knowledge graph generation: {type(e).__name__}: {e}")
+            raise Exception(f"Knowledge graph generation failed: {e}")
     
     def _generate_from_documents(self, documents: List[LangChainDocument]):
         """Generate tests directly from documents."""

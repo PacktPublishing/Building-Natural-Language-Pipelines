@@ -35,7 +35,7 @@ dependencies = [
   "rapidfuzz>=3.14.1",
   "sentence-transformers>=5.0.0",
   "trafilatura>=2.0.0",
-  "transformers[sentencepiece,torch]>=4.57.1",
+  "transformers[sentencepiece,torch]>=4.57.1"
 ]
 
 [build-system]

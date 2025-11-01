@@ -59,6 +59,9 @@ Get your OpenAI API key at [OpenAI's platform](https://platform.openai.com)
 # Start in detached mode
 docker-compose up -d
 
+# Run the indexing script
+uv run python scripts/indexing.py
+
 # Verify it's running (should show cluster health)
 curl -X GET "localhost:9200/_cat/health?v"
 ```
