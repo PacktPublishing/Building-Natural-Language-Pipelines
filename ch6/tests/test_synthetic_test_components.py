@@ -22,7 +22,7 @@ sys.path.insert(0, str(scripts_dir))
 from haystack.dataclasses import Document as HaystackDocument
 from langchain_core.documents import Document as LangChainDocument
 
-from scripts.synthetic_test_components import (
+from synthetic_data_generation.synthetic_test_components import (
     SyntheticTestGenerator,
     TestDatasetSaver
 )

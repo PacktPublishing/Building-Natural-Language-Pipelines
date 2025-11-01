@@ -22,11 +22,12 @@ from haystack.dataclasses import Document as HaystackDocument
 from langchain_core.documents import Document as LangChainDocument
 from ragas.testset.graph import KnowledgeGraph, Node, NodeType
 
-from scripts.knowledge_graph_component import (
+from synthetic_data_generation.knowledge_graph_component import (
     KnowledgeGraphGenerator, 
-    KnowledgeGraphSaver,
-    DocumentToLangChainConverter
+    KnowledgeGraphSaver
 )
+
+from synthetic_data_generation.langchaindocument import DocumentToLangChainConverter
 
 
 class TestKnowledgeGraphGenerator:
