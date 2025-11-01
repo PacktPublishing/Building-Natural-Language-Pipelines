@@ -57,7 +57,7 @@ doc_joiner = DocumentJoiner()
 
 # Preprocessors: For cleaning and splitting documents
 doc_cleaner = DocumentCleaner()
-doc_splitter = DocumentSplitter(split_by="word", split_length=150, split_overlap=20)
+doc_splitter = DocumentSplitter(split_by="sentence", split_length=150, split_overlap=20)
 
 # Embedder:
 doc_embedder = SentenceTransformersDocumentEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")

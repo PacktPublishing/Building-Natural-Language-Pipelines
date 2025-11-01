@@ -2,7 +2,7 @@
 
 This chapter covers building reproducible workflows for question and answer systems using Elasticsearch, Haystack, and vector embeddings.
 
-## 🚀 Quick Start Guide
+## Setup
 
 Follow these steps to get up and running:
 
@@ -58,12 +58,6 @@ Get your OpenAI API key at [OpenAI's platform](https://platform.openai.com)
 ```bash
 # Start in detached mode
 docker-compose up -d
-
-# Run the indexing script
-uv run python scripts/indexing.py
-
-# Verify it's running (should show cluster health)
-curl -X GET "localhost:9200/_cat/health?v"
 ```
 
 ---
@@ -76,41 +70,50 @@ Now you'll index multiple data sources with vector embeddings for semantic searc
 
 The indexing pipeline processes four types of data sources:
 
-1. **Web content**: Fetches from `https://haystack.deepset.ai/blog/haystack-2-release`
-2. **Text file**: `data_for_indexing/haystack_intro.txt`
-3. **PDF file**: `data_for_indexing/howpeopleuseai.pdf` 
-4. **CSV file**: `data_for_indexing/llm_models.csv`
+1. **Web content**: Fetches from 
+- `https://www.bbc.com/news/articles/c2l799gxjjpo`
+- `https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/`
+2. **PDF file**: `data_for_indexing/howpeopleuseai.pdf` 
 
-Create the sample data files by running:
+### Step 2: Generate Synthetic data
+
+Execute
 
 ```bash
-cd scripts
-uv run python dummy_data.py
+cd jupyter-notebooks
+uv run python scripts/synthetic_data_generation/sdg_html_pdf.py
 ```
 
-### Step 2: Run the Indexing Pipeline
+This will create a file under [jupyter-notebooks/data-for-eval/](./jupyter-notebooks/data_for_eval/)
+
+[A sample is provided here](./jupyter-notebooks/data_for_eval/synthetic_tests_advanced_branching_50.csv)
+
+### Step 3: Run the Indexing Pipeline
 
 Execute the indexing script to process all data sources and store them in Elasticsearch:
 
 ```bash
-cd scripts
-uv run python indexing.py
+cd jupyter-notebooks
+uv run python scripts/rag/indexing.py
 ```
 
 **Expected Output:**
 ```
-Running unified indexing pipeline for web, local files, and CSV...
-Error processing document [...]. Keeping it, but skipping cleaning. Error: [...]
-Error processing document [...]. Keeping it, but skipping splitting. Error: [...]
-Batches: 100%|████████████████| 5/5 [00:00<00:00,  6.21it/s]
+Processing web URL: ['https://www.bbc.com/news/articles/c2l799gxjjpo', 'https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/']
+Batches: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:01<00:00,  4.42it/s]
+Indexing completed successfully!
+```
+
+Verify the ElasticSearch store was populated
+
+```bash
+curl -X GET "localhost:9200/_cat/health?v"
 ```
 
 The pipeline will:
 - Fetch and process web content from the Haystack blog
 - Convert and chunk the PDF document into readable segments
-- Process text and CSV files
 - Generate 384-dimensional vector embeddings for all content
-- Store approximately 133 documents in Elasticsearch
 
 ### Step 3: Verify Documents are Loaded
 
@@ -120,7 +123,7 @@ Check that documents have been successfully indexed:
 # Get total document count
 curl -X GET "localhost:9200/default/_count"
 
-# Expected output: {"count":133,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}
+# Expected output: {"count":10,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}% 
 
 # View document breakdown by source
 curl -X GET "localhost:9200/default/_search?size=0&pretty" -H "Content-Type: application/json" -d '{
@@ -139,12 +142,6 @@ curl -X GET "localhost:9200/default/_search?size=0&pretty" -H "Content-Type: app
 curl -X GET "localhost:9200/default/_search?size=1&pretty"
 ```
 
-**Expected Document Distribution:**
-- ~118 documents from `howpeopleuseai.pdf`
-- ~13 documents from web content  
-- 1 document from `haystack_intro.txt`
-- 1 document from `llm_models.csv`
-
 ### Step 4: Clean Up (Optional)
 
 To stop the Elasticsearch container and clean up:
@@ -159,26 +156,9 @@ curl -X DELETE "localhost:9200/default"
 
 ### Troubleshooting
 
-**Issue: Duplicate document errors**
-```bash
-# Solution: Clear the index and recreate with proper mappings
-curl -X DELETE "localhost:9200/default"
-curl -X PUT "localhost:9200/default" -H "Content-Type: application/json" -d '{
-  "mappings": {
-    "properties": {
-      "content": {"type": "text"},
-      "content_type": {"type": "keyword"}, 
-      "id": {"type": "keyword"},
-      "embedding": {"type": "dense_vector", "dims": 384}
-    }
-  }
-}'
-```
-
 **Issue: PDF not found warnings**
 - Ensure you're running from the correct directory
 - Verify the PDF file exists in `data_for_indexing/howpeopleuseai.pdf`
-- Run `uv run python dummy_data.py` to set up correct file paths
 
 
 
