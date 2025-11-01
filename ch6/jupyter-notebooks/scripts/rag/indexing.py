@@ -32,7 +32,9 @@ from haystack.components.embedders import SentenceTransformersDocumentEmbedder
 
 # Define sources: only PDF file and web URL
 pdf_file = Path("./data_for_indexing/howpeopleuseai.pdf")
-web_url = "https://www.tableau.com/data-insights/ai/examples"
+web_urls = ["https://www.bbc.com/news/articles/c2l799gxjjpo",
+            "https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/"
+            ]
 
 # --- 2. Initialize Core Components ---
 
@@ -106,10 +108,10 @@ if not pdf_file.exists():
     exit(1)
 
 print(f"Processing PDF: {pdf_file}")
-print(f"Processing web URL: {web_url}")
+print(f"Processing web URL: {web_urls}")
 
 indexing_pipeline.run({
-    "link_fetcher": {"urls": [web_url]},
+    "link_fetcher": {"urls": web_urls},
     "file_type_router": {"sources": [pdf_file]}
 })
 
