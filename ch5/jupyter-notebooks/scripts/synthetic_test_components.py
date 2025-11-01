@@ -25,10 +25,11 @@ from ragas.testset.synthesizers import (
     MultiHopSpecificQuerySynthesizer
 )
 
-from ragas.llms.base import llm_factory
-from ragas.embeddings import embedding_factory
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
+from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+  
 
 
 logger = logging.getLogger(__name__)
@@ -98,19 +99,6 @@ class SyntheticTestGenerator:
         if not api_key:
             raise ValueError("OPENAI_API_KEY not found in environment variables or parameters.")
         
-        # Check internet connectivity by testing a simple API call
-        try:
-            import requests
-            response = requests.get("https://api.openai.com/v1/models", 
-                                  headers={"Authorization": f"Bearer {api_key}"}, 
-                                  timeout=10)
-            if response.status_code == 401:
-                raise ConnectionError("Invalid OpenAI API key.")
-            elif response.status_code != 200:
-                raise ConnectionError(f"OpenAI API returned status code: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            raise ConnectionError(f"Cannot connect to OpenAI API: {e}")
-        
         logger.info("Environment validation successful")
     
     def _initialize_models(self):
@@ -121,10 +109,19 @@ class SyntheticTestGenerator:
             if not api_key:
                 raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
             
+            # Initialize using LangchainLLMWrapper for compatibility
+            chat_openai_kwargs = {"model": self.llm_model}
+            if api_key:
+                chat_openai_kwargs["openai_api_key"] = api_key
+                
+            self.llm = LangchainLLMWrapper(ChatOpenAI(**chat_openai_kwargs))
             
-            self.llm = llm_factory(self.llm_model)
-            self.embeddings = embedding_factory('openai', model='text-embedding-3-small')
-            logger.info(f"Using modern Ragas API with model: {self.llm_model}")
+            embeddings_kwargs = {}
+            if api_key:
+                embeddings_kwargs["openai_api_key"] = api_key
+                
+            self.embeddings = LangchainEmbeddingsWrapper(OpenAIEmbeddings(**embeddings_kwargs))
+            logger.info(f"Using LangchainLLMWrapper with model: {self.llm_model}")
                 
             logger.info(f"Initialized SyntheticTestGenerator with model: {self.llm_model}")
             
@@ -245,25 +242,58 @@ class SyntheticTestGenerator:
     
     def _generate_from_knowledge_graph(self, knowledge_graph: KnowledgeGraph):
         """Generate tests using a knowledge graph."""
-        generator = TestsetGenerator(
-            llm=self.llm,
-            embedding_model=self.embeddings,
-            knowledge_graph=knowledge_graph
-        )
+        try:
+            generator = TestsetGenerator(
+                llm=self.llm,
+                embedding_model=self.embeddings,
+                knowledge_graph=knowledge_graph
+            )
+        except Exception as e:
+            logger.error(f"ErrortestGenerator: {type(e).__name__}: {e}")
+            raise Exception(f"Test generstor failed: {e}")
+        try:   
+            query_distribution = self._create_query_synthesizers()
+        except Exception as e:
+            logger.error(f"Error query distribution: {type(e).__name__}: {e}")
+            raise Exception(f"Query distribution failes: {e}")
         
-        query_distribution = self._create_query_synthesizers()
-        
-        # Use max_testset_size if specified, otherwise use full testset_size
-        actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
-        
-        return generator.generate(
-            testset_size=actual_size,
-            query_distribution=query_distribution
-        )
+        try:
+            # Use max_testset_size if specified, otherwise use full testset_size
+            actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
+            
+            logger.info(f"Attempting to generate {actual_size} test cases from knowledge graph")
+            
+            result = generator.generate(
+                testset_size=actual_size,
+                query_distribution=query_distribution
+            )
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error generator: {type(e).__name__}: {e}")
+            raise Exception(f"generator: {e}")
     
     def _generate_from_documents(self, documents: List[LangChainDocument]):
         """Generate tests directly from documents."""
         try:
+            # Filter documents to ensure they have sufficient content (>100 tokens)
+            # Rough estimate: 1 token ≈ 4 characters for English text
+            min_content_length = 400  # ~100 tokens
+            filtered_docs = [
+                doc for doc in documents 
+                if len(doc.page_content) >= min_content_length
+            ]
+            
+            if not filtered_docs:
+                logger.warning("No documents meet minimum length requirement (100+ tokens). Using original documents.")
+                filtered_docs = documents
+                # If still too short, concatenate documents
+                if len(documents) > 1:
+                    combined_content = " ".join([doc.page_content for doc in documents])
+                    if len(combined_content) >= min_content_length:
+                        from langchain_core.documents import Document as LangChainDocument
+                        filtered_docs = [LangChainDocument(page_content=combined_content, metadata={})]
+            
             generator = TestsetGenerator(
                 llm=self.llm,
                 embedding_model=self.embeddings
@@ -272,12 +302,32 @@ class SyntheticTestGenerator:
             # Use max_testset_size if specified, otherwise use full testset_size
             actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
             
+            # Create query distribution for generate_with_langchain_docs
+            # In recent versions of Ragas, the query_distribution for
+            # ``generate_with_langchain_docs`` is expected to be a list of
+            # ``(synthesizer, probability)`` tuples (similar to the
+            # knowledge‐graph generation method). Passing a plain dictionary
+            # will cause unpacking errors when Ragas iterates over the
+            # distribution. To remain compatible with both newer and older
+            # versions, reuse the synthesizer objects created in
+            # ``_create_query_synthesizers``.
+            query_dist = self._create_query_synthesizers()
+
             return generator.generate_with_langchain_docs(
-                documents,
-                testset_size=actual_size
+                documents=filtered_docs,
+                testset_size=actual_size,
+                query_distribution=query_dist,
+                raise_exceptions=True,
+                with_debugging_logs=True
             )
         except Exception as e:
             logger.error(f"Document-based generation failed: {e}")
+            # Check if it's a length-related error and provide helpful guidance
+            if "too short" in str(e).lower():
+                logger.error("Documents are too short for Ragas test generation. Consider:")
+                logger.error("1. Using longer documents (>100 tokens)")
+                logger.error("2. Combining multiple documents")
+                logger.error("3. Using the knowledge graph approach instead")
             # Create a minimal fallback dataset
             return self._create_fallback_testset(documents)
     
@@ -399,50 +449,6 @@ class TestDatasetSaver:
                 "row_count": 0
             }
 
-
-@component
-class DocumentToLangChainConverter:
-    """
-    Haystack 2.0 component to convert Haystack Documents to LangChain Documents.
-    
-    This bridge component allows Haystack document processing pipelines to work
-    with Ragas components that expect LangChain document format.
-    """
-    
-    @component.output_types(langchain_documents=List[LangChainDocument], document_count=int)
-    def run(self, documents: List[HaystackDocument]) -> Dict[str, Any]:
-        """
-        Convert Haystack Documents to LangChain Documents.
-        
-        Args:
-            documents (List[HaystackDocument]): Haystack documents to convert.
-            
-        Returns:
-            Dict containing converted documents and count.
-        """
-        if not documents:
-            return {"langchain_documents": [], "document_count": 0}
-        
-        try:
-            langchain_docs = []
-            
-            for doc in documents:
-                langchain_doc = LangChainDocument(
-                    page_content=doc.content,
-                    metadata=doc.meta or {}
-                )
-                langchain_docs.append(langchain_doc)
-            
-            logger.info(f"Converted {len(langchain_docs)} Haystack documents to LangChain format")
-            
-            return {
-                "langchain_documents": langchain_docs,
-                "document_count": len(langchain_docs)
-            }
-            
-        except Exception as e:
-            logger.error(f"Failed to convert documents: {e}")
-            return {"langchain_documents": [], "document_count": 0}
 
 """
 Sample usage:

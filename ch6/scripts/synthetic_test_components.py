@@ -248,35 +248,53 @@ class SyntheticTestGenerator:
                 embedding_model=self.embeddings,
                 knowledge_graph=knowledge_graph
             )
-            
+        except Exception as e:
+            logger.error(f"ErrortestGenerator: {type(e).__name__}: {e}")
+            raise Exception(f"Test generstor failed: {e}")
+        try:   
             query_distribution = self._create_query_synthesizers()
-            
+            print(f"Query distribution type: {type(query_distribution)}")
+        except Exception as e:
+            logger.error(f"Error query distribution: {type(e).__name__}: {e}")
+            raise Exception(f"Query distribution failes: {e}")
+        
+        try:
             # Use max_testset_size if specified, otherwise use full testset_size
             actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
             
             logger.info(f"Attempting to generate {actual_size} test cases from knowledge graph")
             
-            return generator.generate(
+            result = generator.generate(
                 testset_size=actual_size,
                 query_distribution=query_distribution
             )
+            return result
             
-        except ConnectionError as e:
-            logger.error(f"Connection error during knowledge graph generation: {e}")
-            raise ConnectionError(f"Network/API connection failed: {e}")
-        except AttributeError as e:
-            logger.error(f"Attribute error in knowledge graph generation: {e}")
-            raise AttributeError(f"API compatibility issue: {e}")
-        except ValueError as e:
-            logger.error(f"Value error in knowledge graph generation: {e}")
-            raise ValueError(f"Invalid parameters or data: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error in knowledge graph generation: {type(e).__name__}: {e}")
-            raise Exception(f"Knowledge graph generation failed: {e}")
+            logger.error(f"Error generator: {type(e).__name__}: {e}")
+            raise Exception(f"generator: {e}")
     
     def _generate_from_documents(self, documents: List[LangChainDocument]):
         """Generate tests directly from documents."""
         try:
+            # Filter documents to ensure they have sufficient content (>100 tokens)
+            # Rough estimate: 1 token ≈ 4 characters for English text
+            min_content_length = 400  # ~100 tokens
+            filtered_docs = [
+                doc for doc in documents 
+                if len(doc.page_content) >= min_content_length
+            ]
+            
+            if not filtered_docs:
+                logger.warning("No documents meet minimum length requirement (100+ tokens). Using original documents.")
+                filtered_docs = documents
+                # If still too short, concatenate documents
+                if len(documents) > 1:
+                    combined_content = " ".join([doc.page_content for doc in documents])
+                    if len(combined_content) >= min_content_length:
+                        from langchain_core.documents import Document as LangChainDocument
+                        filtered_docs = [LangChainDocument(page_content=combined_content, metadata={})]
+            
             generator = TestsetGenerator(
                 llm=self.llm,
                 embedding_model=self.embeddings
@@ -285,12 +303,32 @@ class SyntheticTestGenerator:
             # Use max_testset_size if specified, otherwise use full testset_size
             actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
             
+            # Create query distribution for generate_with_langchain_docs
+            # In recent versions of Ragas, the query_distribution for
+            # ``generate_with_langchain_docs`` is expected to be a list of
+            # ``(synthesizer, probability)`` tuples (similar to the
+            # knowledge‐graph generation method). Passing a plain dictionary
+            # will cause unpacking errors when Ragas iterates over the
+            # distribution. To remain compatible with both newer and older
+            # versions, reuse the synthesizer objects created in
+            # ``_create_query_synthesizers``.
+            query_dist = self._create_query_synthesizers()
+
             return generator.generate_with_langchain_docs(
-                documents,
-                testset_size=actual_size
+                documents=filtered_docs,
+                testset_size=actual_size,
+                query_distribution=query_dist,
+                raise_exceptions=True,
+                with_debugging_logs=True
             )
         except Exception as e:
             logger.error(f"Document-based generation failed: {e}")
+            # Check if it's a length-related error and provide helpful guidance
+            if "too short" in str(e).lower():
+                logger.error("Documents are too short for Ragas test generation. Consider:")
+                logger.error("1. Using longer documents (>100 tokens)")
+                logger.error("2. Combining multiple documents")
+                logger.error("3. Using the knowledge graph approach instead")
             # Create a minimal fallback dataset
             return self._create_fallback_testset(documents)
     

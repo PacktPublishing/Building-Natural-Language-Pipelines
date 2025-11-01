@@ -12,7 +12,7 @@ from scripts.synthetic_test_components import SyntheticTestGenerator,\
                                                 TestDatasetSaver
                                                     
 # Load environment variables
-load_dotenv("./.env")
+load_dotenv(".env")
 
         
 # Create pipeline components
@@ -22,7 +22,7 @@ doc_cleaner = DocumentCleaner(
     remove_extra_whitespaces=True,
 )
 doc_splitter = DocumentSplitter(split_by="sentence",
-                                split_length=50,
+                                split_length=100,
                                 split_overlap=5)
 doc_converter = DocumentToLangChainConverter()
 kg_generator = KnowledgeGraphGenerator(apply_transforms=True)
@@ -32,14 +32,13 @@ test_generator = SyntheticTestGenerator(
     testset_size=10,  
     llm_model="gpt-4o-mini",
     query_distribution=[
-        ("single_hop", 0.25), 
-        ("multi_hop_specific", 0.25),
-        ("multi_hop_abstract", 0.5)
+        ("single_hop", 0.3), 
+        ("multi_hop_specific", 0.4),
+        ("multi_hop_abstract", 0.3)
     ],
-    # Optional: Add max_testset_size=5 if you want to limit due to API constraints
-    # max_testset_size=5  # Uncomment this line if you experience API timeouts
+    max_testset_size=3  # Force small batches to avoid asyncio event loop issues
 )
-test_saver = TestDatasetSaver("data_for_eval/synthetic_tests_10_from_pdf.csv")
+test_saver = TestDatasetSaver("data_for_eval/synthetic_tests_5_from_pdf.csv")
 
 # Create pipeline
 pipeline = Pipeline()

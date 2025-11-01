@@ -36,7 +36,7 @@ doc_cleaner = DocumentCleaner(
 )
 doc_splitter = DocumentSplitter(split_by="sentence", split_length=50, split_overlap=5)
 doc_converter = DocumentToLangChainConverter()
-kg_generator = KnowledgeGraphGenerator(apply_transforms=True)
+kg_generator = KnowledgeGraphGenerator(apply_transforms=False)
 test_generator = SyntheticTestGenerator(
     testset_size=15,  # Larger test set for multiple sources
     llm_model="gpt-4o-mini",

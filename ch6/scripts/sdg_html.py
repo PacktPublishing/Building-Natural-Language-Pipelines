@@ -14,7 +14,7 @@ from scripts.synthetic_test_components import SyntheticTestGenerator,\
                                                 TestDatasetSaver
 
 # Load environment variables
-load_dotenv("./.env")
+load_dotenv(".env")
 
 # Create web content processing components
 fetcher = LinkContentFetcher()
@@ -22,10 +22,9 @@ converter = HTMLToDocument()
 doc_cleaner = DocumentCleaner(
     remove_empty_lines=True,
     remove_extra_whitespaces=True,
-    remove_substrings=['<1-hop>\n\n', '<multi-hop>\n\n', '<single-hop>\n\n', '\n\n\n', '\f', '\r']  # Remove synthetic data generation artifacts and weird characters
 )
 doc_splitter = DocumentSplitter(split_by="sentence",
-                                split_length=50,
+                                split_length=100,
                                 split_overlap=5)
 doc_converter = DocumentToLangChainConverter()
 kg_generator = KnowledgeGraphGenerator(apply_transforms=True)
