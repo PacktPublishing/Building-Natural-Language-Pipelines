@@ -24,9 +24,10 @@ from ragas.testset.graph import KnowledgeGraph, Node, NodeType
 
 from knowledge_graph_component import (
     KnowledgeGraphGenerator, 
-    KnowledgeGraphSaver,
-    DocumentToLangChainConverter
+    KnowledgeGraphSaver
 )
+
+from langchaindocument import DocumentToLangChainConverter
 
 
 class TestKnowledgeGraphGenerator:
