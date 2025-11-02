@@ -179,25 +179,25 @@ curl -X DELETE "localhost:9200/default"
 
 ## Pipeline Progression
 
-The Q&A system notebooks and scripts are organized in increasing complexity:
+The RAG evaluation notebooks and scripts are organized for comparative analysis:
 
 ### 1. Document Indexing Pipeline
-- **Focus**: Multi-source data ingestion and processing
+- **Focus**: Multi-source data ingestion and processing for both RAG approaches
 - **Components**: HTMLToDocument → PyPDFToDocument → DocumentSplitter → SentenceTransformersDocumentEmbedder → DocumentWriter (Elasticsearch)
 - **Best for**: Learning the basics of document indexing and vector embeddings
-- **Output**: Searchable document store with semantic embeddings
+- **Output**: Unified searchable document store with semantic embeddings for fair comparison
 
-### 2. Naive RAG System
-- **Focus**: Simple question-answering with semantic search
+### 2. Naive RAG Baseline
+- **Focus**: Simple retrieval-augmented generation with semantic search only
 - **Components**: SentenceTransformersTextEmbedder → ElasticsearchEmbeddingRetriever → PromptBuilder → OpenAIGenerator
-- **Best for**: Understanding basic RAG architecture and retrieval mechanics
-- **Output**: Direct answers from document context
+- **Best for**: Establishing baseline performance metrics for comparison
+- **Output**: Direct answers using purely semantic retrieval
 
-### 3. Hybrid RAG System
-- **Focus**: Advanced retrieval combining keyword and semantic search
+### 3. Hybrid RAG with Reranking
+- **Focus**: Advanced retrieval combining keyword and semantic search with rank fusion
 - **Components**: ElasticsearchBM25Retriever + ElasticsearchEmbeddingRetriever → RankFusion → PromptBuilder → OpenAIGenerator
-- **Best for**: Production-ready systems requiring high retrieval accuracy
-- **Output**: Enhanced answers with improved context relevance
+- **Best for**: Demonstrating improved retrieval accuracy and answer quality
+- **Output**: Enhanced answers with better context relevance through multi-strategy retrieval
 
 ---
 
@@ -206,22 +206,24 @@ The Q&A system notebooks and scripts are organized in increasing complexity:
 1. **Reproducible Workflow Building Blocks**
    - Setting up consistent environments with Docker and Elasticsearch
    - Version-controlled dependency management with uv
-   - Containerized development workflows
+   - Containerized development workflows for fair RAG comparison
 
-2. **Setting up Q&A Pipelines**
-   - Case I: Q&A system for small collection of text
-   - Case II: Q&A system for complex knowledge bases
-   - Multi-source document processing (web content, PDFs)
+2. **Naive vs Hybrid RAG Implementation and Comparison**
+   - Naive RAG: Semantic search-only retrieval implementation
+   - Hybrid RAG: Keyword (BM25) + semantic search with reranking
+   - Multi-source document processing (web content, PDFs) for both approaches
 
-3. **Incorporating Observability with Weights and Biases and Evaluating Results with RAGAS**
-   - Performance monitoring and experiment tracking
-   - Multi-dimensional RAG evaluation (faithfulness, relevance, context precision)
-   - Automated evaluation pipeline setup
+3. **Observability with Weights and Biases and Evaluating Results with RAGAS**
+   - Performance monitoring and experiment tracking for RAG system comparison
+   - Multi-dimensional RAG evaluation (faithfulness, relevance, context precision, recall)
+   - Comparative analysis between naive and hybrid RAG approaches
+   - Automated evaluation pipeline setup for systematic comparison
 
-4. **Optimising Performance through Feedback Loops**
-   - Iterative improvement cycles using evaluation results
-   - Custom evaluation metrics and components
-   - Performance benchmarking and optimization strategies
+4. **Performance Optimization through Feedback Loops**
+   - Iterative improvement cycles using RAGAS evaluation results
+   - Custom evaluation metrics for comparing retrieval strategies
+   - Performance benchmarking between naive and hybrid RAG systems
+   - Reranking optimization strategies based on evaluation feedback
 
 
 
