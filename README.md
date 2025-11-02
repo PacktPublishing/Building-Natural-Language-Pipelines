@@ -12,7 +12,17 @@ Author: Laura Funderburk
   - [Chapter 3: Introduction to Haystack](#chapter-3-introduction-to-haystack)
   - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
   - [Chapter 5: Haystack pipeline development with custom components](#chapter-5-haystack-pipeline-development-with-custom-components)
-  - [Chapter 6: Setting up a reproducible project: Q&A system](#chapter-6-setting-up-a-reproducible-project-qa-system)
+  - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
+
+## Table of Contents
+
+- [What You'll Learn to Build](#what-youll-learn-to-build)
+- [Setting Up](#setting-up)
+- [Chapter Breakdown](#chapter-breakdown)
+  - [Chapter 3: Introduction to Haystack](#chapter-3-introduction-to-haystack)
+  - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
+  - [Chapter 5: Haystack pipeline development with custom components](#chapter-5-haystack-pipeline-development-with-custom-components)
+  - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-qa-system)
 
 
 ## What You'll Learn to Build
