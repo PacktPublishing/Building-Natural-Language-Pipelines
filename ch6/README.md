@@ -164,7 +164,7 @@ curl -X DELETE "localhost:9200/default"
 | Notebook | Link | Description |
 |---|---|---|
 | RAGAS Evaluation Tutorial | [rag_evaluation_with_ragas.ipynb](./jupyter-notebooks/rag_evaluation_with_ragas.ipynb) | Comprehensive RAG system assessment using RAGAS framework with multiple evaluation metrics |
-| Custom Evaluation Methods | [rag_evaluation_custom.ipynb](./jupyter-notebooks/rag_evaluation_custom.ipynb) | Custom evaluation components and tailored assessment criteria for performance analysis |
+| Generalizing evaluation through custom components and pipelines | [rag_evaluation_as_custom_components.ipynb](./jupyter-notebooks/rag_evaluation_as_custom_components.ipynb) | Package evaluation through custom components and pipelines, and run evaluation on naive vs hybrid RAG with reranking |
 | Synthetic Data Generation | [standalone_synthetic_data_generation.ipynb](./jupyter-notebooks/standalone_synthetic_data_generation.ipynb) | Automated test case creation and question-answer pair generation for evaluation datasets |
 
 ### RAG Pipeline Scripts
