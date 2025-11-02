@@ -77,18 +77,9 @@ class KnowledgeGraphGenerator:
     def _initialize_models(self):
         """Initialize the LLM and embedding models."""
         try:
-            chat_openai_kwargs = {"model": self.llm_model}
-            if self.openai_api_key:
-                chat_openai_kwargs["openai_api_key"] = self.openai_api_key
-                
-                
-
-                
+            
             self.generator_llm = HaystackLLMWrapper(OpenAIGenerator(model="gpt-4.1-mini",
                                                                     api_key=Secret.from_env_var("OPENAI_API_KEY")))
-            embeddings_kwargs = {}
-            if self.openai_api_key:
-                embeddings_kwargs["openai_api_key"] = self.openai_api_key
                 
             self.generator_embeddings = HaystackEmbeddingsWrapper(embedder=OpenAITextEmbedder(model="text-embedding-ada-002",
                                                                                               api_key=Secret.from_env_var("OPENAI_API_KEY")),
