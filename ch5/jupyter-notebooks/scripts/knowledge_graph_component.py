@@ -10,10 +10,14 @@ from typing import List, Optional
 from haystack import component, logging
 from langchain_core.documents import Document as LangChainDocument
 
-from ragas.llms import LangchainLLMWrapper
-from ragas.embeddings import LangchainEmbeddingsWrapper
-from langchain_openai import ChatOpenAI
-from langchain_openai import OpenAIEmbeddings
+from ragas.llms import HaystackLLMWrapper
+from haystack.components.generators import OpenAIGenerator
+from ragas.embeddings import HaystackEmbeddingsWrapper
+from haystack.components.embedders.openai_text_embedder import (
+            OpenAITextEmbedder,
+        )
+from haystack.utils import Secret
+
 from ragas.testset.graph import Node, NodeType, KnowledgeGraph
 from ragas.testset.transforms import default_transforms, apply_transforms
 
@@ -77,13 +81,18 @@ class KnowledgeGraphGenerator:
             if self.openai_api_key:
                 chat_openai_kwargs["openai_api_key"] = self.openai_api_key
                 
-            self.generator_llm = LangchainLLMWrapper(ChatOpenAI(**chat_openai_kwargs))
-            
+                
+
+                
+            self.generator_llm = HaystackLLMWrapper(OpenAIGenerator(model="gpt-4.1-mini",
+                                                                    api_key=Secret.from_env_var("OPENAI_API_KEY")))
             embeddings_kwargs = {}
             if self.openai_api_key:
                 embeddings_kwargs["openai_api_key"] = self.openai_api_key
                 
-            self.generator_embeddings = LangchainEmbeddingsWrapper(OpenAIEmbeddings(**embeddings_kwargs))
+            self.generator_embeddings = HaystackEmbeddingsWrapper(embedder=OpenAITextEmbedder(model="text-embedding-ada-002",
+                                                                                              api_key=Secret.from_env_var("OPENAI_API_KEY")),
+                                                                )
             
             logger.info(f"Initialized KnowledgeGraphGenerator with model: {self.llm_model}")
             
