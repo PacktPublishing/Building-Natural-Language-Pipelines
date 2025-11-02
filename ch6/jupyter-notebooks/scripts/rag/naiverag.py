@@ -63,6 +63,7 @@ naive_rag_sc = SuperComponent(
     },
     output_mapping={
         "llm.replies": "replies",
+        "retriever.documents": "documents"
 
     }
 )
