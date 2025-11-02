@@ -1,64 +1,114 @@
 # Chapter 6: Setting up a Reproducible Q&A Pipeline
 
-This chapter covers building reproducible workflows for question and answer systems using Elasticsearch, Haystack, and vector embeddings.
+This repository contains exercises and interactive notebooks for Chapter 6, focusing on building reproducible workflows for question and answer systems using Elasticsearch, Haystack, and vector embeddings. You'll learn to set up Q&A systems for different scales of knowledge bases, incorporate observability with Weights and Biases, evaluate results with RAGAS, and optimize performance through feedback loops.
 
-## Setup
+## Setup Instructions
 
-Follow these steps to get up and running:
+1. **Install Docker:**
+	```bash
+	brew install docker
+	brew install docker-compose
+	brew install --cask docker
+	```
 
-### Step 1: Install Prerequisites
+2. **Install [uv](https://github.com/astral-sh/uv):**
+	```sh
+	pip install uv
+	```
+3. **Install dependencies:**
+	```sh
+	uv sync
+	```
+4. **Activate the virtual environment:**
+	```sh
+	source .venv/bin/activate
+	```
+5. **(Recommended) Open this `ch6` folder in a new VS Code window.**
+6. **Select the virtual environment as the Jupyter kernel:**
+	- Open any notebook.
+	- Click the kernel picker (top right) and select the `.venv` environment.
 
-**Install Docker:**
-```bash
-brew install docker
-brew install docker-compose
-brew install --cask docker
-```
+7. **Set up API keys:**
 
-**Install uv (Python package manager):**
-```bash
-pip install uv
-```
-
-### Step 2: Set Up Python Environment
-
-**Install dependencies and activate environment:**
-```bash
-# Install all dependencies
-uv sync
-
-# Activate the virtual environment
-source .venv/bin/activate
-```
-
-### Step 3: Configure API Keys
-
-Create a `.env` file in the root directory:
-```bash
+Create a `.env` file in the root directory with your API keys:
+```sh
 OPENAI_API_KEY=your_openai_key_here
 ```
 
-Get your OpenAI API key at [OpenAI's platform](https://platform.openai.com)
+To obtain the API key:
+- OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
 
-### Step 4: Set Up VS Code (Recommended)
+8. **Start Elasticsearch:**
+	```bash
+	# Start in detached mode
+	docker-compose up -d
+	```
 
-**Open this chapter folder in VS Code:**
-- Open VS Code
-- File → Open Folder → Select this `ch6` folder
-- Select the `.venv` environment as your Python interpreter
+---
 
-**For Jupyter notebooks:**
-- Open any `.ipynb` file
-- Click the kernel picker (top right)
-- Select the `.venv` environment
+## Contents
 
-### Step 5: Start Elasticsearch
+| Notebook | Link | Description |
+|---|---|---|
+| RAGAS Evaluation Tutorial | [rag_evaluation_with_ragas.ipynb](./jupyter-notebooks/rag_evaluation_with_ragas.ipynb) | Comprehensive RAG system assessment using RAGAS framework with multiple evaluation metrics |
+| Custom Evaluation Methods | [rag_evaluation_custom.ipynb](./jupyter-notebooks/rag_evaluation_custom.ipynb) | Custom evaluation components and tailored assessment criteria for performance analysis |
+| Synthetic Data Generation | [standalone_synthetic_data_generation.ipynb](./jupyter-notebooks/standalone_synthetic_data_generation.ipynb) | Automated test case creation and question-answer pair generation for evaluation datasets |
 
-**Start Elasticsearch container:**
-```bash
-# Start in detached mode
-docker-compose up -d
-```
+### RAG Pipeline Scripts
+
+| Component | Link | Description |
+|---|---|---|
+| Document Indexing | [scripts/rag/indexing.py](./jupyter-notebooks/scripts/rag/indexing.py) | Multi-source data processing with vector embedding generation and Elasticsearch integration |
+| Naive RAG | [scripts/rag/naiverag.py](./jupyter-notebooks/scripts/rag/naiverag.py) | Basic retrieval-augmented generation with semantic search foundation |
+| Hybrid RAG | [scripts/rag/hybridrag.py](./jupyter-notebooks/scripts/rag/hybridrag.py) | Advanced hybrid search combining keyword (BM25) and semantic search strategies |
+
+---
+
+## Pipeline Progression
+
+The Q&A system notebooks and scripts are organized in increasing complexity:
+
+### 1. Document Indexing Pipeline
+- **Focus**: Multi-source data ingestion and processing
+- **Components**: HTMLToDocument → PyPDFToDocument → DocumentSplitter → SentenceTransformersDocumentEmbedder → DocumentWriter (Elasticsearch)
+- **Best for**: Learning the basics of document indexing and vector embeddings
+- **Output**: Searchable document store with semantic embeddings
+
+### 2. Naive RAG System
+- **Focus**: Simple question-answering with semantic search
+- **Components**: SentenceTransformersTextEmbedder → ElasticsearchEmbeddingRetriever → PromptBuilder → OpenAIGenerator
+- **Best for**: Understanding basic RAG architecture and retrieval mechanics
+- **Output**: Direct answers from document context
+
+### 3. Hybrid RAG System
+- **Focus**: Advanced retrieval combining keyword and semantic search
+- **Components**: ElasticsearchBM25Retriever + ElasticsearchEmbeddingRetriever → RankFusion → PromptBuilder → OpenAIGenerator
+- **Best for**: Production-ready systems requiring high retrieval accuracy
+- **Output**: Enhanced answers with improved context relevance
+
+---
+
+## Chapter Topics Covered
+
+1. **Reproducible Workflow Building Blocks**
+   - Setting up consistent environments with Docker and Elasticsearch
+   - Version-controlled dependency management with uv
+   - Containerized development workflows
+
+2. **Setting up Q&A Pipelines**
+   - Case I: Q&A system for small collection of text
+   - Case II: Q&A system for complex knowledge bases
+   - Multi-source document processing (web content, PDFs)
+
+3. **Incorporating Observability with Weights and Biases and Evaluating Results with RAGAS**
+   - Performance monitoring and experiment tracking
+   - Multi-dimensional RAG evaluation (faithfulness, relevance, context precision)
+   - Automated evaluation pipeline setup
+
+4. **Optimising Performance through Feedback Loops**
+   - Iterative improvement cycles using evaluation results
+   - Custom evaluation metrics and components
+   - Performance benchmarking and optimization strategies
 
 ---
 
