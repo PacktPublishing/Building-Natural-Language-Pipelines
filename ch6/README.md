@@ -1,6 +1,21 @@
 # Chapter 6: Setting up a Reproducible Q&A Pipeline
 
-This repository contains exercises and interactive notebooks for Chapter 6, focusing on building reproducible workflows for question and answer systems using Elasticsearch, Haystack, and vector embeddings. You'll learn to set up Q&A systems for different scales of knowledge bases, incorporate observability with Weights and Biases, evaluate results with RAGAS, and optimize performance through feedback loops.
+This repository contains exercises and interactive notebooks for Chapter 6, focusing on building reproducible workflows for RAG systems using Elasticsearch, Haystack, and vector embeddings. You'll learn to implement and compare naive RAG vs hybrid RAG with reranking, incorporate observability with Weights and Biases, evaluate results with RAGAS, and optimize performance through feedback loops.
+
+## Table of Contents
+
+- [Setup Instructions](#setup-instructions)
+  - [Elasticsearch Document Indexing Workflow](#elasticsearch-document-indexing-workflow)
+    - [Step 1: Prepare Data Sources](#step-1-prepare-data-sources)
+    - [Step 2: Generate Synthetic Data](#step-2-generate-synthetic-data)
+    - [Step 3: Run the Indexing Pipeline](#step-3-run-the-indexing-pipeline)
+    - [Step 4: Verify Documents are Loaded](#step-4-verify-documents-are-loaded)
+    - [Step 5: Clean Up (Optional)](#step-5-clean-up-optional)
+  - [Troubleshooting](#troubleshooting)
+- [Contents](#contents)
+  - [RAG Pipeline Scripts](#rag-pipeline-scripts)
+- [Pipeline Progression](#pipeline-progression)
+- [Chapter Topics Covered](#chapter-topics-covered)
 
 ## Setup Instructions
 
@@ -43,6 +58,104 @@ To obtain the API key:
 	# Start in detached mode
 	docker-compose up -d
 	```
+
+### Elasticsearch Document Indexing Workflow
+
+Now you'll index multiple data sources with vector embeddings for semantic search.
+
+#### Step 1: Prepare Data Sources
+
+The indexing pipeline processes four types of data sources:
+
+1. **Web content**: Fetches from 
+- `https://www.bbc.com/news/articles/c2l799gxjjpo`
+- `https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/`
+2. **PDF file**: `data_for_indexing/howpeopleuseai.pdf` 
+
+#### Step 2: Generate Synthetic Data
+
+Execute
+
+```bash
+cd jupyter-notebooks
+uv run python scripts/synthetic_data_generation/sdg_html_pdf.py
+```
+
+This will create a file under [jupyter-notebooks/data-for-eval/](./jupyter-notebooks/data_for_eval/)
+
+[A sample is provided here](./jupyter-notebooks/data_for_eval/synthetic_tests_advanced_branching_50.csv)
+
+#### Step 3: Run the Indexing Pipeline
+
+Execute the indexing script to process all data sources and store them in Elasticsearch:
+
+```bash
+cd jupyter-notebooks
+uv run python scripts/rag/indexing.py
+```
+
+**Expected Output:**
+```
+Processing web URL: ['https://www.bbc.com/news/articles/c2l799gxjjpo', 'https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/']
+Batches: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:01<00:00,  4.42it/s]
+Indexing completed successfully!
+```
+
+Verify the ElasticSearch store was populated
+
+```bash
+curl -X GET "localhost:9200/_cat/health?v"
+```
+
+The pipeline will:
+- Fetch and process web content from the Haystack blog
+- Convert and chunk the PDF document into readable segments
+- Generate 384-dimensional vector embeddings for all content
+
+#### Step 4: Verify Documents are Loaded
+
+Check that documents have been successfully indexed:
+
+```bash
+# Get total document count
+curl -X GET "localhost:9200/default/_count"
+
+# Expected output: {"count":10,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}% 
+
+# View document breakdown by source
+curl -X GET "localhost:9200/default/_search?size=0&pretty" -H "Content-Type: application/json" -d '{
+  "aggs": {
+    "sources": {
+      "terms": {
+        "field": "file_path.keyword", 
+        "size": 10,
+        "missing": "web_content"
+      }
+    }
+  }
+}'
+
+# Sample a document to verify embeddings
+curl -X GET "localhost:9200/default/_search?size=1&pretty"
+```
+
+#### Step 5: Clean Up (Optional)
+
+To stop the Elasticsearch container and clean up:
+
+```bash
+# Stop the container
+docker-compose down
+
+# Remove the index (if you want to start fresh)
+curl -X DELETE "localhost:9200/default"
+```
+
+### Troubleshooting
+
+**Issue: PDF not found warnings**
+- Ensure you're running from the correct directory
+- Verify the PDF file exists in `data_for_indexing/howpeopleuseai.pdf`
 
 ---
 
@@ -110,105 +223,7 @@ The Q&A system notebooks and scripts are organized in increasing complexity:
    - Custom evaluation metrics and components
    - Performance benchmarking and optimization strategies
 
----
 
-## 📚 Elasticsearch Document Indexing Workflow
-
-Now you'll index multiple data sources with vector embeddings for semantic search.
-
-### Step 1: Prepare Data Sources
-
-The indexing pipeline processes four types of data sources:
-
-1. **Web content**: Fetches from 
-- `https://www.bbc.com/news/articles/c2l799gxjjpo`
-- `https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/`
-2. **PDF file**: `data_for_indexing/howpeopleuseai.pdf` 
-
-### Step 2: Generate Synthetic data
-
-Execute
-
-```bash
-cd jupyter-notebooks
-uv run python scripts/synthetic_data_generation/sdg_html_pdf.py
-```
-
-This will create a file under [jupyter-notebooks/data-for-eval/](./jupyter-notebooks/data_for_eval/)
-
-[A sample is provided here](./jupyter-notebooks/data_for_eval/synthetic_tests_advanced_branching_50.csv)
-
-### Step 3: Run the Indexing Pipeline
-
-Execute the indexing script to process all data sources and store them in Elasticsearch:
-
-```bash
-cd jupyter-notebooks
-uv run python scripts/rag/indexing.py
-```
-
-**Expected Output:**
-```
-Processing web URL: ['https://www.bbc.com/news/articles/c2l799gxjjpo', 'https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/']
-Batches: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:01<00:00,  4.42it/s]
-Indexing completed successfully!
-```
-
-Verify the ElasticSearch store was populated
-
-```bash
-curl -X GET "localhost:9200/_cat/health?v"
-```
-
-The pipeline will:
-- Fetch and process web content from the Haystack blog
-- Convert and chunk the PDF document into readable segments
-- Generate 384-dimensional vector embeddings for all content
-
-### Step 3: Verify Documents are Loaded
-
-Check that documents have been successfully indexed:
-
-```bash
-# Get total document count
-curl -X GET "localhost:9200/default/_count"
-
-# Expected output: {"count":10,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}% 
-
-# View document breakdown by source
-curl -X GET "localhost:9200/default/_search?size=0&pretty" -H "Content-Type: application/json" -d '{
-  "aggs": {
-    "sources": {
-      "terms": {
-        "field": "file_path.keyword", 
-        "size": 10,
-        "missing": "web_content"
-      }
-    }
-  }
-}'
-
-# Sample a document to verify embeddings
-curl -X GET "localhost:9200/default/_search?size=1&pretty"
-```
-
-### Step 4: Clean Up (Optional)
-
-To stop the Elasticsearch container and clean up:
-
-```bash
-# Stop the container
-docker-compose down
-
-# Remove the index (if you want to start fresh)
-curl -X DELETE "localhost:9200/default"
-```
-
-### Troubleshooting
-
-**Issue: PDF not found warnings**
-- Ensure you're running from the correct directory
-- Verify the PDF file exists in `data_for_indexing/howpeopleuseai.pdf`
 
 
 
