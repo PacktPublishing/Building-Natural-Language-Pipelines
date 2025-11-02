@@ -92,7 +92,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Reproducible Workflow Building Blocks**: Setting up consistent environments with Docker, Elasticsearch, and dependency management
 - **Naive RAG Implementation**: Building basic retrieval-augmented generation with semantic search
 - **Hybrid RAG with Reranking**: Advanced retrieval combining keyword (BM25) and semantic search with rank fusion strategies
-- **Observability with Weights and Biases**: Implementing monitoring and tracking for RAG system performance comparison and experiment management
 - **Evaluation with RAGAS**: Using the RAGAS framework to assess and compare naive vs hybrid RAG system quality across multiple dimensions
+- **Observability with Weights and Biases**: Implementing monitoring and tracking for RAG system performance comparison and experiment management
 - **Performance Optimization through Feedback Loops**: Creating iterative improvement cycles using evaluation results to enhance retrieval and generation performance
 
