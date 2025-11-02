@@ -77,7 +77,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Quality Control Systems**: Implementing automated evaluation and monitoring components
 - **Unit Testing Frameworks**: Comprehensive testing strategies for custom components
 
-### **[Chapter 6: Setting up a reproducible project: Q&A system](./ch6/)**
+### **[Chapter 6: Setting up a reproducible project: hybrid vs naive RAG with reranking and evaluation](./ch6/)**
 **Reproducible Workflows & Evaluation**
 - **Reproducible Workflow Building Blocks**: Setting up consistent environments with Docker, Elasticsearch, and dependency management
 - **Naive RAG Implementation**: Building basic retrieval-augmented generation with semantic search
