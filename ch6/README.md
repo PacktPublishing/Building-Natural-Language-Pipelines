@@ -163,8 +163,9 @@ curl -X DELETE "localhost:9200/default"
 
 | Notebook | Link | Description |
 |---|---|---|
-| RAGAS Evaluation Tutorial | [rag_evaluation_with_ragas.ipynb](./jupyter-notebooks/rag_evaluation_with_ragas.ipynb) | Comprehensive RAG system assessment using RAGAS framework with multiple evaluation metrics |
-| Generalizing evaluation through custom components and pipelines | [rag_evaluation_as_custom_components.ipynb](./jupyter-notebooks/rag_evaluation_as_custom_components.ipynb) | Package evaluation through custom components and pipelines, and run evaluation on naive vs hybrid RAG with reranking |
+| Getting Started with RAGAS Evaluation | [get_started_rag_evaluation_with_ragas.ipynb](./jupyter-notebooks/get_started_rag_evaluation_with_ragas.ipynb) | Comprehensive RAG system assessment using RAGAS framework with multiple evaluation metrics |
+| RAGAS Evaluation with Custom Components | [ragas_evaluation_with_custom_components.ipynb](./jupyter-notebooks/ragas_evaluation_with_custom_components.ipynb) | Package evaluation through custom components and pipelines, and run evaluation on naive vs hybrid RAG with reranking |
+| Adding Observability with Weights & Biases | [add_observability_with_wandb.ipynb](./jupyter-notebooks/add_observability_with_wandb.ipynb) | Integration of W&B for experiment tracking, performance monitoring, and RAG system observability |
 | Synthetic Data Generation | [standalone_synthetic_data_generation.ipynb](./jupyter-notebooks/standalone_synthetic_data_generation.ipynb) | Automated test case creation and question-answer pair generation for evaluation datasets |
 
 ### RAG Pipeline Scripts
