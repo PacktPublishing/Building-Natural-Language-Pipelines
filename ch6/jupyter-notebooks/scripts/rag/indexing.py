@@ -20,6 +20,7 @@ from haystack.components.converters import (
     HTMLToDocument,
 )
 from haystack.components.routers import FileTypeRouter
+from haystack.utils import Secret
 
 # Import components for preprocessing
 from haystack.components.preprocessors import (
@@ -28,7 +29,7 @@ from haystack.components.preprocessors import (
 )
 
 # Import components for embedding
-from haystack.components.embedders import SentenceTransformersDocumentEmbedder
+from haystack.components.embedders import OpenAIDocumentEmbedder
 
 # Define sources: only PDF file and web URL
 pdf_file = Path("./data_for_indexing/howpeopleuseai.pdf")
@@ -60,7 +61,7 @@ doc_cleaner = DocumentCleaner()
 doc_splitter = DocumentSplitter(split_by="sentence", split_length=150, split_overlap=20)
 
 # Embedder:
-doc_embedder = SentenceTransformersDocumentEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
+doc_embedder = OpenAIDocumentEmbedder(api_key=Secret.from_env_var("OPENAI_API_KEY"), model="text-embedding-ada-002")
 
 # DocumentWriter:
 writer = DocumentWriter(document_store, policy=DuplicatePolicy.OVERWRITE)

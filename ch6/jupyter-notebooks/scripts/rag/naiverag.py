@@ -1,5 +1,5 @@
 # Import necessary components for the query pipeline
-from haystack.components.embedders import SentenceTransformersTextEmbedder
+from haystack.components.embedders import OpenAITextEmbedder
 from haystack_integrations.components.retrievers.elasticsearch import ElasticsearchEmbeddingRetriever
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
@@ -10,7 +10,7 @@ from haystack_integrations.document_stores.elasticsearch import ElasticsearchDoc
 document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
 
 # Text Embedder: To embed the user's query. Must be compatible with the document embedder.
-text_embedder = SentenceTransformersTextEmbedder(model="sentence-transformers/all-MiniLM-L6-v2")
+text_embedder = OpenAITextEmbedder(api_key=Secret.from_env_var("OPENAI_API_KEY"), model="text-embedding-ada-002")
 
 # Retriever: Fetches documents from the Elasticsearch DocumentStore based on vector similarity.
 retriever = ElasticsearchEmbeddingRetriever(document_store=document_store, top_k=3)
