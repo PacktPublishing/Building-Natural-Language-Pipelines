@@ -118,25 +118,19 @@ Check that documents have been successfully indexed:
 
 ```bash
 # Get total document count
-curl -X GET "localhost:9200/default/_count"
+curl -X GET "localhost:9200/small_embeddings/_count"
+curl -X GET "localhost:9201/large_embeddings/_count"
+```
 
-# Expected output: {"count":10,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}% 
+```bash
+# Expected output: {"count":26,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}%   
+```
 
-# View document breakdown by source
-curl -X GET "localhost:9200/default/_search?size=0&pretty" -H "Content-Type: application/json" -d '{
-  "aggs": {
-    "sources": {
-      "terms": {
-        "field": "file_path.keyword", 
-        "size": 10,
-        "missing": "web_content"
-      }
-    }
-  }
-}'
-
+Get embeddings
+```bash
 # Sample a document to verify embeddings
-curl -X GET "localhost:9200/default/_search?size=1&pretty"
+curl -X GET "localhost:9200/small_embeddings/_search?size=1&pretty"
+curl -X GET "localhost:9201/large_embeddings/_search?size=1&pretty"
 ```
 
 #### Step 5: Clean Up (Optional)

@@ -31,6 +31,65 @@ from haystack.components.routers import FileTypeRouter
 
 from haystack.components.preprocessors import DocumentPreprocessor
 
+# Import for custom component
+from haystack import component
+from haystack.dataclasses import Document
+from typing import List
+
+
+@component
+class EmbeddingFieldMapper:
+    """
+    Custom component to map embeddings from one field to another.
+    This allows us to store multiple embeddings in different fields.
+    """
+    
+    def __init__(self, source_field: str = "embedding", target_field: str = "embedding_large"):
+        """
+        Initialize the embedding field mapper.
+        
+        Args:
+            source_field (str): Source embedding field name
+            target_field (str): Target embedding field name
+        """
+        self.source_field = source_field
+        self.target_field = target_field
+    
+    @component.output_types(documents=List[Document])
+    def run(self, documents: List[Document]) -> dict:
+        """
+        Map embeddings from source field to target field.
+        
+        Args:
+            documents: List of documents with embeddings
+            
+        Returns:
+            dict: Documents with mapped embedding fields
+        """
+        processed_docs = []
+        
+        for doc in documents:
+            # Create a copy of the document
+            new_doc = Document(
+                content=doc.content,
+                meta=doc.meta.copy() if doc.meta else {},
+                id=doc.id
+            )
+            
+            # Copy all existing embedding fields
+            if hasattr(doc, 'embedding') and doc.embedding is not None:
+                new_doc.embedding = doc.embedding
+                
+            # Map the current embedding to the target field
+            if hasattr(doc, self.source_field):
+                embedding_value = getattr(doc, self.source_field)
+                if embedding_value is not None:
+                    setattr(new_doc, self.target_field, embedding_value)
+            
+            processed_docs.append(new_doc)
+            
+        return {"documents": processed_docs}
+
 
 @super_component
 class IndexingPipelineSuperComponent:
@@ -135,24 +194,37 @@ if __name__ == "__main__":
 
     # --- 2. Initialize Core Components ---
     # DocumentStore:
-    document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
+    # For small embeddings pipeline
+    small_document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200", index="small_embeddings")
 
-    indexing_pipeline_sc = IndexingPipelineSuperComponent( 
-        document_store=document_store,
+    
+    indexing_pipeline_sc_small = IndexingPipelineSuperComponent( 
+        document_store=small_document_store,
         embedder_model="text-embedding-3-small",
         openai_api_key=os.getenv('OPENAI_API_KEY')
     )
 
     # --- 5. Run the Pipeline ---
 
-    print("Running indexing pipeline for PDF file and web URL...")
-
-    # Check if PDF file exists
-    if not pdf_file.exists():
-        print(f"Error: PDF file not found at {pdf_file}")
-        exit(1)
+    print("Running indexing pipeline (SMALL) for PDF file and web URL...")
 
     # Run with separate inputs for URLs and files
-    indexing_pipeline_sc.run(urls=urls, sources=files)
+    indexing_pipeline_sc_small.run(urls=urls, sources=files)
+    
+    
+    print("Running indexing pipeline (LARGE) for PDF file and web URL...")
+    # For large embeddings pipeline  
+    large_document_store = ElasticsearchDocumentStore(hosts="http://localhost:9201", index="large_embeddings")
+
+
+    indexing_pipeline_sc_large = IndexingPipelineSuperComponent( 
+        document_store=large_document_store,
+        embedder_model="text-embedding-3-large",
+        openai_api_key=os.getenv('OPENAI_API_KEY')
+    )
+    
+    indexing_pipeline_sc_large.run(urls=urls, sources=files)
 
     print("Indexing completed successfully!")
+    
+  

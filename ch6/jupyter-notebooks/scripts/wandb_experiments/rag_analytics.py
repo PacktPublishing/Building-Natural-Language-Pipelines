@@ -1,6 +1,7 @@
 import wandb
 import tiktoken
 from typing import Dict, List, Any
+import numpy as np
 
 class RAGAnalytics:
     """Simplified analytics class for RAG evaluation results and W&B logging."""

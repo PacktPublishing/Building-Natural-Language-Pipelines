@@ -1,15 +1,61 @@
+networks:
+  elasticsearch-network:
+    driver: bridge
 services:
-  elasticsearch:
-    image: "docker.elastic.co/elasticsearch/elasticsearch:8.11.1"
-    ports:
-      - 9200:9200
-    restart: on-failure
+  elasticsearch-large:
+    container_name: es-large
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    - node.name=es-large-node
+    - cluster.name=es-large-cluster
+    - discovery.type=single-node
+    - xpack.security.enabled=false
+    - ES_JAVA_OPTS=-Xms2048m -Xmx4096m
+    - bootstrap.memory_lock=true
     healthcheck:
-        test: curl --fail http://localhost:9200/_cat/health || exit 1
-        interval: 10s
-        timeout: 1s
-        retries: 10
+      interval: 15s
+      retries: 10
+      test: curl --fail http://localhost:9200/_cat/health || exit 1
+      timeout: 10s
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    networks:
+    - elasticsearch-network
+    ports:
+    - 9201:9200
+    restart: on-failure
+    ulimits:
+      memlock:
+        hard: -1
+        soft: -1
+    volumes:
+    - es_large_data:/usr/share/elasticsearch/data
+  elasticsearch-small:
+    container_name: es-small
+    environment:
+    - node.name=es-small-node
+    - cluster.name=es-small-cluster
+    - discovery.type=single-node
+    - xpack.security.enabled=false
+    - ES_JAVA_OPTS=-Xms512m -Xmx1024m
+    - bootstrap.memory_lock=true
+    healthcheck:
+      interval: 15s
+      retries: 10
+      test: curl --fail http://localhost:9200/_cat/health || exit 1
+      timeout: 10s
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    networks:
+    - elasticsearch-network
+    ports:
+    - 9200:9200
+    restart: on-failure
+    ulimits:
+      memlock:
+        hard: -1
+        soft: -1
+    volumes:
+    - es_small_data:/usr/share/elasticsearch/data
+volumes:
+  es_large_data:
+    driver: local
+  es_small_data:
+    driver: local
