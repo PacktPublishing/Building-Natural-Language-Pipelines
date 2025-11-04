@@ -95,7 +95,7 @@ Execute
 
 ```bash
 cd jupyter-notebooks
-uv run python scripts/synthetic_data_generation/sdg_html_pdf.py
+uv run python scripts/synthetic_data_generation/synthetic_data_generator_supercomponent.py
 ```
 
 This will create a file under [jupyter-notebooks/data-for-eval/](./jupyter-notebooks/data_for_eval/)
