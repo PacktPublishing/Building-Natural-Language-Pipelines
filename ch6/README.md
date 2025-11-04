@@ -2,6 +2,8 @@
 
 This repository contains exercises and interactive notebooks for Chapter 6, focusing on building reproducible workflows for RAG systems using Elasticsearch, Haystack, and vector embeddings. You'll learn to implement and compare naive RAG vs hybrid RAG with reranking, incorporate observability with Weights and Biases, evaluate results with RAGAS, and optimize performance through feedback loops.
 
+📚 **[Complete Chapter Overview](./chapter_overview.md)** - Comprehensive architectural guide covering SuperComponent patterns, evaluation frameworks, and experimental design.
+
 ## Table of Contents
 
 - [Setup Instructions](#setup-instructions)
@@ -169,6 +171,8 @@ curl -X DELETE "localhost:9200/default"
 ---
 
 ## Contents
+
+📋 **[Chapter Overview](./chapter_overview.md)** - Detailed architectural guide covering SuperComponent patterns, evaluation frameworks, and experimental design
 
 | Notebook | Link | Description |
 |---|---|---|
