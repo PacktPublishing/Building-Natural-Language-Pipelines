@@ -1,0 +1,80 @@
+name: NLP Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout Code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python Environment (Optional for running Python-specific tests)
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    # Step 3: Install Dependencies for Tests
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    # Step 4: Run Tests
+    - name: Run tests
+      run: |
+        pytest
+
+  dockerize:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    # Step 1: Checkout Code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Log in to DockerHub (or another container registry)
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # Step 3: Build Docker Image
+    - name: Build Docker image
+      run: |
+        docker build -t nlp-api:latest .
+
+    # Step 4: Push Docker Image to DockerHub
+    - name: Push Docker image
+      run: |
+        docker tag nlp-api:latest ${{ secrets.DOCKER_USERNAME }}/nlp-api:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/nlp-api:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: dockerize
+
+    steps:
+    # Step 1: Checkout Code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Deploy Docker Image to AWS ECS (or another service)
+    - name: Deploy to AWS ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ecs-task-def.json
+        service: my-ecs-service
+        cluster: my-ecs-cluster
+        region: us-east-1
+        wait-for-service-stability: true

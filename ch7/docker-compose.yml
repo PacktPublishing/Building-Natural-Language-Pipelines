@@ -1,0 +1,84 @@
+networks:
+  hybrid-rag-network:
+    driver: bridge
+
+volumes:
+  elasticsearch_data:
+    driver: local
+
+services:
+  # Elasticsearch service
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: hybrid-rag-elasticsearch
+    environment:
+      - node.name=es-node
+      - cluster.name=es-cluster  
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx1024m
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - hybrid-rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cat/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    restart: unless-stopped
+
+  # Indexing service (runs once then exits)
+  indexing:
+    build: .
+    container_name: hybrid-rag-indexing
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=documents
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - hybrid-rag-network
+    command: ["uv", "run", "python", "-m", "src.rag.indexing"]
+    restart: no
+
+  # API service
+  api:
+    build: .
+    container_name: hybrid-rag-api
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - ELASTICSEARCH_INDEX=documents
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - WANDB_API_KEY=${WANDB_API_KEY:-}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      indexing:
+        condition: service_completed_successfully
+    networks:
+      - hybrid-rag-network
+    command: ["uv", "run", "uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
