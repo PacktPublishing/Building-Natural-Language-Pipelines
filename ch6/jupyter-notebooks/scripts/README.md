@@ -194,5 +194,5 @@ uv run pytest tests/test_knowledge_graph_component.py
 ## 📚 Related Documentation
 
 - [Main Project README](../README.md) - Project overview and setup
-- [Docker Compose Setup](../docker-compose.yml) - Elasticsearch configuration
-- [Project Configuration](../pyproject.toml) - Dependencies and project metadata
+- [Docker Compose Setup](../../docker-compose.yml) - Elasticsearch configuration
+- [Project Configuration](../../pyproject.toml) - Dependencies and project metadata
