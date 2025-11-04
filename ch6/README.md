@@ -187,13 +187,13 @@ curl -X DELETE "localhost:9200/default"
 
 | Component | Link | Description |
 |---|---|---|
-| Document Indexing | [scripts/rag/indexing.py](./jupyter-notebooks/scripts/rag/indexing.py) | Multi-source data processing with dual embedding support and Elasticsearch integration |
-| Naive RAG | [scripts/rag/naiverag.py](./jupyter-notebooks/scripts/rag/naiverag.py) | Basic retrieval-augmented generation with semantic search foundation |
-| Hybrid RAG | [scripts/rag/hybridrag.py](./jupyter-notebooks/scripts/rag/hybridrag.py) | Advanced hybrid search combining keyword (BM25) and semantic search strategies |
-| RAGAS Evaluation | [scripts/ragas_evaluation/](./jupyter-notebooks/scripts/ragas_evaluation/) | Automated RAG evaluation using RAGAS metrics |
-| Elasticsearch Config | [scripts/elasticsearch_config.py](./jupyter-notebooks/scripts/elasticsearch_config.py) | Dual Elasticsearch instance configuration and helpers |
-| W&B Analytics | [scripts/wandb_experiments/rag_analytics.py](./jupyter-notebooks/scripts/wandb_experiments/rag_analytics.py) | Enhanced cost tracking and performance analytics with current OpenAI pricing |
-| Synthetic Data | [scripts/synthetic_data_generation/](./jupyter-notebooks/scripts/synthetic_data_generation/) | Automated test data generation for RAG evaluation |
+| Document Indexing | [jupyter-notebooks/scripts/rag/indexing.py](./jupyter-notebooks/scripts/rag/indexing.py) | Multi-source data processing with dual embedding support and Elasticsearch integration |
+| Naive RAG | [jupyter-notebooks/scripts/rag/naiverag.py](./jupyter-notebooks/scripts/rag/naiverag.py) | Basic retrieval-augmented generation with semantic search foundation |
+| Hybrid RAG | [jupyter-notebooks/scripts/rag/hybridrag.py](./jupyter-notebooks/scripts/rag/hybridrag.py) | Advanced hybrid search combining keyword (BM25) and semantic search strategies |
+| RAGAS Evaluation | [jupyter-notebooks/scripts/ragas_evaluation/](./jupyter-notebooks/scripts/ragas_evaluation/) | Automated RAG evaluation using RAGAS metrics |
+| Elasticsearch Config | [jupyter-notebooks/scripts/elasticsearch_config.py](./jupyter-notebooks/scripts/elasticsearch_config.py) | Dual Elasticsearch instance configuration and helpers |
+| W&B Analytics | [jupyter-notebooks/scripts/wandb_experiments/rag_analytics.py](./jupyter-notebooks/scripts/wandb_experiments/rag_analytics.py) | Enhanced cost tracking and performance analytics with current OpenAI pricing |
+| Synthetic Data | [jupyter-notebooks/scripts/synthetic_data_generation/](./jupyter-notebooks/scripts/synthetic_data_generation/) | Automated test data generation for RAG evaluation |
 
 ---
 
