@@ -17,7 +17,6 @@ class ElasticsearchConfig:
     # Default index names for different embedding types
     SMALL_EMBEDDING_INDEX = "small_embeddings"
     LARGE_EMBEDDING_INDEX = "large_embeddings"
-    DUAL_EMBEDDING_INDEX = "dual_embeddings"
     
     # Instance configurations
     SMALL_CONFIG = {
@@ -80,7 +79,7 @@ class ElasticsearchConfig:
         Returns:
             ElasticsearchDocumentStore configured for dual embeddings
         """
-        index_name = index_name or cls.DUAL_EMBEDDING_INDEX
+        index_name = index_name
         
         if instance_type == "small":
             return ElasticsearchDocumentStore(
@@ -135,11 +134,6 @@ EMBEDDING_STRATEGIES = {
         "description": "Use only large embeddings for high accuracy",
         "instance": "large", 
         "models": ["text-embedding-3-large"]
-    },
-    "dual_embeddings": {
-        "description": "Use both small and large embeddings in same documents",
-        "instance": "large",  # Store in large instance due to document size
-        "models": ["text-embedding-3-small", "text-embedding-3-large"]
     },
     "separate_instances": {
         "description": "Store small and large embeddings in separate instances",
