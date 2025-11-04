@@ -13,6 +13,7 @@ Author: Laura Funderburk
   - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
   - [Chapter 5: Haystack pipeline development with custom components](#chapter-5-haystack-pipeline-development-with-custom-components)
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
+  - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
 
 
 ## What You'll Learn to Build
@@ -85,4 +86,19 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Evaluation with RAGAS**: Using the RAGAS framework to assess and compare naive vs hybrid RAG system quality across multiple dimensions
 - **Observability with Weights and Biases**: Implementing monitoring and tracking for RAG system performance comparison and experiment management
 - **Performance Optimization through Feedback Loops**: Creating iterative improvement cycles using evaluation results to enhance retrieval and generation performance
+
+### **[Chapter 7: Production deployment strategies](./ch7/)**
+**Deployment & Scaling**
+
+#### **[Deploying a Retriever Pipeline as FastAPI App](./ch7/)**
+- **FastAPI REST API**: Building production-ready APIs with clean documentation and error handling
+- **Docker Containerization**: Full containerization with Docker Compose for scalable deployments
+- **Elasticsearch Integration**: Production-grade document storage and hybrid search capabilities
+- **Local Development Workflows**: Script-based development environment setup and testing
+
+#### **[Deploying Multiple Pipelines with Hayhooks](./ch7-hayhooks/)**
+- **Hayhooks Framework**: Multi-pipeline deployment using Haystack's native REST API framework
+- **Pipeline Orchestration**: Managing multiple RAG pipelines (indexing + querying) as microservices
+- **Service Discovery**: Automated API endpoint generation and pipeline management
+- **Production Scaling**: Container-based deployment strategies for enterprise environments
 
