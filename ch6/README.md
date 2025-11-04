@@ -20,11 +20,8 @@ This repository contains exercises and interactive notebooks for Chapter 6, focu
 ## Setup Instructions
 
 1. **Install Docker:**
-	```bash
-	brew install docker
-	brew install docker-compose
-	brew install --cask docker
-	```
+
+**Preferred**: install [Docker Desktop](https://docs.docker.com/desktop/)
 
 2. **Install [uv](https://github.com/astral-sh/uv):**
 	```sh
