@@ -25,10 +25,13 @@ from ragas.testset.synthesizers import (
     MultiHopSpecificQuerySynthesizer
 )
 
-from ragas.llms import LangchainLLMWrapper
-from ragas.embeddings import LangchainEmbeddingsWrapper
-from langchain_openai import ChatOpenAI
-from langchain_openai import OpenAIEmbeddings
+from ragas.llms import HaystackLLMWrapper
+from ragas.embeddings import HaystackEmbeddingsWrapper
+from haystack.components.generators import OpenAIGenerator
+from haystack.components.embedders.openai_text_embedder import (
+    OpenAITextEmbedder,
+)
+from haystack.utils import Secret
   
 
 
@@ -61,12 +64,40 @@ class SyntheticTestGenerator:
     
     def __init__(
         self,
-        testset_size: int = 10,
+        test_size: int = 10,
         llm_model: str = "gpt-4o-mini",
+        embedder_model: str = "text-embedding-3-small",
         query_distribution: Optional[List[Tuple[str, float]]] = None,
-        openai_api_key: Optional[str] = None,
-        max_testset_size: Optional[int] = None
+        openai_api_key: Optional[str] = None
     ):
+        """
+        Initialize the SyntheticTestGenerator component.
+        
+        Args:
+            test_size (int): Number of synthetic test cases to generate. Defaults to 10.
+            llm_model (str): OpenAI model name for test generation. Defaults to "gpt-4o-mini".
+            embedder_model (str): OpenAI embedding model name. Defaults to "text-embedding-3-small".
+            query_distribution (Optional[List[Tuple[str, float]]]): Distribution of query types and their weights.
+                Format: [("single_hop", 0.5), ("multi_hop_abstract", 0.25), ("multi_hop_specific", 0.25)]
+                If None, uses default balanced distribution.
+            openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
+        """
+        self.test_size = test_size
+        self.llm_model = llm_model
+        self.embedder_model = embedder_model
+        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
+        
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
+        
+        # Set default query distribution if none provided
+        self.query_distribution = query_distribution or [
+            ("single_hop", 0.5),
+            ("multi_hop_abstract", 0.25),
+            ("multi_hop_specific", 0.25)
+        ]
+        
+        self._initialize_models()
         """
         Initialize the SyntheticTestGenerator component.
         
@@ -76,12 +107,10 @@ class SyntheticTestGenerator:
             query_distribution (Optional[List[Tuple[str, float]]]): Distribution of query types.
                 Format: [("single_hop", 0.5), ("multi_hop_abstract", 0.25), ("multi_hop_specific", 0.25)]
             openai_api_key (Optional[str]): OpenAI API key override.
-            max_testset_size (Optional[int]): Maximum testset size to prevent API timeouts. If None, uses testset_size.
         """
-        self.testset_size = testset_size
+        self.testset_size = test_size
         self.llm_model = llm_model
         self.openai_api_key = openai_api_key
-        self.max_testset_size = max_testset_size
         
         # Set default query distribution if not provided
         self.query_distribution = query_distribution or [
@@ -104,26 +133,21 @@ class SyntheticTestGenerator:
     def _initialize_models(self):
         """Initialize LLM and embedding models."""
         try:
-            # Check for API key
-            api_key = self.openai_api_key or os.getenv('OPENAI_API_KEY')
-            if not api_key:
-                raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
+            # Initialize using HaystackLLMWrapper for compatibility
+            self.llm = HaystackLLMWrapper(
+                OpenAIGenerator(
+                    model=self.llm_model,
+                    api_key=Secret.from_token(self.openai_api_key)
+                )
+            )
             
-            # Initialize using LangchainLLMWrapper for compatibility
-            chat_openai_kwargs = {"model": self.llm_model}
-            if api_key:
-                chat_openai_kwargs["openai_api_key"] = api_key
-                
-            self.llm = LangchainLLMWrapper(ChatOpenAI(**chat_openai_kwargs))
-            
-            embeddings_kwargs = {}
-            if api_key:
-                embeddings_kwargs["openai_api_key"] = api_key
-                
-            self.embeddings = LangchainEmbeddingsWrapper(OpenAIEmbeddings(**embeddings_kwargs))
-            logger.info(f"Using LangchainLLMWrapper with model: {self.llm_model}")
-                
-            logger.info(f"Initialized SyntheticTestGenerator with model: {self.llm_model}")
+            self.embeddings = HaystackEmbeddingsWrapper(
+                embedder=OpenAITextEmbedder(
+                    model=self.embedder_model,
+                    api_key=Secret.from_token(self.openai_api_key)
+                )
+            )
+            logger.info(f"Initialized SyntheticTestGenerator with LLM: {self.llm_model}, Embedder: {self.embedder_model}")
             
         except Exception as e:
             logger.error(f"Failed to initialize models: {e}")
@@ -151,8 +175,7 @@ class SyntheticTestGenerator:
     @component.output_types(
         testset=pd.DataFrame, 
         testset_size=int, 
-        generation_method=str, 
-        success=bool
+        generation_method=str
     )
     def run(
         self, 
@@ -253,13 +276,10 @@ class SyntheticTestGenerator:
             raise Exception(f"Query distribution failes: {e}")
         
         try:
-            # Use max_testset_size if specified, otherwise use full testset_size
-            actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
-            
-            logger.info(f"Attempting to generate {actual_size} test cases from knowledge graph")
+            logger.info(f"Attempting to generate {self.testset_size} test cases from knowledge graph")
             
             result = generator.generate(
-                testset_size=actual_size,
+                testset_size=self.testset_size,
                 query_distribution=query_distribution
             )
             return result
@@ -294,23 +314,12 @@ class SyntheticTestGenerator:
                 embedding_model=self.embeddings
             )
             
-            # Use max_testset_size if specified, otherwise use full testset_size
-            actual_size = min(self.testset_size, self.max_testset_size) if self.max_testset_size else self.testset_size
             
-            # Create query distribution for generate_with_langchain_docs
-            # In recent versions of Ragas, the query_distribution for
-            # ``generate_with_langchain_docs`` is expected to be a list of
-            # ``(synthesizer, probability)`` tuples (similar to the
-            # knowledge‐graph generation method). Passing a plain dictionary
-            # will cause unpacking errors when Ragas iterates over the
-            # distribution. To remain compatible with both newer and older
-            # versions, reuse the synthesizer objects created in
-            # ``_create_query_synthesizers``.
             query_dist = self._create_query_synthesizers()
 
             return generator.generate_with_langchain_docs(
                 documents=filtered_docs,
-                testset_size=actual_size,
+                testset_size=self.testset_size,
                 query_distribution=query_dist,
                 raise_exceptions=True,
                 with_debugging_logs=True

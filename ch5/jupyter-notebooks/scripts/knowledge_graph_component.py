@@ -6,7 +6,8 @@ This component takes a list of LangChain Document objects and creates a Ragas kn
 with applied transforms for synthetic test generation and evaluation.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+import os
 from haystack import component, logging
 from langchain_core.documents import Document as LangChainDocument
 
@@ -21,9 +22,6 @@ from haystack.utils import Secret
 from ragas.testset.graph import Node, NodeType, KnowledgeGraph
 from ragas.testset.transforms import default_transforms, apply_transforms
 
-from typing import List, Optional, Dict, Any
-
-from haystack import component, logging
 from haystack.dataclasses import Document as HaystackDocument
 
 logger = logging.getLogger(__name__)
@@ -56,6 +54,7 @@ class KnowledgeGraphGenerator:
     def __init__(
         self, 
         llm_model: str = "gpt-4o-mini",
+        embedder_model: str = "text-embedding-3-small",
         apply_transforms: bool = True,
         openai_api_key: Optional[str] = None
     ):
@@ -64,12 +63,17 @@ class KnowledgeGraphGenerator:
         
         Args:
             llm_model (str): OpenAI model name for LLM operations. Defaults to "gpt-4o-mini".
+            embedder_model (str): OpenAI embedding model name. Defaults to "text-embedding-3-small".
             apply_transforms (bool): Whether to apply default transforms to enhance the knowledge graph.
             openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
         """
         self.llm_model = llm_model
+        self.embedder_model = embedder_model
         self.apply_transforms = apply_transforms
-        self.openai_api_key = openai_api_key
+        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
+        
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
         
         # Initialize LLM and embeddings
         self._initialize_models()
@@ -77,20 +81,25 @@ class KnowledgeGraphGenerator:
     def _initialize_models(self):
         """Initialize the LLM and embedding models."""
         try:
-            
-            self.generator_llm = HaystackLLMWrapper(OpenAIGenerator(model="gpt-4.1-mini",
-                                                                    api_key=Secret.from_env_var("OPENAI_API_KEY")))
+            self.generator_llm = HaystackLLMWrapper(
+                OpenAIGenerator(
+                    model=self.llm_model,
+                    api_key=Secret.from_token(self.openai_api_key)
+                )
+            )
                 
-            self.generator_embeddings = HaystackEmbeddingsWrapper(embedder=OpenAITextEmbedder(model="text-embedding-ada-002",
-                                                                                              api_key=Secret.from_env_var("OPENAI_API_KEY")),
-                                                                )
+            self.generator_embeddings = HaystackEmbeddingsWrapper(
+                embedder=OpenAITextEmbedder(
+                    model=self.embedder_model,
+                    api_key=Secret.from_token(self.openai_api_key)
+                )
+            )
             
-            logger.info(f"Initialized KnowledgeGraphGenerator with model: {self.llm_model}")
+            logger.info(f"Initialized KnowledgeGraphGenerator with LLM: {self.llm_model}, Embedder: {self.embedder_model}")
             
         except Exception as e:
             logger.error(f"Failed to initialize models: {e}")
             raise
-    
     
     @component.output_types(knowledge_graph=KnowledgeGraph, node_count=int, transform_applied=bool)
     def run(self, documents: List[LangChainDocument]) -> dict:

@@ -24,7 +24,6 @@ load_dotenv(".env")
 
 @super_component
 class SDGGenerator:
-    
     def __init__(self, 
                  provided_query_distribution, 
                  provided_test_size, 
@@ -32,9 +31,34 @@ class SDGGenerator:
                  provided_embedder_model,
                  sd_file_name,
                  openai_api_key=None):
-
+        """
+        Initialize the Synthetic Data Generator SuperComponent.
         
-
+        Args:
+            provided_query_distribution: Distribution of query types for synthetic test generation
+            provided_test_size: Number of synthetic tests to generate
+            provided_llm_model (str): LLM model name for generation tasks
+            provided_embedder_model (str): Embedding model name for vector operations
+            sd_file_name (str): Output file name for synthetic dataset
+            openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
+        """
+        self.query_distribution = provided_query_distribution
+        self.test_size = provided_test_size
+        self.llm_model = provided_llm_model
+        self.embedder_model = provided_embedder_model
+        self.sd_file_name = sd_file_name
+        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
+        
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
+        
+        self._build_pipeline()
+    
+    def _build_pipeline(self):
+        """Build the synthetic data generation pipeline with initialized components."""
+        
+        # --- 1. Initialize Document Processing Components ---
+        
         # Core routing and joining components  
         file_router = FileTypeRouter(mime_types=["text/plain", "application/pdf", "text/html"])
         doc_joiner = DocumentJoiner()  # Joins documents from different branches
@@ -44,33 +68,41 @@ class SDGGenerator:
         html_converter = HTMLToDocument()  
         link_fetcher = LinkContentFetcher()
 
-        preprocessor = DocumentPreprocessor(split_by='sentence',
-                                                    split_length=50,
-                                                    split_overlap=5,
-                                                    remove_empty_lines = True,
-                                                    remove_extra_whitespaces = True,
-                                                    )
+        # Document preprocessor for splitting and cleaning
+        preprocessor = DocumentPreprocessor(
+            split_by='sentence',
+            split_length=50,
+            split_overlap=5,
+            remove_empty_lines=True,
+            remove_extra_whitespaces=True,
+        )
+        
+        # Convert Haystack documents to LangChain format
         langchain_doc_converter = DocumentToLangChainConverter()
         
-        # Initialize KnowledgeGraphGenerator with explicit model parameters
+        # --- 2. Initialize Knowledge Graph and Test Generation Components ---
+        
+        # Knowledge Graph Generator with explicit model parameters
         kg_generator = KnowledgeGraphGenerator(
-            llm_model=provided_llm_model,
-            embedder_model=provided_embedder_model,
+            llm_model=self.llm_model,
+            embedder_model=self.embedder_model,
             apply_transforms=True,
-            openai_api_key=openai_api_key
+            openai_api_key=self.openai_api_key
         )
         
-        # Initialize SyntheticTestGenerator with explicit model parameters
+        # Synthetic Test Generator with explicit model parameters
         test_generator = SyntheticTestGenerator(
-            test_size=provided_test_size,  # Larger test set for multiple sources
-            llm_model=provided_llm_model,
-            embedder_model=provided_embedder_model,
-            query_distribution=provided_query_distribution,
-            openai_api_key=openai_api_key
+            test_size=self.test_size,
+            llm_model=self.llm_model,
+            embedder_model=self.embedder_model,
+            query_distribution=self.query_distribution,
+            openai_api_key=self.openai_api_key
         )
-        test_saver = TestDatasetSaver(default_output_path=sd_file_name)
         
-        # Initialize pipeline
+        # Test Dataset Saver
+        test_saver = TestDatasetSaver(default_output_path=self.sd_file_name)
+        
+        # --- 3. Build the Pipeline ---
         self.pipeline = Pipeline()
 
         # Add all components to the pipeline with unique names
@@ -85,15 +117,17 @@ class SDGGenerator:
         self.pipeline.add_component("test_generator", test_generator)
         self.pipeline.add_component("test_saver", test_saver)
 
-        # Web data branch
+        # --- 4. Connect the Components in a Graph ---
+        
+        # Web data branch: URLs -> HTML conversion -> document joiner
         self.pipeline.connect("link_fetcher.streams", "html_converter.sources")
         self.pipeline.connect("html_converter.documents", "doc_joiner.documents")
 
-        # PDF file branch
+        # PDF file branch: Files -> PDF conversion -> document joiner
         self.pipeline.connect("file_type_router.application/pdf", "pdf_converter.sources")
         self.pipeline.connect("pdf_converter.documents", "doc_joiner.documents")
 
-        # Main processing path
+        # Main processing path: Documents -> Preprocessing -> LangChain conversion -> Knowledge Graph -> Test Generation -> Saving
         self.pipeline.connect("doc_joiner", "doc_preprocessor")
         self.pipeline.connect('doc_preprocessor', 'lg_doc_converter')
         self.pipeline.connect("lg_doc_converter.langchain_documents", "kg_generator.documents")
@@ -101,10 +135,14 @@ class SDGGenerator:
         self.pipeline.connect("lg_doc_converter.langchain_documents", "test_generator.documents")
         self.pipeline.connect("test_generator.testset", "test_saver.testset")
         
-        # Separate input mappings for URLs and files
+        # --- 5. Define Input and Output Mappings ---
         self.input_mapping = {
             "urls": ["link_fetcher.urls"],
             "sources": ["file_type_router.sources"]
+        }
+
+        self.output_mapping = {
+            "test_saver.saved_path": "saved_path"
         }
 
 
