@@ -168,12 +168,12 @@ if __name__ == "__main__":
                 ]
     llm_model = "gpt-4o-mini"
     embedder_model = "text-embedding-3-small"
-    file_name ="data_for_eval/synthetic_tests_advanced_branching_2.csv"
+    file_name ="data_for_eval/synthetic_tests_advanced_branching_10.csv"
     
     # Create SDGGenerator with explicit model parameters
     sdg_generator = SDGGenerator(
         provided_query_distribution=query_dist,
-        provided_test_size=2,
+        provided_test_size=10,
         provided_llm_model=llm_model,
         provided_embedder_model=embedder_model,
         sd_file_name=file_name,

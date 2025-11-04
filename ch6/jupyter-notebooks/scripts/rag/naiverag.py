@@ -53,17 +53,17 @@ class NaiveRAGSuperComponent:
         # PromptBuilder: Creates a prompt using the retrieved documents and the query.
         # The Jinja2 template iterates through the documents and adds their content to the prompt.
         prompt_template_for_pipeline = """
-Given the following information, answer the user's question.
-If the information is not available in the provided documents, say that you don't have enough information to answer.
+                    Given the following information, answer the user's question.
+                    If the information is not available in the provided documents, say that you don't have enough information to answer.
 
-Context:
-{% for doc in documents %}
-    {{ doc.content }}
-{% endfor %}
+                    Context:
+                    {% for doc in documents %}
+                        {{ doc.content }}
+                    {% endfor %}
 
-Question: {{question}}
-Answer:
-"""
+                    Question: {{question}}
+                    Answer:
+                    """
         prompt_builder_inst = PromptBuilder(template=prompt_template_for_pipeline,
                                             required_variables="*")
         llm_generator_inst = OpenAIGenerator(
