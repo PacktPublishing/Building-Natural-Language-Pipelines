@@ -179,7 +179,6 @@ class SyntheticTestGenerator:
                 "testset": pd.DataFrame(),
                 "testset_size": 0,
                 "generation_method": "none",
-                "success": False
             }
         
         # Validate environment before proceeding
@@ -191,7 +190,6 @@ class SyntheticTestGenerator:
                 "testset": pd.DataFrame(),
                 "testset_size": 0,
                 "generation_method": "env_validation_failed",
-                "success": False
             }
         
         try:
@@ -220,7 +218,6 @@ class SyntheticTestGenerator:
                 "testset": df,
                 "testset_size": actual_size,
                 "generation_method": method,
-                "success": True
             }
             
         except ConnectionError as e:
@@ -229,7 +226,6 @@ class SyntheticTestGenerator:
                 "testset": pd.DataFrame(),
                 "testset_size": 0,
                 "generation_method": "failed_connection",
-                "success": False
             }
         except Exception as e:
             logger.error(f"Failed to generate synthetic tests: {e}")
@@ -237,7 +233,6 @@ class SyntheticTestGenerator:
                 "testset": pd.DataFrame(),
                 "testset_size": 0,
                 "generation_method": "failed",
-                "success": False
             }
     
     def _generate_from_knowledge_graph(self, knowledge_graph: KnowledgeGraph):

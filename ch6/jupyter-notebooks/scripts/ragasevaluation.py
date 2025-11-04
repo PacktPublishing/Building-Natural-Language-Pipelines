@@ -106,17 +106,36 @@ class RagasEvaluationComponent:
     
     def __init__(self, 
                  metrics: Optional[List[Any]] = None,
+                 llm_model: str = "gpt-4o-mini",
+                 openai_api_key: Optional[str] = None,
                  ragas_llm: Optional[Any] = None):
+        """
+        Initialize the RagasEvaluationComponent.
+        
+        Args:
+            metrics: List of RAGAS metrics to evaluate
+            llm_model (str): OpenAI model for evaluation. Defaults to "gpt-4o-mini".
+            openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
+            ragas_llm: Pre-configured RAGAS LLM (overrides llm_model if provided)
+        """
         
         # Default metrics for RAG evaluation
         self.metrics = metrics
+        self.llm_model = llm_model
+        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
+        
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
         
         # Ragas requires an LLM for evaluation, often provided through OpenAI or Anthropic.
         # It's best practice to use a strong model like gpt-4o-mini or gpt-4.
         if ragas_llm is None:
-            # Assumes OPENAI_API_KEY is set in the environment
-            self.ragas_llm = HaystackLLMWrapper(OpenAIGenerator(model="gpt-4o-mini",
-                                                               api_key=Secret.from_env_var("OPENAI_API_KEY")))
+            self.ragas_llm = HaystackLLMWrapper(
+                OpenAIGenerator(
+                    model=self.llm_model,
+                    api_key=Secret.from_token(self.openai_api_key)
+                )
+            )
         else:
             self.ragas_llm = ragas_llm
 

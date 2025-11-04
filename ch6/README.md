@@ -97,7 +97,7 @@ uv run python scripts/rag/indexing.py
 **Expected Output:**
 ```
 Processing web URL: ['https://www.bbc.com/news/articles/c2l799gxjjpo', 'https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/']
-Batches: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:01<00:00,  4.42it/s]
+Calculating embeddings: 1it [00:00,  1.03it/s]
 Indexing completed successfully!
 ```
 
