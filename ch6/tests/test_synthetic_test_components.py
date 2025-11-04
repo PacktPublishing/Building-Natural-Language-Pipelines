@@ -14,15 +14,17 @@ from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
 # Add the scripts directory to the Python path for imports
-current_dir = Path(__file__).parent  # ch5/tests/
-project_root = current_dir.parent    # ch5/
+current_dir = Path(__file__).parent  # ch6/tests/
+project_root = current_dir.parent    # ch6/
 scripts_dir = project_root / "jupyter-notebooks" / "scripts"
+synthetic_data_dir = scripts_dir / "synthetic_data_generation"
 sys.path.insert(0, str(scripts_dir))
+sys.path.insert(0, str(synthetic_data_dir))
 
 from haystack.dataclasses import Document as HaystackDocument
 from langchain_core.documents import Document as LangChainDocument
 
-from synthetic_data_generation.synthetic_test_components import (
+from synthetic_test_components import (
     SyntheticTestGenerator,
     TestDatasetSaver
 )
