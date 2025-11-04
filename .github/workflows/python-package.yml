@@ -44,3 +44,14 @@ jobs:
       run: |
         cd ch5
         python tests/run_tests.py
+    - name: Install dependencies for ch6
+      run: |
+        cd ch6
+        uv pip install --system -e .
+    - name: Run ch6 tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      run: |
+        cd ch6
+        python tests/run_tests.py
