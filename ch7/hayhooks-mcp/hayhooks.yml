@@ -1,0 +1,4 @@
+pipelines:
+  # This tells hayhooks to call the 'load_pipelines' function
+  # from the 'custom_pipelines.py' file.
+  python_object: "custom_pipelines:load_pipelines"

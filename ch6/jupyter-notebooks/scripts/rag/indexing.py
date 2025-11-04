@@ -29,66 +29,13 @@ from haystack.components.converters import (
 from haystack.components.routers import FileTypeRouter
 
 
-from haystack.components.preprocessors import DocumentPreprocessor
+from haystack.components.preprocessors import DocumentSplitter
+from haystack.components.preprocessors import DocumentCleaner
 
 # Import for custom component
 from haystack import component
 from haystack.dataclasses import Document
 from typing import List
-
-
-@component
-class EmbeddingFieldMapper:
-    """
-    Custom component to map embeddings from one field to another.
-    This allows us to store multiple embeddings in different fields.
-    """
-    
-    def __init__(self, source_field: str = "embedding", target_field: str = "embedding_large"):
-        """
-        Initialize the embedding field mapper.
-        
-        Args:
-            source_field (str): Source embedding field name
-            target_field (str): Target embedding field name
-        """
-        self.source_field = source_field
-        self.target_field = target_field
-    
-    @component.output_types(documents=List[Document])
-    def run(self, documents: List[Document]) -> dict:
-        """
-        Map embeddings from source field to target field.
-        
-        Args:
-            documents: List of documents with embeddings
-            
-        Returns:
-            dict: Documents with mapped embedding fields
-        """
-        processed_docs = []
-        
-        for doc in documents:
-            # Create a copy of the document
-            new_doc = Document(
-                content=doc.content,
-                meta=doc.meta.copy() if doc.meta else {},
-                id=doc.id
-            )
-            
-            # Copy all existing embedding fields
-            if hasattr(doc, 'embedding') and doc.embedding is not None:
-                new_doc.embedding = doc.embedding
-                
-            # Map the current embedding to the target field
-            if hasattr(doc, self.source_field):
-                embedding_value = getattr(doc, self.source_field)
-                if embedding_value is not None:
-                    setattr(new_doc, self.target_field, embedding_value)
-            
-            processed_docs.append(new_doc)
-            
-        return {"documents": processed_docs}
 
 
 @super_component
@@ -118,21 +65,23 @@ class IndexingPipelineSuperComponent:
         
         # Core routing and joining components  
         file_router = FileTypeRouter(mime_types=["text/plain", "application/pdf", "text/html"])
-        doc_joiner = DocumentJoiner()  # Joins documents from different branches
+        doc_joiner = DocumentJoiner(sort_by_score=False)  # Joins documents from different branches without sorting by score
 
         # Input converters for each file type
         pdf_converter = PyPDFToDocument()
         html_converter = HTMLToDocument()  
         link_fetcher = LinkContentFetcher()
 
+        # Document cleaner to clean up text
+        cleaner = DocumentCleaner(remove_empty_lines=True,
+                                   remove_extra_whitespaces=True)
 
-        # Preprocessors for Text Data:
-        preprocessor = DocumentPreprocessor(split_by='sentence',
+        # Splitter for Text Data:
+        splitter = DocumentSplitter(split_by='sentence',
                                             split_length=50,
                                             split_overlap=5,
-                                            remove_empty_lines = True,
-                                            remove_extra_whitespaces = True,
                                             )
+        
         
 
         # Embedder:
@@ -152,7 +101,8 @@ class IndexingPipelineSuperComponent:
         self.pipeline.add_component("file_type_router", file_router)
         self.pipeline.add_component("pdf_converter", pdf_converter)
         self.pipeline.add_component("doc_joiner", doc_joiner)
-        self.pipeline.add_component("doc_preprocessor", preprocessor)
+        self.pipeline.add_component("cleaner", cleaner)
+        self.pipeline.add_component("doc_splitter", splitter)
         self.pipeline.add_component("doc_embedder", doc_embedder)
         self.pipeline.add_component("writer", writer)
 
@@ -167,8 +117,9 @@ class IndexingPipelineSuperComponent:
         self.pipeline.connect("pdf_converter.documents", "doc_joiner.documents")
 
         # Main processing path
-        self.pipeline.connect("doc_joiner", "doc_preprocessor")
-        self.pipeline.connect("doc_preprocessor", "doc_embedder")
+        self.pipeline.connect("doc_joiner", "cleaner")
+        self.pipeline.connect("cleaner", "doc_splitter")
+        self.pipeline.connect("doc_splitter", "doc_embedder")
         self.pipeline.connect("doc_embedder", "writer")
         
         # Separate input mappings for URLs and files
@@ -200,7 +151,6 @@ if __name__ == "__main__":
     
     indexing_pipeline_sc_small = IndexingPipelineSuperComponent( 
         document_store=small_document_store,
-        embedder_model="text-embedding-3-small",
         openai_api_key=os.getenv('OPENAI_API_KEY')
     )
 

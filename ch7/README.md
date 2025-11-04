@@ -27,8 +27,12 @@ A production-ready Hybrid Retrieval-Augmented Generation (RAG) application using
    # Edit .env and set OPENAI_API_KEY=your_actual_key
    ```
 
-3. **Start Elasticsearch**:
+3. **Create and start Elasticsearch**:
    ```bash
+   docker-compose up -d elasticsearch
+   ```
+
+```bash
    docker-compose up -d elasticsearch
    ```
 
