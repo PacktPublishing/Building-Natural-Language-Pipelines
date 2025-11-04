@@ -48,15 +48,33 @@ This repository contains exercises and interactive notebooks for Chapter 6, focu
 Create a `.env` file in the root directory with your API keys:
 ```sh
 OPENAI_API_KEY=your_openai_key_here
+WANDB_API_KEY=your_wandb_key_here
 ```
 
-To obtain the API key:
-- OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
+To obtain the API keys:
+- **OpenAI API key**: Sign up at [OpenAI's platform](https://platform.openai.com)
+  - Navigate to [API Keys](https://platform.openai.com/api-keys)
+  - Click "Create new secret key"
+  - Copy the key and add it to your `.env` file
+- **Weights & Biases API key**: Sign up at [Weights & Biases](https://wandb.ai)
+  - Go to [User Settings → API Keys](https://wandb.ai/authorize)
+  - Copy your API key and add it to your `.env` file
+  - Required for experiment tracking and observability features
 
-8. **Start Elasticsearch:**
+8. **Start Elasticsearch (Dual Instance Setup):**
 	```bash
-	# Start in detached mode
+	# Start both Elasticsearch instances in detached mode
 	docker-compose up -d
+	```
+	
+	This starts two Elasticsearch instances:
+	- **Small Instance** (Port 9200): Optimized for `text-embedding-3-small` (512MB-1GB heap)
+	- **Large Instance** (Port 9201): Optimized for `text-embedding-3-large` (2GB-4GB heap)
+	
+	Verify both instances are running:
+	```bash
+	curl -s "localhost:9200/_cluster/health" | jq '.cluster_name'  # "es-small-cluster"
+	curl -s "localhost:9201/_cluster/health" | jq '.cluster_name'  # "es-large-cluster"
 	```
 
 ### Elasticsearch Document Indexing Workflow
@@ -164,11 +182,17 @@ curl -X DELETE "localhost:9200/default"
 
 ### RAG Pipeline Scripts
 
+📁 **[Complete Scripts Documentation](./jupyter-notebooks/scripts/README.md)** - Comprehensive guide to all script components, usage examples, and architecture overview.
+
 | Component | Link | Description |
 |---|---|---|
-| Document Indexing | [scripts/rag/indexing.py](./jupyter-notebooks/scripts/rag/indexing.py) | Multi-source data processing with vector embedding generation and Elasticsearch integration |
+| Document Indexing | [scripts/rag/indexing.py](./jupyter-notebooks/scripts/rag/indexing.py) | Multi-source data processing with dual embedding support and Elasticsearch integration |
 | Naive RAG | [scripts/rag/naiverag.py](./jupyter-notebooks/scripts/rag/naiverag.py) | Basic retrieval-augmented generation with semantic search foundation |
 | Hybrid RAG | [scripts/rag/hybridrag.py](./jupyter-notebooks/scripts/rag/hybridrag.py) | Advanced hybrid search combining keyword (BM25) and semantic search strategies |
+| RAGAS Evaluation | [scripts/ragas_evaluation/](./jupyter-notebooks/scripts/ragas_evaluation/) | Automated RAG evaluation using RAGAS metrics |
+| Elasticsearch Config | [scripts/elasticsearch_config.py](./jupyter-notebooks/scripts/elasticsearch_config.py) | Dual Elasticsearch instance configuration and helpers |
+| W&B Analytics | [scripts/wandb_experiments/rag_analytics.py](./jupyter-notebooks/scripts/wandb_experiments/rag_analytics.py) | Enhanced cost tracking and performance analytics with current OpenAI pricing |
+| Synthetic Data | [scripts/synthetic_data_generation/](./jupyter-notebooks/scripts/synthetic_data_generation/) | Automated test data generation for RAG evaluation |
 
 ---
 
@@ -196,6 +220,33 @@ The RAG evaluation notebooks and scripts are organized for comparative analysis:
 
 ---
 
+## 🚀 Quick Reference
+
+### Dual Elasticsearch Setup
+- **Small Instance**: `localhost:9200` - Fast retrieval with `text-embedding-3-small`
+- **Large Instance**: `localhost:9201` - High accuracy with `text-embedding-3-large`
+- **Configuration**: See [elasticsearch_config.py](./jupyter-notebooks/scripts/elasticsearch_config.py)
+
+### Current OpenAI Pricing (Built-in)
+- **text-embedding-3-small**: $0.02 per 1M tokens
+- **text-embedding-3-large**: $0.13 per 1M tokens  
+- **gpt-4o-mini**: $0.15/$0.60 per 1M input/output tokens
+
+### Key Commands
+```bash
+# Check document counts
+curl "localhost:9200/small_embeddings/_count"
+curl "localhost:9201/large_embeddings/_count"
+
+# Start monitoring notebook
+uv run jupyter lab jupyter-notebooks/elasticsearch_monitoring.ipynb
+
+# Run cost analysis
+uv run jupyter lab jupyter-notebooks/add_observability_with_wandb.ipynb
+```
+
+---
+
 ## Chapter Topics Covered
 
 1. **Reproducible Workflow Building Blocks**
@@ -211,7 +262,9 @@ The RAG evaluation notebooks and scripts are organized for comparative analysis:
 3. **Observability with Weights and Biases and Evaluating Results with RAGAS**
    - Performance monitoring and experiment tracking for RAG system comparison
    - Multi-dimensional RAG evaluation (faithfulness, relevance, context precision, recall)
-   - Comparative analysis between naive and hybrid RAG approaches
+   - **Enhanced cost analytics** with current OpenAI pricing (November 2024)
+   - **Dual embedding comparison** (`text-embedding-3-small` vs `text-embedding-3-large`)
+   - Comprehensive cost breakdown including LLM and embedding operations
    - Automated evaluation pipeline setup for systematic comparison
 
 4. **Performance Optimization through Feedback Loops**

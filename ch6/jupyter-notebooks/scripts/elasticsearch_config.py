@@ -158,4 +158,3 @@ if __name__ == "__main__":
     print(f"\nDefault indices:")
     print(f"Small embeddings: {config.SMALL_EMBEDDING_INDEX}")
     print(f"Large embeddings: {config.LARGE_EMBEDDING_INDEX}")
-    print(f"Dual embeddings: {config.DUAL_EMBEDDING_INDEX}")
