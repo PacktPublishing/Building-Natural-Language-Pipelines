@@ -1,0 +1,147 @@
+components:
+  cleaner:
+    init_parameters:
+      ascii_only: false
+      keep_id: false
+      remove_empty_lines: true
+      remove_extra_whitespaces: true
+      remove_regex: null
+      remove_repeated_substrings: false
+      remove_substrings: null
+      unicode_normalization: null
+    type: haystack.components.preprocessors.document_cleaner.DocumentCleaner
+  doc_embedder:
+    init_parameters:
+      api_base_url: null
+      api_key:
+        env_vars:
+        - OPENAI_API_KEY
+        strict: true
+        type: env_var
+      batch_size: 32
+      dimensions: null
+      embedding_separator: '
+
+        '
+      http_client_kwargs: null
+      max_retries: null
+      meta_fields_to_embed: []
+      model: text-embedding-3-small
+      organization: null
+      prefix: ''
+      progress_bar: true
+      raise_on_failure: false
+      suffix: ''
+      timeout: null
+    type: haystack.components.embedders.openai_document_embedder.OpenAIDocumentEmbedder
+  doc_joiner:
+    init_parameters:
+      join_mode: concatenate
+      sort_by_score: false
+      top_k: null
+      weights: null
+    type: haystack.components.joiners.document_joiner.DocumentJoiner
+  doc_splitter:
+    init_parameters:
+      extend_abbreviations: true
+      language: en
+      respect_sentence_boundary: false
+      skip_empty_documents: true
+      split_by: sentence
+      split_length: 50
+      split_overlap: 5
+      split_threshold: 0
+      use_split_rules: true
+    type: haystack.components.preprocessors.document_splitter.DocumentSplitter
+  file_type_router:
+    init_parameters:
+      additional_mimetypes: null
+      mime_types:
+      - text/plain
+      - application/pdf
+      - text/html
+      raise_on_failure: false
+    type: haystack.components.routers.file_type_router.FileTypeRouter
+  html_converter:
+    init_parameters:
+      extraction_kwargs: {}
+      store_full_path: false
+    type: haystack.components.converters.html.HTMLToDocument
+  html_file_converter:
+    init_parameters:
+      extraction_kwargs: {}
+      store_full_path: false
+    type: haystack.components.converters.html.HTMLToDocument
+  link_fetcher:
+    init_parameters:
+      client_kwargs:
+        follow_redirects: true
+        timeout: 3
+      http2: false
+      raise_on_failure: true
+      request_headers: {}
+      retry_attempts: 2
+      timeout: 3
+      user_agents:
+      - haystack/LinkContentFetcher/2.19.0
+    type: haystack.components.fetchers.link_content.LinkContentFetcher
+  pdf_converter:
+    init_parameters:
+      extraction_mode: plain
+      layout_mode_font_height_weight: 1.0
+      layout_mode_scale_weight: 1.25
+      layout_mode_space_vertically: true
+      layout_mode_strip_rotated: true
+      plain_mode_orientations: !!python/tuple
+      - 0
+      - 90
+      - 180
+      - 270
+      plain_mode_space_width: 200.0
+      store_full_path: false
+    type: haystack.components.converters.pypdf.PyPDFToDocument
+  writer:
+    init_parameters:
+      document_store:
+        init_parameters:
+          api_key:
+            env_vars:
+            - ELASTIC_API_KEY
+            strict: false
+            type: env_var
+          api_key_id:
+            env_vars:
+            - ELASTIC_API_KEY_ID
+            strict: false
+            type: env_var
+          custom_mapping: null
+          embedding_similarity_function: cosine
+          hosts: http://localhost:9200
+          index: small_embeddings
+        type: haystack_integrations.document_stores.elasticsearch.document_store.ElasticsearchDocumentStore
+      policy: OVERWRITE
+    type: haystack.components.writers.document_writer.DocumentWriter
+connection_type_validation: true
+connections:
+- receiver: html_converter.sources
+  sender: link_fetcher.streams
+- receiver: doc_joiner.documents
+  sender: html_converter.documents
+- receiver: doc_joiner.documents
+  sender: html_file_converter.documents
+- receiver: pdf_converter.sources
+  sender: file_type_router.application/pdf
+- receiver: html_file_converter.sources
+  sender: file_type_router.text/html
+- receiver: doc_joiner.documents
+  sender: pdf_converter.documents
+- receiver: cleaner.documents
+  sender: doc_joiner.documents
+- receiver: doc_splitter.documents
+  sender: cleaner.documents
+- receiver: doc_embedder.documents
+  sender: doc_splitter.documents
+- receiver: writer.documents
+  sender: doc_embedder.documents
+max_runs_per_component: 100
+metadata: {}

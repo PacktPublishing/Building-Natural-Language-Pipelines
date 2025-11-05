@@ -14,91 +14,17 @@ from haystack_integrations.components.retrievers.elasticsearch import (
     ElasticsearchBM25Retriever,
     ElasticsearchEmbeddingRetriever
 )
-
+from pathlib import Path
 
 class PipelineWrapper(BasePipelineWrapper):
     def setup(self) -> None:
         """Initialize the hybrid RAG pipeline"""
         log.info("Setting up hybrid RAG pipeline...")
         
-        # Initialize document store (same as indexing)
-        document_store = ElasticsearchDocumentStore(
-            hosts=os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200"),
-            index="small_embeddings"
-        )
-        
-        # Build the pipeline exactly as in your HybridRAGSuperComponent
-        self.pipeline = self._build_hybrid_rag_pipeline(document_store)
+        pipeline_yaml = (Path(__file__).parent / "rag.yml").read_text()
+        self.pipeline = Pipeline.loads(pipeline_yaml)
         log.info("Hybrid RAG pipeline setup complete")
     
-    def _build_hybrid_rag_pipeline(self, document_store):
-        """Build the hybrid RAG pipeline with all components"""
-        pipeline = Pipeline()
-        
-        # Core components
-        text_embedder = OpenAITextEmbedder(
-            api_key=Secret.from_env_var("OPENAI_API_KEY"),
-            model="text-embedding-3-small"
-        )
-        
-        embedding_retriever = ElasticsearchEmbeddingRetriever(
-            document_store=document_store,
-            top_k=3
-        )
-        
-        bm25_retriever = ElasticsearchBM25Retriever(
-            document_store=document_store,
-            top_k=3
-        )
-        
-        document_joiner = DocumentJoiner()
-        
-        ranker = SentenceTransformersSimilarityRanker(
-            model="BAAI/bge-reranker-base",
-            top_k=3
-        )
-        
-        prompt_template = """
-        Given the following information, answer the user's question.
-        If the information is not available in the provided documents, say that you don't have enough information to answer.
-
-        Context:
-        {% for doc in documents %}
-            {{ doc.content }}
-        {% endfor %}
-
-        Question: {{question}}
-        Answer:
-        """
-        
-        prompt_builder = PromptBuilder(
-            template=prompt_template,
-            required_variables=["documents", "question"]
-        )
-        
-        llm = OpenAIGenerator(
-            api_key=Secret.from_env_var("OPENAI_API_KEY"),
-            model="gpt-4o-mini"
-        )
-        
-        # Add components
-        pipeline.add_component("text_embedder", text_embedder)
-        pipeline.add_component("embedding_retriever", embedding_retriever)
-        pipeline.add_component("bm25_retriever", bm25_retriever)
-        pipeline.add_component("document_joiner", document_joiner)
-        pipeline.add_component("ranker", ranker)
-        pipeline.add_component("prompt_builder", prompt_builder)
-        pipeline.add_component("llm", llm)
-        
-        # Connect components
-        pipeline.connect("text_embedder.embedding", "embedding_retriever.query_embedding")
-        pipeline.connect("embedding_retriever.documents", "document_joiner.documents")
-        pipeline.connect("bm25_retriever.documents", "document_joiner.documents")
-        pipeline.connect("document_joiner.documents", "ranker.documents")
-        pipeline.connect("ranker.documents", "prompt_builder.documents")
-        pipeline.connect("prompt_builder.prompt", "llm.prompt")
-        
-        return pipeline
     
     def run_api(self, query: str) -> Dict[str, Any]:
         """
