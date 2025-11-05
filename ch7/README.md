@@ -1,15 +1,7 @@
-# Hybrid RAG Application
+# Chapter 7 Deploying Haystack-based applications  
 
-A production-ready Hybrid Retrieval-Augmented Generation (RAG) application using Haystack, Elasticsearch, and OpenAI.
-
-## Features
-
-- **Hybrid Retrieval**: Combines BM25 (keyword-based) and embedding-based (semantic) search
-- **FastAPI REST API**: Clean, documented API with health checks and error handling
-- **Elasticsearch Integration**: Scalable document storage and search
-- **OpenAI Integration**: State-of-the-art embeddings and language generation
-- **Docker Support**: Full containerization with Docker Compose
-- **Local Development**: Script-based workflow for easy local development
+ 
+In this chapter you will learn about how to deploy a Haystack retriever pipeline as a REST API Endpoint with FastAPI. This is part I - deploying a retrieval pipeline from a prepopulated document store. [Part II](../ch7-hayhooks/README.md) is an advanced case where you will learn to deploy an indexing and advanced retrieval pipelines that can dynamically upload a PDF and web urls and answer questions about the uploaded material.
 
 ## Quick Start
 

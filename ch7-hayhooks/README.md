@@ -1,6 +1,7 @@
-# Hayhooks MCP - Indexing & Hybrid RAG Deployment
+# Chapter 7 Deploying Haystack-based applications  
 
-This project demonstrates how to deploy Haystack pipelines as REST API services using Hayhooks, providing production-ready endpoints for document indexing and intelligent question answering.
+ 
+In this chapter you will learn about how to deploy multiple Haystack pipelines as REST API services that can interact with one another using Hayhooks, providing production-ready endpoints for document indexing and intelligent question answering. This is Part II in chapter 7, covering an advanced case where you will learn to deploy an indexing and advanced retrieval pipelines that can dynamically upload a PDF and web urls and answer questions about the uploaded material. In [Part I](../ch7/README.md) we learn about a simpler case where we deploy a Haystack pipeline as a REST API using FastAPI and dockerize the application.
 
 
 ## Quick Start
