@@ -38,12 +38,12 @@ jobs:
     - name: Build Docker images
       run: |
         cd ch7
-        docker-compose build --no-cache
+        docker compose build --no-cache
         
     - name: Start services
       run: |
         cd ch7
-        docker-compose up -d
+        docker compose up -d
         
     - name: Wait for Elasticsearch to be healthy
       run: |
@@ -52,7 +52,7 @@ jobs:
         counter=0
         echo "Waiting for Elasticsearch to be healthy..."
         while [ $counter -lt $timeout ]; do
-          if docker-compose exec -T elasticsearch curl -f http://localhost:9200/_cat/health > /dev/null 2>&1; then
+          if docker compose exec -T elasticsearch curl -f http://localhost:9200/_cat/health > /dev/null 2>&1; then
             echo "Elasticsearch is healthy!"
             break
           fi
@@ -63,7 +63,7 @@ jobs:
         
         if [ $counter -ge $timeout ]; then
           echo "Elasticsearch failed to become healthy within $timeout seconds"
-          docker-compose logs elasticsearch
+          docker compose logs elasticsearch
           exit 1
         fi
         
@@ -74,13 +74,13 @@ jobs:
         counter=0
         echo "Waiting for indexing service to complete..."
         while [ $counter -lt $timeout ]; do
-          status=$(docker-compose ps indexing --format "table {{.State}}" | tail -n +2)
+          status=$(docker compose ps indexing --format "table {{.State}}" | tail -n +2)
           if echo "$status" | grep -q "Exited (0)"; then
             echo "Indexing completed successfully!"
             break
           elif echo "$status" | grep -q "Exited"; then
             echo "Indexing failed!"
-            docker-compose logs indexing
+            docker compose logs indexing
             exit 1
           fi
           echo "Waiting for indexing to complete... ($counter/$timeout)"
@@ -90,7 +90,7 @@ jobs:
         
         if [ $counter -ge $timeout ]; then
           echo "Indexing failed to complete within $timeout seconds"
-          docker-compose logs indexing
+          docker compose logs indexing
           exit 1
         fi
         
@@ -112,7 +112,7 @@ jobs:
         
         if [ $counter -ge $timeout ]; then
           echo "API failed to become healthy within $timeout seconds"
-          docker-compose logs api
+          docker compose logs api
           exit 1
         fi
         
@@ -162,17 +162,17 @@ jobs:
       run: |
         cd ch7
         echo "=== Elasticsearch logs ==="
-        docker-compose logs elasticsearch || true
+        docker compose logs elasticsearch || true
         echo "=== Indexing logs ==="
-        docker-compose logs indexing || true
+        docker compose logs indexing || true
         echo "=== API logs ==="
-        docker-compose logs api || true
+        docker compose logs api || true
         echo "=== Docker compose ps ==="
-        docker-compose ps || true
+        docker compose ps || true
         
     - name: Cleanup
       if: always()
       run: |
         cd ch7
-        docker-compose down -v
+        docker compose down -v
         docker system prune -f

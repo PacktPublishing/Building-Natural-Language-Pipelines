@@ -33,6 +33,27 @@ HAYHOOKS_PIPELINES_DIR=./pipelines
 HAYHOOKS_SHOW_TRACEBACKS=true
 ```
 
+## ⚠️ Important: Elasticsearch Credentials
+
+The indexing pipeline is configured to use Elasticsearch with API key authentication. The pipeline expects these environment variables:
+
+- `ELASTIC_API_KEY`: Your Elasticsearch API key (optional, `strict: false` in config)
+- `ELASTIC_API_KEY_ID`: Your Elasticsearch API key ID (optional, `strict: false` in config)
+
+**For local development with basic Elasticsearch (no security)**:
+The current configuration may throw error messages when testing indexing and retrieval using local Elasticsearch instance started via Docker Compose, which runs without authentication. The API key variables are marked as non-strict, so the pipeline will work without them for local development.
+
+**For production or Elasticsearch Cloud**:
+If you're using Elasticsearch Cloud or a secured Elasticsearch instance, add these to your `.env` file:
+
+```bash
+# Elasticsearch API Credentials (for production/cloud)
+ELASTIC_API_KEY=your_elasticsearch_api_key
+ELASTIC_API_KEY_ID=your_elasticsearch_api_key_id
+```
+
+You can generate API keys in Elasticsearch by following the [official documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html).
+
 2. **Start Elasticsearch**
 
 ```bash
@@ -205,6 +226,52 @@ hayhooks-mcp/
 - **Error Handling**: Comprehensive error reporting
 - **Scalable**: Horizontal scaling support
 - **Extensible**: Easy to add new endpoints
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Pipeline Loading Errors
+
+**Error**: `'dict' object has no attribute 'resolve_value'` in DocumentWriter
+- **Cause**: Missing Elasticsearch credentials or configuration issues
+- **Solution**: Ensure Elasticsearch is running and credentials are properly configured (see Elasticsearch Credentials section above)
+
+**Error**: `ModuleNotFoundError: No module named 'nltk'` or similar import errors
+- **Cause**: Missing optional dependencies
+- **Solution**: Install missing packages:
+  ```bash
+  uv add nltk>=3.9.1 lxml_html_clean pypdf>=6.1.3
+  ```
+
+#### 2. Elasticsearch Connection Issues
+
+**Error**: Connection refused to localhost:9200
+- **Solution**: Start Elasticsearch with Docker Compose:
+  ```bash
+  docker-compose up -d elasticsearch
+  ```
+
+#### 3. OpenAI API Issues
+
+**Error**: Invalid API key or authentication errors
+- **Solution**: Verify your OpenAI API key is correctly set in `.env`
+
+### Verifying Setup
+
+Test your pipeline configuration:
+
+```bash
+# Test pipeline loading
+uv run python -c "
+from pathlib import Path
+from haystack import Pipeline
+pipeline_yaml = (Path('pipelines/indexing/indexing.yml')).read_text()
+pipeline = Pipeline.loads(pipeline_yaml)
+print('✓ Pipeline loaded successfully')
+print(f'Components: {list(pipeline.graph.nodes())}')
+"
+```
 
 ## Advanced Usage
 
