@@ -16,62 +16,65 @@ A production-ready Hybrid Retrieval-Augmented Generation (RAG) application using
 ### Local Development (Recommended first)
 
 1. **Setup environment**:
-   ```bash
-   ./scripts/setup_local.sh
-   ```
+```bash
+uv sync
+source .venv/bin/activate
+
+./scripts/setup_local.sh
+```
 
 2. **Configure environment**:
-   ```bash
-   # Edit .env file and add your OpenAI API key
-   cp .env.example .env
-   # Edit .env and set OPENAI_API_KEY=your_actual_key
-   ```
+```bash
+# Edit .env file and add your OpenAI API key
+cp .env.example .env
+# Edit .env and set OPENAI_API_KEY=your_actual_key
+```
 
 3. **Create and start Elasticsearch**:
-   ```bash
-   docker-compose up -d elasticsearch
-   ```
+```bash
+docker-compose up -d elasticsearch
+```
 
 ```bash
-   docker-compose up -d elasticsearch
-   ```
+docker-compose up -d elasticsearch
+```
 
 4. **Run indexing**:
-   ```bash
-   ./scripts/run_indexing.sh
-   ```
+```bash
+./scripts/run_indexing.sh
+```
 
 5. **Start API**:
-   ```bash
-   ./scripts/run_api.sh
-   ```
+```bash
+./scripts/run_api.sh
+```
 
 6. **Test the API**:
-   ```bash
-   uv run python tests/test_api.py
-   ```
+```bash
+uv run python tests/test_api.py
+```
 
 ### Docker Deployment
 
 1. **Configure environment**:
-   ```bash
-   cp .env.example .env
-   # Edit .env and set OPENAI_API_KEY=your_actual_key
-   ```
+```bash
+cp .env.example .env
+# Edit .env and set OPENAI_API_KEY=your_actual_key
+```
 
 2. **Run full stack**:
-   ```bash
-   docker-compose up -d
-   ```
+```bash
+docker-compose up -d
+```
 
 3. **Test**:
-   ```bash
-   # Wait for services to be ready
-   uv run python tests/test_api.py wait
-   
-   # Run tests
-   uv run python tests/test_api.py
-   ```
+```bash
+# Wait for services to be ready
+uv run python tests/test_api.py wait
+
+# Run tests
+uv run python tests/test_api.py
+```
 
 ## API Endpoints
 
