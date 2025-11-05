@@ -84,6 +84,7 @@ uv run python tests/test_api.py
 - **POST /query**: Submit queries to the RAG system
 - **GET /docs**: Interactive API documentation (Swagger UI)
 
+
 ## Project Structure
 
 Project structure can be found [here](./PROJECT_STRUCTURE.md)
