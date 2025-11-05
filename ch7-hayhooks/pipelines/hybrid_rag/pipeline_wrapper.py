@@ -122,18 +122,6 @@ class PipelineWrapper(BasePipelineWrapper):
             }
             
             log.info(f"Running pipeline with inputs: {list(pipeline_inputs.keys())}")
-            
-        #     self.input_mapping = {
-        #     "query": ["text_embedder.text", 
-        #               "bm25_retriever.query",
-        #               "ranker.query",
-        #               "prompt_builder.question"]
-        # }
-
-        #     self.output_mapping = {
-        #         "llm.replies": "replies",
-        #         "ranker.documents": "documents"
-        #     }
 
 
             log.info(f"Running pipeline with inputs: {list(pipeline_inputs.keys())}")

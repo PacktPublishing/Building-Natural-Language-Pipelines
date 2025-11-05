@@ -100,5 +100,4 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Hayhooks Framework**: Multi-pipeline deployment using Haystack's native REST API framework
 - **Pipeline Orchestration**: Managing multiple RAG pipelines (indexing + querying) as microservices
 - **Service Discovery**: Automated API endpoint generation and pipeline management
-- **Production Scaling**: Container-based deployment strategies for enterprise environments
 
