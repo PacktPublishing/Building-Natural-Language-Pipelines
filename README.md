@@ -87,7 +87,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Observability with Weights and Biases**: Implementing monitoring and tracking for RAG system performance comparison and experiment management
 - **Performance Optimization through Feedback Loops**: Creating iterative improvement cycles using evaluation results to enhance retrieval and generation performance
 
-### **[Chapter 7: Production deployment strategies](./ch7/)**
+### **Chapter 7: Production deployment strategies**
 **Deployment & Scaling**
 
 #### **[Deploying a Retriever Pipeline as FastAPI App](./ch7/)**
