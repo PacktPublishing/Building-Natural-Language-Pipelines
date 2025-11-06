@@ -1,9 +1,0 @@
--e .
--r build.in
-ipython
-mypy
-pre-commit
-ruff
-sphinx-autobuild
-types-docutils
-vermin
