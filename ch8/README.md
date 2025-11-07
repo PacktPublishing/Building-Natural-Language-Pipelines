@@ -2,6 +2,11 @@
 
 Exercises for Chapter 8. "Hands-on projects"
 
+
+This notebook uses the Yelp Business Reviews API through RapidAPI:
+- Sign up at: https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews
+- Store your API key in a `.env` file as `RAPID_API_KEY`
+
 ## Mini projects
 
 1. [Perform Named Entity Recognition (NER)](./named-entity-recognition/) - this folder contains two sample applications for NER:
