@@ -1,11 +1,12 @@
 # %%
 from haystack import Pipeline
 from haystack.components.preprocessors import DocumentCleaner
-from haystack.components.websearch import SerperDevWebSearch
+from haystack.components.websearch import SearchApiWebSearch
 from haystack.components.fetchers import LinkContentFetcher
 from haystack.components.converters import HTMLToDocument
 from haystack.components.writers import DocumentWriter
 from haystack import Pipeline
+from haystack.utils import Secret
 from haystack.components.extractors import NamedEntityExtractor
 from haystack import component, Document
 from typing import Any, Dict, List, Union
@@ -79,7 +80,8 @@ class NERPopulator():
 
 # Initialize pipeline
 pipeline = Pipeline()
-web_search = SerperDevWebSearch(top_k=5,
+web_search = SearchApiWebSearch(top_k=5,
+                                api_key=Secret.from_env_var("SEARCH_API_KEY"),
                                 allowed_domains=["https://www.britannica.com/"])
 link_content = LinkContentFetcher(retry_attempts=3,
                                   timeout=10)
@@ -111,10 +113,10 @@ pipeline.connect("cleaner", "extractor")
 pipeline.connect("extractor", "ner")
 
 
-if __name__ == "__main__":
-    query = "Elon Musk"
-    output = pipeline.run(data={"search":{"query":query}})
-    extracted_documents = output['ner']['documents']
+# if __name__ == "__main__":
+#     query = "Elon Musk"
+#     output = pipeline.run(data={"search":{"query":query}})
+#     extracted_documents = output['ner']['documents']
 
 
 
