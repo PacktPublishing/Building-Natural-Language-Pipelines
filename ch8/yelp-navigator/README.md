@@ -95,6 +95,75 @@ This will:
 
 ---
 
+## Pipeline Descriptions
+
+### Pipeline 1: Business Search with NER
+**Purpose**: Extract entities from natural language queries and search for businesses on Yelp.
+
+**Components**:
+- `QueryToDocument`: Converts query string to Haystack Document
+- `NamedEntityExtractor`: Uses NER model to extract locations and keywords
+- `EntityKeywordExtractor`: Processes entities into search parameters
+- `YelpBusinessSearch`: Searches Yelp API with extracted parameters
+
+**Input**: Natural language query (e.g., "best Mexican restaurants in Austin, Texas")
+
+**Output**: JSON with business results including IDs, names, ratings, websites, locations
+
+### Pipeline 2: Business Details Fetcher
+**Purpose**: Fetch detailed business information and website content.
+
+**Components**:
+- `Pipeline1ResultParser`: Extracts business data from Pipeline 1 output
+- `WebsiteURLExtractor`: Extracts website URLs and prepares metadata
+- `LinkContentFetcher`: Fetches website content (Haystack component)
+- `HTMLToDocument`: Converts HTML to Haystack Documents
+- `DocumentCleaner`: Cleans and formats document content
+- `DocumentMetadataEnricher`: Adds business metadata to documents
+
+**Input**: Complete output from Pipeline 1
+
+**Output**: Enriched Haystack Documents with website content and business metadata
+
+### Pipeline 3: Reviews & Sentiment Analysis
+**Purpose**: Fetch business reviews and perform sentiment analysis.
+
+**Components**:
+- `Pipeline1ResultParser`: Extracts business IDs from Pipeline 1 output
+- `YelpReviewsFetcher`: Fetches reviews from Yelp API
+- `BatchSentimentAnalyzer`: Analyzes sentiment using transformer models
+- `ReviewsAggregatorByBusiness`: Aggregates reviews and identifies top/bottom reviews
+
+**Input**: Complete output from Pipeline 1
+
+**Output**: Aggregated documents per business with sentiment distribution and highlighted reviews
+
+### Pipeline 4: Business Report Summarizer
+**Purpose**: Generate comprehensive, AI-powered business reports from any combination of pipeline outputs.
+
+**Components**:
+- `FlexibleInputParser`: Consolidates data from Pipelines 1, 2, and/or 3
+- `BusinessReportGenerator`: Uses OpenAI to generate professional business reports with:
+  - Business overview
+  - Offerings & services (if Pipeline 2 data available)
+  - Customer feedback highlights (if Pipeline 3 data available)
+  - Recommendation summary
+
+**Input**: Flexible - accepts any combination of:
+- `pipeline1_output`: Basic business information
+- `pipeline2_output`: Website content and details (optional)
+- `pipeline3_output`: Review analysis and sentiment (optional)
+
+**Output**: Structured business reports with adaptive depth based on available inputs
+
+**Report Sections**:
+1. **Business Overview**: Location, pricing, establishment type
+2. **Offerings & Services**: Key products/services (requires Pipeline 2)
+3. **Customer Feedback Highlights**: Positive themes, areas of concern, overall sentiment (requires Pipeline 3)
+4. **Recommendation Summary**: Target audience and considerations
+
+---
+
 ## Troubleshooting
 
 ### Import Errors
@@ -178,12 +247,67 @@ Pipeline 4 generates reports with different levels of detail based on available 
 
 ---
 
+## Usage Examples
+
+### Basic Workflow (Single Business)
+
+```bash
+# Step 1: Search for businesses
+curl -X POST http://localhost:1416/business_search/run \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Italian restaurants in San Francisco"}' \
+  > pipeline1_output.json
+
+# Step 2: Generate basic report from search results
+curl -X POST http://localhost:1416/business_summary_review/run \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --slurpfile p1 pipeline1_output.json '{pipeline1_output: $p1[0]}')"
+```
+
+### Enhanced Workflow (With Website Content)
+
+```bash
+# Steps 1-2: Get business details
+curl -X POST http://localhost:1416/business_details/run \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --slurpfile p1 pipeline1_output.json '{pipeline1_output: $p1[0]}')" \
+  > pipeline2_output.json
+
+# Step 3: Generate enhanced report
+curl -X POST http://localhost:1416/business_summary_review/run \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --slurpfile p1 pipeline1_output.json --slurpfile p2 pipeline2_output.json \
+    '{pipeline1_output: $p1[0], pipeline2_output: $p2[0]}')"
+```
+
+### Complete Workflow (With Reviews & Sentiment)
+
+```bash
+# Steps 1-3: Get review analysis
+curl -X POST http://localhost:1416/business_sentiment/run \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --slurpfile p1 pipeline1_output.json '{pipeline1_output: $p1[0]}')" \
+  > pipeline3_output.json
+
+# Step 4: Generate comprehensive report
+curl -X POST http://localhost:1416/business_summary_review/run \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n --slurpfile p1 pipeline1_output.json \
+            --slurpfile p2 pipeline2_output.json \
+            --slurpfile p3 pipeline3_output.json \
+    '{pipeline1_output: $p1[0], pipeline2_output: $p2[0], pipeline3_output: $p3[0]}')"
+```
+
+---
+
 ## Next Steps
 
 After building and deploying the pipelines:
 
-1. **Test the API endpoints** using curl or Postman
-2. **Integrate with LangGraph** for multi-agent orchestration
+1. **Test the API endpoints** using curl or the provided Jupyter notebook (`pipeline_chaining_guide.ipynb`)
+2. **Experiment with Pipeline 4** at different report levels (basic, enhanced, complete)
+3. **Integrate with LangGraph** for multi-agent orchestration
+4. **Customize report templates** in `pipelines/business_summary_review/components.py`
 
 ---
 
