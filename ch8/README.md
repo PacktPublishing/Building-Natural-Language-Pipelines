@@ -2,10 +2,46 @@
 
 Exercises for Chapter 8. "Hands-on projects"
 
+## Setup Instructions
+
+1. **Install [uv](https://github.com/astral-sh/uv):**
+	```sh
+	pip install uv
+	```
+2. **Install dependencies:**
+	```sh
+	uv sync
+	```
+3. **Activate the virtual environment:**
+	```sh
+	source .venv/bin/activate
+	```
+4. **(Recommended) Open this `ch8` folder in a new VS Code window.**
+5. **Select the virtual environment as the Jupyter kernel:**
+	- Open any notebook.
+	- Click the kernel picker (top right) and select the `.venv` environment.
+
+6. **Set up API keys:**
+
+Create a `.env` file in the root directory with your API keys:
+```sh
+OPENAI_API_KEY=your_openai_key_here
+RAPID_API_KEY=your_rapid_api_key_here
+SEARCH_API_KEY=your_search_api_key_here
+```
+
+To obtain the API key:
+- OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
+- Search API key: Sign ut at [Search API](https://www.searchapi.io/)
 
 This notebook uses the Yelp Business Reviews API through RapidAPI:
 - Sign up at: https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews
 - Store your API key in a `.env` file as `RAPID_API_KEY`
+
+
+---
+
+
 
 ## Mini projects
 
