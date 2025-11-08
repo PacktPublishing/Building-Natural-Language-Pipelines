@@ -14,6 +14,7 @@ Author: Laura Funderburk
   - [Chapter 5: Haystack pipeline development with custom components](#chapter-5-haystack-pipeline-development-with-custom-components)
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
+  - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
 
 
 ## What You'll Learn to Build
@@ -100,4 +101,29 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Hayhooks Framework**: Multi-pipeline deployment using Haystack's native REST API framework
 - **Pipeline Orchestration**: Managing multiple RAG pipelines (indexing + querying) as microservices
 - **Service Discovery**: Automated API endpoint generation and pipeline management
+
+### **[Chapter 8: Hands-on projects](./ch8/)**
+**Real-World Applications & Multi-Agent Systems**
+
+Hands-on projects that progress from beginner to advanced complexity, focusing on Named Entity Recognition, Text Classification, and Multi-Agent Systems. Each project includes complete notebooks with custom component definition, pipeline definition, and pipeline serialization.
+
+#### **[Named Entity Recognition (NER) - Beginner](./ch8/named-entity-recognition/)**
+- **Haystack Pipeline Fundamentals**: Building basic pipelines for entity extraction workflows
+- **Pre-trained NER Models**: Using transformer models to identify people, organizations, and locations
+- **Custom Component Creation**: Developing reusable components for text processing
+- **Web Content Processing**: Building pipelines that extract entities from web search results
+
+#### **[Text Classification & Sentiment Analysis - Intermediate](./ch8/text-classification/)**
+- **Zero-Shot Classification**: Categorizing content without training data using LLMs
+- **External API Integration**: Connecting Haystack pipelines with the Yelp API
+- **Model Performance Evaluation**: Assessing classification accuracy on labeled datasets
+- **Sentiment Analysis Pipelines**: Building custom components for analyzing review sentiment
+
+#### **[Yelp Navigator - Multi-Agent System - Advanced](./ch8/yelp-navigator/)**
+- **Pipeline Chaining**: Connecting multiple specialized Haystack pipelines into complex workflows
+- **Hayhooks Deployment**: Deploying pipelines as REST API endpoints for agent consumption
+- **LangGraph Multi-Agent Orchestration**: Building intelligent supervisor systems that coordinate specialized agents
+- **Modular Pipeline Architecture**: Creating 4 specialized pipelines (business search, details, sentiment, reporting)
+- **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
+- **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
 
