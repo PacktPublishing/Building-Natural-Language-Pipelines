@@ -1,0 +1,357 @@
+"""
+Custom components for Pipeline 3: Business Reviews with Sentiment Analysis
+
+This module contains reusable custom components for fetching business reviews
+from Yelp and performing sentiment analysis to identify highest and lowest rated reviews.
+"""
+
+import requests
+from haystack import component, Document
+from haystack.components.routers import TransformersTextRouter
+from typing import List, Dict, Any
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+
+@component
+class Pipeline1ResultParser:
+    """
+    Parses the full Pipeline 1 output to extract business results.
+    
+    This component:
+    1. Accepts the complete Pipeline 1 output dictionary
+    2. Navigates the nested structure to find business results
+    3. Extracts business IDs for downstream processing
+    
+    Input:
+        - pipeline1_output (Dict): Complete output from Pipeline 1
+    
+    Output:
+        - business_ids (List[str]): List of business IDs for review fetching
+    """
+    
+    def __init__(self):
+        """Initialize the component with a logger."""
+        self.logger = logging.getLogger(__name__ + ".Pipeline1ResultParser")
+    
+    @component.output_types(business_ids=List[str])
+    def run(self, pipeline1_output: Dict) -> Dict[str, List[str]]:
+        """
+        Parse Pipeline 1 output to extract business IDs.
+        
+        Args:
+            pipeline1_output: Full output dictionary from Pipeline 1
+                Expected structure: {'result': {'businesses': [...]}}
+            
+        Returns:
+            Dictionary with business_ids key containing list of business IDs
+        """
+        self.logger.info("Parsing Pipeline 1 output")
+        
+        try:
+            # Navigate the nested structure
+            result = pipeline1_output.get('result', {})
+            business_results = result.get('businesses', [])
+            
+            result_count = result.get('result_count', 0)
+            extracted_location = result.get('extracted_location', '')
+            extracted_keywords = result.get('extracted_keywords', [])
+            
+            # Extract business IDs (field name changed from bizId to business_id)
+            business_ids = [business.get('business_id') for business in business_results if business.get('business_id')]
+            
+            self.logger.info(f"Extracted {len(business_ids)} business IDs from Pipeline 1")
+            self.logger.debug(f"Result count: {result_count}, Location: {extracted_location}, Keywords: {extracted_keywords}")
+            self.logger.debug(f"Business IDs: {business_ids}")
+            
+            return {"business_ids": business_ids}
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing Pipeline 1 output: {e}", exc_info=True)
+            return {"business_ids": []}
+
+
+@component
+class YelpReviewsFetcher:
+    """
+    Fetches business reviews from Yelp API and creates Documents.
+    
+    This component:
+    1. Accepts a list of business IDs
+    2. Fetches reviews for each business
+    3. Creates Haystack Documents with review text and metadata
+    4. Returns documents ready for sentiment analysis
+    
+    Input:
+        - business_ids (List[str]): List of Yelp business IDs
+    
+    Output:
+        - documents (List[Document]): Documents containing review text and metadata
+    """
+    
+    def __init__(self, api_key: str, max_reviews_per_business: int = 10):
+        """
+        Initialize the reviews fetcher.
+        
+        Args:
+            api_key: RapidAPI key for Yelp Business Reviews API
+            max_reviews_per_business: Maximum reviews to fetch per business
+        """
+        self.api_key = api_key
+        self.base_url = "https://yelp-business-reviews.p.rapidapi.com/reviews"
+        self.max_reviews = max_reviews_per_business
+        self.headers = {
+            "x-rapidapi-key": self.api_key,
+            "x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
+        }
+        self.logger = logging.getLogger(__name__ + ".YelpReviewsFetcher")
+    
+    @component.output_types(documents=List[Document])
+    def run(self, business_ids: List[str]) -> Dict[str, List[Document]]:
+        """
+        Fetch reviews and create Documents.
+        
+        Args:
+            business_ids: List of business IDs to fetch reviews for
+            
+        Returns:
+            Dictionary with 'documents' key containing review Documents
+        """
+        self.logger.info(f"Fetching reviews for {len(business_ids)} businesses")
+        all_documents = []
+        
+        for biz_id in business_ids:
+            try:
+                # Construct URL with business ID
+                url = f"{self.base_url}/{biz_id}"
+                
+                self.logger.debug(f"Fetching reviews for business: {biz_id}")
+                
+                # Execute API request
+                response = requests.get(url, headers=self.headers)
+                response.raise_for_status()
+                results = response.json()
+                
+                # Extract reviews
+                reviews = results.get('reviews', [])
+                self.logger.info(f"Fetched {len(reviews)} reviews for business {biz_id}")
+                
+                # Create documents for each review (up to max_reviews)
+                for i, review in enumerate(reviews[:self.max_reviews]):
+                    doc = Document(
+                        content=review.get('text', ''),
+                        meta={
+                            "business_id": biz_id,
+                            "review_id": review.get('id', f"{biz_id}_{i}"),
+                            "rating": review.get('rating', 0),
+                            "user_name": review.get('user', {}).get('name', 'Anonymous'),
+                            "review_url": review.get('url', ''),
+                            "time_created": review.get('timeCreated', ''),
+                            "review_index": i
+                        }
+                    )
+                    all_documents.append(doc)
+                    
+            except Exception as e:
+                self.logger.error(f"Error fetching reviews for business {biz_id}: {e}")
+                continue
+        
+        self.logger.info(f"Successfully created {len(all_documents)} review documents")
+        return {"documents": all_documents}
+
+
+@component
+class BatchSentimentAnalyzer:
+    """
+    Analyzes sentiment for multiple review documents in batch.
+    
+    This component wraps the sentiment router to process all documents
+    and add sentiment metadata efficiently.
+    
+    Input:
+        - documents (List[Document]): Review documents to analyze
+    
+    Output:
+        - documents (List[Document]): Documents with sentiment metadata
+    """
+    
+    def __init__(self):
+        """Initialize the batch sentiment analyzer."""
+        self.router = TransformersTextRouter(
+            model="cardiffnlp/twitter-roberta-base-sentiment"
+        )
+        self.router.warm_up()
+        
+        self.sentiment_map = {
+            "LABEL_0": "negative",
+            "LABEL_1": "neutral",
+            "LABEL_2": "positive"
+        }
+        self.logger = logging.getLogger(__name__ + ".BatchSentimentAnalyzer")
+    
+    @component.output_types(documents=List[Document])
+    def run(self, documents: List[Document]) -> Dict[str, List[Document]]:
+        """
+        Analyze sentiment for all documents.
+        
+        Args:
+            documents: List of review documents
+            
+        Returns:
+            Dictionary with sentiment-enriched documents
+        """
+        self.logger.info(f"Analyzing sentiment for {len(documents)} documents")
+        enriched_docs = []
+        
+        for doc in documents:
+            # Run sentiment analysis
+            result = self.router.run(text=doc.content)
+            
+            # Extract the label from the result
+            # The router outputs to different sockets (LABEL_0, LABEL_1, LABEL_2)
+            sentiment_label = None
+            for label in ["LABEL_0", "LABEL_1", "LABEL_2"]:
+                if label in result and result[label]:
+                    sentiment_label = label
+                    break
+            
+            # Map to human-readable sentiment
+            sentiment = self.sentiment_map.get(sentiment_label, "unknown")
+            
+            # Create enriched document
+            enriched_doc = Document(
+                content=doc.content,
+                meta={
+                    **doc.meta,
+                    "sentiment": sentiment,
+                    "sentiment_label": sentiment_label
+                }
+            )
+            enriched_docs.append(enriched_doc)
+        
+        self.logger.info(f"Sentiment analysis complete - enriched {len(enriched_docs)} documents")
+        return {"documents": enriched_docs}
+
+
+@component
+class ReviewsAggregatorByBusiness:
+    """
+    Aggregates reviews by business and identifies top/bottom reviews.
+    
+    This component:
+    1. Groups reviews by business ID
+    2. Identifies highest-rated reviews (high star rating + positive sentiment)
+    3. Identifies lowest-rated reviews (low star rating + negative sentiment)
+    4. Creates summary documents for each business
+    
+    Input:
+        - documents (List[Document]): All review documents with sentiment
+    
+    Output:
+        - documents (List[Document]): One document per business with aggregated review metadata
+    """
+    
+    def __init__(self):
+        """Initialize the aggregator with a logger."""
+        self.logger = logging.getLogger(__name__ + ".ReviewsAggregatorByBusiness")
+    
+    @component.output_types(documents=List[Document])
+    def run(self, documents: List[Document]) -> Dict[str, List[Document]]:
+        """
+        Aggregate reviews by business.
+        
+        Args:
+            documents: List of review documents with sentiment metadata
+            
+        Returns:
+            Dictionary with one document per business containing review summaries
+        """
+        self.logger.info(f"Aggregating {len(documents)} reviews by business")
+        
+        # Group reviews by business_id
+        business_reviews = {}
+        
+        for doc in documents:
+            biz_id = doc.meta.get("business_id", "unknown")
+            
+            if biz_id not in business_reviews:
+                business_reviews[biz_id] = []
+            
+            business_reviews[biz_id].append(doc)
+        
+        self.logger.info(f"Found reviews for {len(business_reviews)} businesses")
+        
+        # Create aggregated documents
+        aggregated_docs = []
+        
+        for biz_id, reviews in business_reviews.items():
+            # Separate by sentiment
+            positive_reviews = [r for r in reviews if r.meta.get("sentiment") == "positive"]
+            negative_reviews = [r for r in reviews if r.meta.get("sentiment") == "negative"]
+            neutral_reviews = [r for r in reviews if r.meta.get("sentiment") == "neutral"]
+            
+            # Find highest-rated reviews (high rating + positive sentiment)
+            highest_rated = sorted(
+                [r for r in positive_reviews if r.meta.get("rating", 0) >= 4],
+                key=lambda x: x.meta.get("rating", 0),
+                reverse=True
+            )[:3]
+            
+            # Find lowest-rated reviews (low rating + negative sentiment)
+            lowest_rated = sorted(
+                [r for r in negative_reviews if r.meta.get("rating", 0) <= 3],
+                key=lambda x: x.meta.get("rating", 0)
+            )[:3]
+            
+            # Create summary content
+            summary_content = f"Business Review Summary (ID: {biz_id}):\n"
+            summary_content += f"Total Reviews: {len(reviews)}\n"
+            summary_content += f"Positive: {len(positive_reviews)}, "
+            summary_content += f"Neutral: {len(neutral_reviews)}, "
+            summary_content += f"Negative: {len(negative_reviews)}"
+            
+            self.logger.debug(f"Business {biz_id}: {len(reviews)} total, "
+                            f"{len(positive_reviews)} positive, "
+                            f"{len(negative_reviews)} negative, "
+                            f"{len(neutral_reviews)} neutral")
+            
+            # Create aggregated document
+            agg_doc = Document(
+                content=summary_content,
+                meta={
+                    "business_id": biz_id,
+                    "total_reviews": len(reviews),
+                    "positive_count": len(positive_reviews),
+                    "neutral_count": len(neutral_reviews),
+                    "negative_count": len(negative_reviews),
+                    "highest_rated_reviews": [
+                        {
+                            "rating": r.meta.get("rating"),
+                            "sentiment": r.meta.get("sentiment"),
+                            "text": r.content,
+                            "user": r.meta.get("user_name"),
+                            "url": r.meta.get("review_url")
+                        }
+                        for r in highest_rated
+                    ],
+                    "lowest_rated_reviews": [
+                        {
+                            "rating": r.meta.get("rating"),
+                            "sentiment": r.meta.get("sentiment"),
+                            "text": r.content,
+                            "user": r.meta.get("user_name"),
+                            "url": r.meta.get("review_url")
+                        }
+                        for r in lowest_rated
+                    ]
+                }
+            )
+            aggregated_docs.append(agg_doc)
+        
+        self.logger.info(f"Created {len(aggregated_docs)} aggregated review documents")
+        return {"documents": aggregated_docs}

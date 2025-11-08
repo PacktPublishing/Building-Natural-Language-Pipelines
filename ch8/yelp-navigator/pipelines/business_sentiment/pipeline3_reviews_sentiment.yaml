@@ -1,0 +1,25 @@
+components:
+  parser:
+    init_parameters: {}
+    type: pipelines.business_sentiment.components.Pipeline1ResultParser
+  reviews_aggregator:
+    init_parameters: {}
+    type: pipelines.business_sentiment.components.ReviewsAggregatorByBusiness
+  reviews_fetcher:
+    init_parameters:
+      api_key: 4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707
+      max_reviews_per_business: 10
+    type: pipelines.business_sentiment.components.YelpReviewsFetcher
+  sentiment_analyzer:
+    init_parameters: {}
+    type: pipelines.business_sentiment.components.BatchSentimentAnalyzer
+connection_type_validation: true
+connections:
+- receiver: reviews_fetcher.business_ids
+  sender: parser.business_ids
+- receiver: sentiment_analyzer.documents
+  sender: reviews_fetcher.documents
+- receiver: reviews_aggregator.documents
+  sender: sentiment_analyzer.documents
+max_runs_per_component: 100
+metadata: {}

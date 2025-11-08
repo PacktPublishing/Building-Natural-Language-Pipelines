@@ -1,0 +1,43 @@
+components:
+  keyword_extractor:
+    init_parameters: {}
+    type: pipelines.business_search.components.EntityKeywordExtractor
+  ner_extractor:
+    init_parameters:
+      backend: HUGGING_FACE
+      device:
+        device: mps
+        type: single
+      model: dslim/bert-base-NER
+      pipeline_kwargs:
+        device: mps
+        model: dslim/bert-base-NER
+        task: ner
+      token:
+        env_vars:
+        - HF_API_TOKEN
+        - HF_TOKEN
+        strict: false
+        type: env_var
+    type: haystack.components.extractors.named_entity_extractor.NamedEntityExtractor
+  query_converter:
+    init_parameters: {}
+    type: pipelines.business_search.components.QueryToDocument
+  yelp_search:
+    init_parameters:
+      api_key: 4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707
+    type: pipelines.business_search.components.YelpBusinessSearch
+connection_type_validation: true
+connections:
+- receiver: ner_extractor.documents
+  sender: query_converter.documents
+- receiver: keyword_extractor.documents
+  sender: ner_extractor.documents
+- receiver: yelp_search.location
+  sender: keyword_extractor.location
+- receiver: yelp_search.keywords
+  sender: keyword_extractor.keywords
+- receiver: yelp_search.original_query
+  sender: keyword_extractor.original_query
+max_runs_per_component: 100
+metadata: {}

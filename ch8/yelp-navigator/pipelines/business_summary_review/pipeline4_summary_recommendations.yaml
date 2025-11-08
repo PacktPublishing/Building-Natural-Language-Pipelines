@@ -1,0 +1,15 @@
+components:
+  input_parser:
+    init_parameters: {}
+    type: pipelines.business_summary_review.components.FlexibleInputParser
+  report_generator:
+    init_parameters: {}
+    type: pipelines.business_summary_review.components.BusinessReportGenerator
+connection_type_validation: true
+connections:
+- receiver: report_generator.business_data
+  sender: input_parser.business_data
+- receiver: report_generator.depth_level
+  sender: input_parser.depth_level
+max_runs_per_component: 100
+metadata: {}
