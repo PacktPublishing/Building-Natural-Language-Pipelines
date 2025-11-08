@@ -19,7 +19,7 @@ Author: Laura Funderburk
 
 ## What You'll Learn to Build
 
-This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** with evaluation using the [Haystack 2.0](https://haystack.deepset.ai/), [Ragas](https://docs.ragas.io/en/stable/) and [LangGraph](https://www.langchain.com/langgraph) frameworks. Starting with NLP fundamentals, you'll progress through creating intelligent search systems, custom components, and production-ready applications. The journey culminates in deploying scalable RAG solutions with proper evaluation frameworks, containerized deployments, and real-world projects including financial document analysis, legal chatbots, and text classification systems.
+This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** systems and **multi-agent applications** using the [Haystack 2.0](https://haystack.deepset.ai/), [Ragas](https://docs.ragas.io/en/stable/) and [LangGraph](https://www.langchain.com/langgraph) frameworks. Starting with NLP fundamentals and Haystack's component architecture, you'll progress through creating intelligent search systems with semantic and hybrid retrieval, building custom components for specialized tasks, and implementing comprehensive evaluation frameworks. The journey advances through production deployment strategies with Docker and REST APIs, culminating in hands-on projects including named entity recognition systems, zero-shot text classification pipelines, sentiment analysis tools, and sophisticated multi-agent orchestration systems that coordinate multiple specialized Haystack pipelines through LangGraph supervisors.
 
 ## Setting up
 
@@ -105,7 +105,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 ### **[Chapter 8: Hands-on projects](./ch8/)**
 **Real-World Applications & Multi-Agent Systems**
 
-Hands-on projects that progress from beginner to advanced complexity, focusing on Named Entity Recognition, Text Classification, and Multi-Agent Systems. Each project includes complete notebooks with custom component definition, pipeline definition, and pipeline serialization.
+Hands-on projects that progress from beginner to advanced complexity, focusing on Named Entity Recognition, Text Classification, and Multi-Agent Systems. Projects includes complete notebooks with custom component definition, pipeline definition, and pipeline serialization.
 
 #### **[Named Entity Recognition (NER) - Beginner](./ch8/named-entity-recognition/)**
 - **Haystack Pipeline Fundamentals**: Building basic pipelines for entity extraction workflows
