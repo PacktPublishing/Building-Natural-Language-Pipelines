@@ -32,6 +32,7 @@ These multi-agent pipeline systems are valuable for:
 | Guide | Link | Description |
 |---|---|---|
 | **Pipeline Setup Guide** | [yelp-navigator-hayhooks-guide.md](./yelp-navigator-hayhooks-guide.md) | Complete setup instructions for building and deploying Haystack pipelines with Hayhooks |
+| **API Swagger Documentation** | [Deployed Endpoint Documentation](./Hayhooks%20-%20Swagger%20UI.pdf) | Check the docs of our deployed Haystack pipelines through Hayhooks
 | **LangGraph Multi-Agent Guide** | [langgraph-yelp-multi-agent.md](./langgraph-yelp-multi-agent.md) | Step-by-step guide for running the multi-agent supervisor system |
 | **Troubleshooting** | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common issues and solutions for API keys and pipeline connectivity |
 
