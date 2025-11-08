@@ -1,222 +1,204 @@
-This is a multi-agent architecture that allows me to obtain business reviews using the RapidAPI service
+# Yelp Navigator - Pipeline Setup Guide
 
-URL: https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews
+This guide provides step-by-step instructions for building and serializing the Haystack pipelines used in the Yelp Navigator multi-agent architecture.
 
-# Strategy
+## Project Structure
 
-Use an inmemory document store for this process.
-
-Develop one Haystack pipeline as specified below - store each pipeline in a jupyter notebook under `yelp-navigator`
-
-### Pipeline 1: lets a user or LangGraph agent ask a natural language question searching for businesses and a desired outcome ("best restaurants in town for Mexican food"). The pipeline will use an NER component as seen in named-entity-recognition to extract entities, locations, and use those entities as the keywords. The pipeline returns the key words necessary to populate and execute a query on endpoint SEARCH BUSINESS. The pipeline returns a JSON object with the results found executing that query. Critical information is the business ID and business alias.
-
-### Pipeline 2: let's a user or LangGraph agent get further details about one or more businesses using the output from Pipeline 1 to execute the GET BUSINESS DETAILS endpoint. Uses business ID and business alias to complete query. The pipeline contains a LinkContentFetcher and HTML to Document components to get the website information and stores that information in the form of Haystack documents. It returns Haystack Documents with metadata containing the price range, latitute and longitude, and website. 
-
-## Pipeline 3: let's a user or LangGraph agent get further information about reviews from one or more businesses using the output from Pipeline 1 to execute the GET BUSINESS REVIEWS endpoint. It uses the reviews endpoints and the components used in the pipeline `text-classification/sentiment_analysis.ipynb` to classify the lowest rated and highest rated reviews, it returns a series of Haystack documents with enhanced metadata containing the reviews. One enhanced metadata blob per business. 
-
-## Pipeline 4: lets a user or LangGraph agent obtain a summary, identify key themes and provide a recommendation based on the user request. It will take the Haystack documents from pipeline 3 to form its opinion. 
-
-## Pipeline 5: interacts with the user and asks clarifying questions: it's main objective is to identify a LOCATION and relevant KEY WORDS. 
-
-# ENDPOINTS
-
-## SEARCH BUSINESS: GET BUSINESS ID AND INFORMATION USING LOCATION AND QUERY
-
-Query Params
-
-page
-(optional)
-Number
-Search result page to retrieve, e.g. 3.
-
-Minimum: 1
-location
-*
-Madison, WI
-String
-Location to search in, e.g. Madison, WI.
-
-sortBy
-(optional)
-String
-Search result ordering.
-
-query
-*
-Cheese Curds
-String
-Query string to search for, e.g. Cheese Curds.
-
-### SAMPLE USAGE
-
-```python
-import requests
-
-url = "https://yelp-business-reviews.p.rapidapi.com/search"
-
-querystring = {"location":"Madison, WI","query":"Cheese Curds"}
-
-headers = {
-	"x-rapidapi-key": "4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707",
-	"x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
-}
-
-response = requests.get(url, headers=headers, params=querystring)
-
-print(response.json())
+```
+yelp-navigator/
+├── pipelines/
+│   ├── business_search/        # Pipeline 1: Business Search with NER
+│   │   ├── __init__.py
+│   │   ├── components.py
+│   │   ├── build_pipeline.py
+│   │   └── pipeline_wrapper.py
+│   ├── business_details/       # Pipeline 2: Business Details with Website Content
+│   │   ├── __init__.py
+│   │   ├── components.py
+│   │   ├── build_pipeline.py
+│   │   └── pipeline_wrapper.py
+│   ├── business_sentiment/     # Pipeline 3: Reviews with Sentiment Analysis
+│   │   ├── __init__.py
+│   │   ├── components.py
+│   │   ├── build_pipeline.py
+│   │   └── pipeline_wrapper.py
+│   └── business_summary_review/ # Pipeline 4: Business Report Summarizer
+│       ├── __init__.py
+│       ├── components.py
+│       ├── build_pipeline.py
+│       └── pipeline_wrapper.py
+├── .env                        # Environment variables (API keys)
+└── README.md                   # This file
 ```
 
-### YIELDS
+## Prerequisites
+
+### Environment Setup
+
+Create a `.env` file in the `yelp-navigator` directory with your API keys:
 
 ```bash
-HTTP/1.1 200 OK
-access-control-allow-credentials: true
-access-control-allow-origin: *
-content-length: 4479
-content-type: application/json
-date: Fri, 07 Nov 2025 21:09:13 GMT
-server: RapidAPI-1.2.8
-vary: Accept-Encoding
-x-rapidapi-region: AWS - us-west-2
-x-rapidapi-request-id: 88f1bfa503bfa7df176abf189c662cdb854c3625b1673ec5a81612deab0b5786
-x-rapidapi-version: 1.2.8
-x-ratelimit-rapid-free-plans-hard-limit-limit: 500000
-x-ratelimit-rapid-free-plans-hard-limit-remaining: 499991
-x-ratelimit-rapid-free-plans-hard-limit-reset: 1046073
-x-ratelimit-requests-limit: 50
-x-ratelimit-requests-remaining: 41
-x-ratelimit-requests-reset: 1046073
-{"resultCount":240,"currentPage":1,"totalPages":24,"location":{"city":"Madison, WI"},"results":[{"bizId":"RJNAeNA-209sctUO0dmwuA","name":"The Old Fashioned","alias":"the-old-fashioned-madison","serviceArea":null,"lat":43.07618625,"lon":-89.38375722,"rating":4.1,"reviewCount":2505,"categories":["American","Breakfast & Brunch","Beer Bars"],"services":[],"businessHighlights":[],"priceRange":"$$","phone":"(608) 310-4545","website":"http://theoldfashioned.com/","images":["https://s3-media0.fl.yelpcdn.com/bphoto/n1imsZpO7rNv0aueEL52EQ/348s.jpg"]},{"bizId":"RlulW-HxTuUVk8wSspNXIw","name":"Wisconsin Cheese Mart","alias":"wisconsin-cheese-mart-madison","serviceArea":null,"lat":43.074266,"lon":-89.3873044,"rating":4.2,"reviewCount":25,"categories":["Cheese Shops"],"services":[],"businessHighlights":[],"priceRange":null,"phone":"(414) 272-3544","website":"http://www.wisconsincheesemart.com","images":["https://s3-media0.fl.yelpcdn.com/bphoto/sf4do00IngALCYwkPXu_6Q/348s.jpg"]},
-```
-----
-
-
-## GET BUSINESS DETAILS
-Query Params
-
-business_aliases
-(optional)
-the-old-fashioned-madison,the-great-dane-pub-and-brewing-company-madison
-String
-Comma-separated business aliases
-
-business_ids
-(optional)
-RJNAeNA-209sctUO0dmwuA,EgtyW19V-64c6PmRuvzSEA
-String
-Comma-separated business IDs
-
-
-### SAMPLE USAGE 
-```python
-
-import requests
-
-url = "https://yelp-business-reviews.p.rapidapi.com/details"
-
-querystring = {"business_aliases":"the-old-fashioned-madison,the-great-dane-pub-and-brewing-company-madison","business_ids":"RJNAeNA-209sctUO0dmwuA,EgtyW19V-64c6PmRuvzSEA"}
-
-headers = {
-	"x-rapidapi-key": "4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707",
-	"x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
-}
-
-response = requests.get(url, headers=headers, params=querystring)
-
-print(response.json())
+# yelp-navigator/.env
+RAPID_API_KEY=your_rapidapi_key_here
+OPENAI_API_KEY=your_openai_key_here  # Only needed for Pipeline 1
 ```
 
-### YIELDS
+### Build pipelines
+
+Execute 
 
 ```bash
-HTTP/1.1 200 OK
-access-control-allow-credentials: true
-access-control-allow-origin: *
-content-length: 4479
-content-type: application/json
-date: Fri, 07 Nov 2025 21:09:13 GMT
-server: RapidAPI-1.2.8
-vary: Accept-Encoding
-x-rapidapi-region: AWS - us-west-2
-x-rapidapi-request-id: 88f1bfa503bfa7df176abf189c662cdb854c3625b1673ec5a81612deab0b5786
-x-rapidapi-version: 1.2.8
-x-ratelimit-rapid-free-plans-hard-limit-limit: 500000
-x-ratelimit-rapid-free-plans-hard-limit-remaining: 499991
-x-ratelimit-rapid-free-plans-hard-limit-reset: 1046073
-x-ratelimit-requests-limit: 50
-x-ratelimit-requests-remaining: 41
-x-ratelimit-requests-reset: 1046073
-{"resultCount":240,"currentPage":1,"totalPages":24,"location":{"city":"Madison, WI"},"results":[{"bizId":"RJNAeNA-209sctUO0dmwuA","name":"The Old Fashioned","alias":"the-old-fashioned-madison","serviceArea":null,"lat":43.07618625,"lon":-89.38375722,"rating":4.1,"reviewCount":2505,"categories":["American","Breakfast & Brunch","Beer Bars"],"services":[],"businessHighlights":[],"priceRange":"$$","phone":"(608) 310-4545","website":"http://theoldfashioned.com/","images":["https://s3-media0.fl.yelpcdn.com/bphoto/n1imsZpO7rNv0aueEL52EQ/348s.jpg"]},{"bizId":"RlulW-HxTuUVk8wSspNXIw","name":"Wisconsin Cheese Mart","alias":"wisconsin-cheese-mart-madison","serviceArea":null,"lat":43.074266,"lon":-89.3873044,"rating":4.2,"reviewCount":25,"categories":["Cheese Shops"],"services":[],"businessHighlights":[],"priceRange":null,"phone":"(414) 272-3544","website":"http://www.wisconsincheesemart.com","images":["https://s3-media0.fl.yelpcdn.com/bphoto/sf4do00IngALCYwkPXu_6Q/348s.jpg"]},
+chmod +x build_all_pipelines.sh
+./build_all_pipelines.sh
 ```
 
-----
-## GET BUSINESS REVIEWS
-Query Params
+### Deploying with Hayhooks
 
-query
-(optional)
-String
-Text query to filter reviews by, e.g. friendly.
+Once you've built and serialized the pipelines, you can deploy them with Hayhooks:
 
-page
-(optional)
-Number
-Review page to retrieve, e.g. 3.
+### Start Hayhooks Server
 
-Minimum: 1
-sortBy
-(optional)
-String
-Review ordering, e.g. newest.
-
-language
-(optional)
-String
-Review language as ISO 639-1 code, e.g. en.
-
-Path Params
-
-bizId
-*
-RJNAeNA-209sctUO0dmwuA
-String
-Business ID, e.g. RJNAeNA-209sctUO0dmwuA
-
-### SAMPLE USAGE
-
-```python
-import requests
-
-url = "https://yelp-business-reviews.p.rapidapi.com/reviews/RJNAeNA-209sctUO0dmwuA"
-
-headers = {
-	"x-rapidapi-key": "4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707",
-	"x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
-}
-
-response = requests.get(url, headers=headers)
-
-print(response.json())
-```
-
-### YIELDS
 ```bash
-HTTP/1.1 200 OK
-access-control-allow-credentials: true
-access-control-allow-origin: *
-content-length: 4479
-content-type: application/json
-date: Fri, 07 Nov 2025 21:09:13 GMT
-server: RapidAPI-1.2.8
-vary: Accept-Encoding
-x-rapidapi-region: AWS - us-west-2
-x-rapidapi-request-id: 88f1bfa503bfa7df176abf189c662cdb854c3625b1673ec5a81612deab0b5786
-x-rapidapi-version: 1.2.8
-x-ratelimit-rapid-free-plans-hard-limit-limit: 500000
-x-ratelimit-rapid-free-plans-hard-limit-remaining: 499991
-x-ratelimit-rapid-free-plans-hard-limit-reset: 1046073
-x-ratelimit-requests-limit: 50
-x-ratelimit-requests-remaining: 41
-x-ratelimit-requests-reset: 1046073
-{"resultCount":240,"currentPage":1,"totalPages":24,"location":{"city":"Madison, WI"},"results":[{"bizId":"RJNAeNA-209sctUO0dmwuA","name":"The Old Fashioned","alias":"the-old-fashioned-madison","serviceArea":null,"lat":43.07618625,"lon":-89.38375722,"rating":4.1,"reviewCount":2505,"categories":["American","Breakfast & Brunch","Beer Bars"],"services":[],"businessHighlights":[],"priceRange":"$$","phone":"(608) 310-4545","website":"http://theoldfashioned.com/","images":["https://s3-media0.fl.yelpcdn.com/bphoto/n1imsZpO7rNv0aueEL52EQ/348s.jpg"]},{"bizId":"RlulW-HxTuUVk8wSspNXIw","name":"Wisconsin Cheese Mart","alias":"wisconsin-cheese-mart-madison","serviceArea":null,"lat":43.074266,"lon":-89.3873044,"rating":4.2,"reviewCount":25,"categories":["Cheese Shops"],"services":[],"businessHighlights":[],"priceRange":null,"phone":"(414) 272-3544","website":"http://www.wisconsincheesemart.com","images":["https://s3-media0.fl.yelpcdn.com/bphoto/sf4do00IngALCYwkPXu_6Q/348s.jpg"]},
+# From the yelp-navigator directory
+hayhooks run --pipelines-dir pipelines
 ```
+
+This will:
+- Scan all subdirectories in `pipelines/`
+- Load `pipeline_wrapper.py` from each directory
+- Expose API endpoints for each pipeline
+
+### Access the Pipelines
+
+**Pipeline 1 - Business Search**:
+- Endpoint: `http://localhost:1416/business_search`
+- Method: POST
+- Body: `{"query": "cheese shops in Madison"}`
+
+**Pipeline 2 - Business Details**:
+- Endpoint: `http://localhost:1416/business_details`
+- Method: POST
+- Body: `{"pipeline1_output": {...}}`
+
+**Pipeline 3 - Reviews Sentiment**:
+- Endpoint: `http://localhost:1416/business_sentiment`
+- Method: POST
+- Body: `{"pipeline1_output": {...}}`
+
+**Pipeline 4 - Business Report Summarizer**:
+- Endpoint: `http://localhost:1416/business_summary_review`
+- Method: POST
+- Body: Flexible - accepts any combination of pipeline outputs:
+  - Basic: `{"pipeline1_output": {...}}`
+  - With website: `{"pipeline1_output": {...}, "pipeline2_output": {...}}`
+  - Complete: `{"pipeline1_output": {...}, "pipeline2_output": {...}, "pipeline3_output": {...}}`
+
+---
+
+## Troubleshooting
+
+### Import Errors
+
+If you encounter import errors when running the build scripts:
+
+```bash
+# Make sure you're running from the correct directory
+cd yelp-navigator/pipelines/business_search  # or business_details, business_sentiment
+python build_pipeline.py
+```
+
+### Missing API Keys
+
+If you get authentication errors:
+
+1. Check that `.env` file exists in `yelp-navigator/` directory
+2. Verify `RAPID_API_KEY` is set correctly
+3. Ensure the path to `.env` in build scripts is correct (`../../.env`)
+
+### Model Download Issues
+
+If transformer models fail to download:
+
+1. Check your internet connection
+2. Ensure you have sufficient disk space
+3. Models are cached in `~/.cache/huggingface/`
+
+### Pipeline Serialization Fails
+
+If YAML serialization fails:
+
+1. Ensure all custom components are properly decorated with `@component`
+2. Check that all component connections are valid
+3. Verify component output types match input types
+
+---
+
+## Pipeline Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ User Query: "cheese shops in Madison"                          │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Pipeline 1: Business Search with NER                           │
+│ - Extracts entities (location, keywords)                       │
+│ - Searches Yelp API                                            │
+│ - Returns business results with IDs, names, websites, etc.     │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ├──────────────────────┐
+                           ▼                      ▼
+┌─────────────────────────────────────┐  ┌─────────────────────────┐
+│ Pipeline 2: Business Details        │  │ Pipeline 3: Reviews &   │
+│ - Fetches website content           │  │   Sentiment Analysis    │
+│ - Creates enriched documents        │  │ - Fetches reviews       │
+│ - Returns docs with metadata        │  │ - Analyzes sentiment    │
+└──────────────────┬──────────────────┘  │ - Identifies top/worst  │
+                   │                      └───────────┬─────────────┘
+                   │                                  │
+                   └──────────────┬───────────────────┘
+                                  ▼
+                   ┌──────────────────────────────────┐
+                   │ Pipeline 4: Report Generator     │
+                   │ - Consolidates all information   │
+                   │ - Generates comprehensive reports│
+                   │ - Flexible depth based on inputs │
+                   └──────────────────────────────────┘
+```
+
+### Pipeline 4 Report Levels
+
+Pipeline 4 generates reports with different levels of detail based on available inputs:
+
+- **Level 1 (Basic)**: Pipeline 1 only → Business overview with basic info
+- **Level 2 (Enhanced)**: Pipelines 1+2 → Adds website content and offerings
+- **Level 3 (Complete)**: Pipelines 1+2+3 → Full report with customer feedback and sentiment analysis
+
+---
+
+## Next Steps
+
+After building and deploying the pipelines:
+
+1. **Test the API endpoints** using curl or Postman
+2. **Integrate with LangGraph** for multi-agent orchestration
+
+---
+
+## Additional Resources
+
+- **Haystack Documentation**: https://docs.haystack.deepset.ai/
+- **Hayhooks Documentation**: https://docs.haystack.deepset.ai/docs/hayhooks
+- **RapidAPI Yelp Business Reviews**: https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews
+
+---
+
+## Support
+
+For issues or questions:
+1. Check the troubleshooting section above
+2. Review component implementations in `components.py` files
+3. Verify pipeline connections in `build_pipeline.py` files
+4. Test individual components before running full pipeline
