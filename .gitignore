@@ -194,3 +194,4 @@ ch6/adding-observability/wandb/*
 ch6/adding-evaluation/wandb/*
 .pdf
 *.txt
+ch8/named-entity-recognition/ner_results/*.csv
