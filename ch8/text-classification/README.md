@@ -12,7 +12,6 @@ The primary goal of these resources is to teach you how to:
 4. **Evaluate Classification Performance**: Use metrics, confusion matrices, and classification reports to assess model accuracy
 5. **Create Custom Components**: Develop specialized components for data fetching, enrichment, and classification workflows
 6. **Handle Multi-Category Classification**: Build systems that organize content across multiple predefined categories
-
 ## Use Cases
 
 These text classification pipelines are valuable for:
@@ -41,8 +40,35 @@ These text classification pipelines are valuable for:
 | [classification_model_used_df_file.csv](./classification_model_used_df_file.csv) | Dataset with 2,225 pre-labeled documents across 5 categories for evaluation |
 | [df_file.csv](./df_file.csv) | Additional classification dataset |
 | `images/` | Visualization assets including confusion matrices and pipeline diagrams |
+| `haystack-agents-mini-project/` | Hands-on exercise combining classification and NER with agent-based orchestration |
 
 ---
+
+### Folder challenge
+
+The **haystack-agents-mini-project** folder contains a comprehensive hands-on exercise (~3 hours) that teaches you to build agent-orchestrated pipelines combining text classification and named entity recognition (NER). This mini-project is designed as a capstone exercise that brings together multiple concepts from the chapter.
+
+**What You'll Build:**
+- **EntityExtractor Component**: Custom NER component that extracts and filters entities (persons, organizations, locations) from text
+- **Three Specialized Pipelines**: 
+  - Classification pipeline (web search → classification)
+  - NER extraction pipeline (web search → entity extraction)
+  - Combined pipeline (web search → classification + entity extraction)
+- **SuperComponents**: Simplified pipeline wrappers with clean interfaces for tool integration
+- **Agent System**: Natural language agent that intelligently routes queries to the appropriate pipeline using tool calling
+- **REST API Deployment**: Serialize pipelines and deploy via Hayhooks for production-ready endpoints
+
+**Key Learning Outcomes:**
+- Building custom components with complex logic
+- Creating modular, reusable pipeline architectures
+- Wrapping pipelines as agent tools
+- Agent-based orchestration with natural language queries
+- Pipeline serialization and deployment patterns
+- Testing and debugging multi-component systems
+
+The exercise includes a detailed Jupyter notebook ([classification-ner-agent-exercise.ipynb](./haystack-agents-mini-project/classification-ner-agent-exercise.ipynb)), comprehensive hints (HINTS.md), and a complete project structure with separate folders for classification and NER pipelines. This is an ideal project for practicing real-world pipeline development and deployment workflows.
+
+
 
 ## Pipeline Architectures
 
