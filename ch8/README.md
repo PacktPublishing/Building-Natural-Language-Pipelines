@@ -47,6 +47,7 @@ SEARCH_API_KEY=your_search_api_key_here
 To obtain the API key:
 - OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
 - Search API key: Sign ut at [Search API](https://www.searchapi.io/)
+- Rapid API key: Sign up at [Rapid API Yelp Business Review API](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
 
 This notebook uses the Yelp Business Reviews API through RapidAPI:
 - Sign up at: https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews

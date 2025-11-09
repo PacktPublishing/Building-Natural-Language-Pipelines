@@ -2,6 +2,18 @@
 
 This folder contains resources for building an advanced multi-agent orchestration system using LangGraph and Haystack pipelines. The system coordinates specialized agents to search for businesses, fetch details, analyze reviews, and generate comprehensive reports.
 
+## Table of Contents
+
+- [Main Objective](#main-objective)
+- [Use Cases](#use-cases)
+- [Getting Started](#getting-started)
+- [Architecture Overview](#architecture-overview)
+- [Contents](#contents)
+- [Key Features](#key-features)
+- [Support](#support)
+
+---
+
 ## Main Objective
 
 The primary goal of these resources is to teach you how to:
@@ -25,33 +37,25 @@ These multi-agent pipeline systems are valuable for:
 
 ---
 
-## Contents
+## Getting Started
 
-### Guides
+### Prerequisites
 
-| Guide | Link | Description |
-|---|---|---|
-| **Pipeline Setup Guide** | [yelp-navigator-hayhooks-guide.md](./yelp-navigator-hayhooks-guide.md) | Complete setup instructions for building and deploying Haystack pipelines with Hayhooks |
-| **API Swagger Documentation** | [Deployed Endpoint Documentation](./Hayhooks%20-%20Swagger%20UI.pdf) | Check the docs of our deployed Haystack pipelines through Hayhooks
-| **LangGraph Multi-Agent Guide** | [langgraph-yelp-multi-agent.md](./langgraph-yelp-multi-agent.md) | Step-by-step guide for running the multi-agent supervisor system |
-| **Troubleshooting** | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common issues and solutions for API keys and pipeline connectivity |
+Complete the [setup instructions](../README.md#setup-instructions)
 
-### Notebooks
+### Quick Start
 
-| Notebook | Link | Description |
-|---|---|---|
-| **Pipeline Chaining** | [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb) | Tutorial on making POST calls to deployed Haystack pipelines together for complex workflows |
-| **LangGraph Supervisor** | [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb) | Multi-agent system with supervisor pattern for intelligent task delegation that uses deployed Haystack pipelines |
+**Option 1: Pipeline Chaining (Intermediate)**
+1. Deploy pipelines: `sh build_all_pipelines.sh && uv run hayhooks run --pipelines-dir pipelines`
+2. Open: [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb)
+3. Learn to chain Haystack pipeline API calls
 
+**Option 2: Multi-Agent System (Advanced)**
+1. Deploy pipelines (same as above)
+2. Open: [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb)
+3. Run the full multi-agent orchestration system
 
-### Pipeline Modules
-
-| Pipeline | Directory | Purpose |
-|---|---|---|
-| **Pipeline 1** | [pipelines/business_search/](./pipelines/business_search/) | Business search with NER entity extraction |
-| **Pipeline 2** | [pipelines/business_details/](./pipelines/business_details/) | Fetch and process business website content |
-| **Pipeline 3** | [pipelines/business_sentiment/](./pipelines/business_sentiment/) | Review fetching and sentiment analysis |
-| **Pipeline 4** | [pipelines/business_summary_review/](./pipelines/business_summary_review/) | Generate comprehensive business reports |
+📖 **Detailed guides**: See [Contents](#contents) section below
 
 ---
 
@@ -91,42 +95,32 @@ Search Agent (Pipeline 1) - always runs
 
 ---
 
-## Getting Started
+## Contents
 
-### Quick Start (3 Steps)
+### 📚 Guides
 
-1. **Setup environment**:
-```bash
-uv sync
-source .venv/bin/activate
-```
+| Resource | Description |
+|---|---|
+| [**Pipeline Setup Guide**](./yelp-navigator-hayhooks-guide.md) | Complete setup for building and deploying Haystack pipelines with Hayhooks |
+| [**LangGraph Multi-Agent Guide**](./langgraph-yelp-multi-agent.md) | Step-by-step guide for running the multi-agent supervisor system |
+| [**API Documentation**](./Hayhooks%20-%20Swagger%20UI.pdf) | Swagger UI docs for deployed Haystack pipeline endpoints |
+| [**Troubleshooting**](./TROUBLESHOOTING.md) | Common issues and solutions for API keys and connectivity |
 
-2. **Configure API keys** - Add to `.env` file:
-   ```bash
-   OPENAI_API_KEY=your_key_here
-   RAPID_API_KEY=your_key_here
-   ```
+### 📓 Notebooks
 
+| Notebook | Level | Description |
+|---|---|---|
+| [**pipeline_chaining_guide.ipynb**](./pipeline_chaining_guide.ipynb) | Intermediate | Tutorial on chaining deployed Haystack pipelines with POST calls |
+| [**langgraph_multiagent_supervisor.ipynb**](./langgraph_multiagent_supervisor.ipynb) | Advanced | Multi-agent system with supervisor pattern using deployed pipelines |
 
-3. **Set up pipelines** - Follow [yelp-navigator-hayhooks-guide.md](./yelp-navigator-hayhooks-guide.md)
-   ```bash
-   sh build_all_pipelines.sh
-   uv run hayhooks run --pipelines-dir pipelines
-   ```
+### 🔧 Pipeline Modules
 
-4. **Run the multi-agent system** - Follow [LANGGRAPH_GUIDE.md](./langgraph-yelp-multi-agent.md)
-   ```bash
-   jupyter notebook langgraph_multiagent_supervisor.ipynb
-   ```
-
----
-
-## Prerequisites
-
-- Python 3.9+
-- OpenAI API key (for LLM operations)
-- RapidAPI key with Yelp Business Reviews subscription
-- LangGraph and LangChain packages
+| Pipeline | Purpose |
+|---|---|
+| [**business_search/**](./pipelines/business_search/) | Business search with NER entity extraction |
+| [**business_details/**](./pipelines/business_details/) | Fetch and process business website content |
+| [**business_sentiment/**](./pipelines/business_sentiment/) | Review fetching and sentiment analysis |
+| [**business_summary_review/**](./pipelines/business_summary_review/) | Generate comprehensive business reports |
 
 ---
 
@@ -139,14 +133,6 @@ source .venv/bin/activate
 - **Fallback Mechanisms**: Handles ambiguous queries and prevents infinite loops
 - **Flexible Report Generation**: Adapts output depth based on available data
 - **Production-Ready**: Includes error handling, logging, and configuration management
-
----
-
-## Learn More
-
-- Start with the **Pipeline Setup Guide** to build and deploy the Haystack pipelines
-- Then explore the **LangGraph Multi-Agent Guide** to see agent orchestration in action
-- Check **Pipeline Chaining Guide** notebook for in-depth pipeline integration examples
 
 ---
 
