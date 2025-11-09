@@ -68,7 +68,7 @@ Learn the fundamentals of building Haystack pipelines by extracting named entiti
 
 **Projects:**
 - [Extracting entities from a dataset](./named-entity-recognition/ner-with-haystack-search-pipeline.ipynb) - Stand-alone component usage
-- [Web search + NER pipeline](./named-entity-recognition/ner-with-haystack-search-pipeline.ipynb) - Pipeline with custom components
+- [Web search + NER pipeline with an Agent](./named-entity-recognition/ner-with-haystack-search-pipeline.ipynb) - Pipeline with custom components, supercomponent definition, and single-agent capabilities.
 
 ---
 
@@ -87,6 +87,7 @@ Build on pipeline basics by implementing classification systems that categorize 
 - [Zero-shot text classification](./text-classification/text-classification.ipynb) - Evaluate classification on labeled datasets
 - [Web-based news classification](./text-classification/classification-with-haystack-search-pipeline.ipynb) - Classify articles from web searches
 - [Yelp review sentiment analysis](./text-classification/sentiment_analysis.ipynb) - Custom components for sentiment analysis
+- [Mini challenge](./text-classification/haystack-agents-mini-project/) - Combine NER, text classification through your own custom components. Package, serialize and expose pipelines as REST endpoints. Add agentic capabilities with the Haystack API. **It is strongly recommended you complete this project before advancing to the final challenge**
 
 ---
 
