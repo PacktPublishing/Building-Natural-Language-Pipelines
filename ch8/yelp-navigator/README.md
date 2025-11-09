@@ -114,7 +114,7 @@ source .venv/bin/activate
    uv run hayhooks run --pipelines-dir pipelines
    ```
 
-4. **Run the multi-agent system** - Follow [LANGGRAPH_GUIDE.md](./LANGGRAPH_GUIDE.md)
+4. **Run the multi-agent system** - Follow [LANGGRAPH_GUIDE.md](./langgraph-yelp-multi-agent.md)
    ```bash
    jupyter notebook langgraph_multiagent_supervisor.ipynb
    ```
