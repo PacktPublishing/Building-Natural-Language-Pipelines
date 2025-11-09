@@ -1,23 +1,23 @@
 # Quick Start Guide
 
-## 🚀 Get Started in 5 Minutes
+## 🚀 Get Started 
 
-### 1. Setup (2 minutes)
+### 1. Setup 
 
 Complete the setup [in the readme](../README.md#setup-instructions)
 
-### 2. Start the Exercise (2 minutes)
+### 2. Complete the Exercise (2-4 hours)
 
 Open the Jupyter notebook [classification-ner-agent-exercise.ipynb](./classification-ner-agent-exercise.ipynb)
 
 
-### 3. Refactor your code and populate the `pipelines/` 
+### 3. Refactor your code and populate the `pipelines/`  (2-4 hours)
 
 * Migrate your final custom components to the appropriate folder. For the classification pipeline, they will be migrated to [pipelines/classification/components](./pipelines/classification/components.py)
 * Build the pipeline with your custom components and serialize it. For the same example [pipelines/classification/build_pipeline](./pipelines/classification/build_pipeline.py)
 * Load the pipeline and get ready to expose as Endpoints with Hayhooks. For the same example [pipelines/classification/pipeline_wrapper](./pipelines/classification/pipeline_wrapper.py)
 
-### 4. Run Hayhooks server
+### 4. Run Hayhooks server (2 hours,debug)
 
 ```bash
 hayhooks run --pipelines-dir pipelines
@@ -25,22 +25,6 @@ hayhooks run --pipelines-dir pipelines
 
 5. Open and test endpoints on `http://localhost:1416/docs#/`
 
-
-## 📋 What to Expect
-
-### Time Estimates
-- **Section 1 (Setup)**: 5 minutes
-- **Section 2 (NER Component)**: 30 minutes
-- **Section 3 (Classification Pipeline)**: 20 minutes
-- **Section 4 (Combined Pipeline)**: 20 minutes
-- **Section 5 (SuperComponents)**: 20 minutes
-- **Section 6 (Tools)**: 15 minutes
-- **Section 7 (Agent)**: 30 minutes
-- **Section 8 (Serialization)**: 10 minutes
-- **Section 9 (Deployment)**: 20 minutes
-- **Section 10 (Testing)**: 20 minutes
-
-**Total**: ~3 hours (can be done in multiple sessions)
 
 ### Key Tasks Summary
 
