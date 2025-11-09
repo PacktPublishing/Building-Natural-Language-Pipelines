@@ -48,6 +48,7 @@ Open and test endpoints on `http://localhost:1416/docs#/`
 
 3. **Deploy with Hayhooks** 
    - Serialize pipelines to YAML  
+   - Expose the YAML pipeline through the pipeline wrapper
    - Start Hayhooks server 
    - Test REST endpoints
 
