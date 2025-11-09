@@ -166,6 +166,12 @@ result = test_pipeline.run(...)
 
 ## Section 9: Hayhooks Deployment
 
+### Ensure you rebuild the pipelines when you change components to get the latest YAML file
+
+```bash
+./build_pipelines.sh
+
+```
 ### Starting the Server
 ```bash
 hayhooks run --pipelines-dir pipelines/
