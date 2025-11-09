@@ -9,10 +9,10 @@ This guide walks you through running the **LangGraph Multi-Agent Supervisor** sy
 The multi-agent system automates the process of finding and analyzing businesses:
 
 1. **Understands your request** - Clarifies what you're looking for, where, and how much detail you need
-2. **Delegates tasks** - A supervisor agent coordinates specialized worker agents
-3. **Searches intelligently** - Finds relevant businesses using natural language queries
-4. **Gathers details** - Optionally fetches website information and customer reviews
-5. **Synthesizes results** - Creates a human-readable summary with recommendations
+2. **Searches intelligently** - Finds relevant businesses using natural language queries
+3. **Gathers details conditionally** - Based on detail level, fetches website information and customer reviews
+4. **Synthesizes results** - Creates a human-readable summary with recommendations
+5. **Quality control** - Supervisor approval reviews output and can request revisions
 
 ### Real-World Example
 
@@ -20,32 +20,32 @@ The multi-agent system automates the process of finding and analyzing businesses
 
 **The system:**
 - **Clarification Agent** extracts: query="Mexican restaurants", location="Austin, Texas", detail_level="reviews"
-- **Supervisor** decides to activate: Search Agent → Details Agent → Sentiment Agent
 - **Search Agent** finds 10+ restaurants with ratings and locations
-- **Details Agent** fetches website content for each restaurant
-- **Sentiment Agent** analyzes customer reviews and identifies positive/negative themes
+- **Details Agent** (activated because detail_level="reviews") fetches website content for each restaurant
+- **Sentiment Agent** (activated because detail_level="reviews") analyzes customer reviews and identifies positive/negative themes
 - **Summary Agent** generates a comprehensive report with top recommendations
+- **Supervisor Approval** reviews the summary and approves or requests revisions
 
 ## Architecture
 
 ![Multi-Agent Architecture](langgraph-multiagent-yelp-helper.png)
 
-The system uses a **supervisor pattern** where one agent coordinates the work of specialized agents:
+The system uses **conditional routing** where agents are activated based on the requested detail level:
 
 ```
 User Query
     ↓
 Clarification Agent ────┐
     ↓                   │ (loops if unclear,
-Supervisor Agent        │  max 2 attempts)
-    ↓                   │
-Search Agent            │
+Search Agent            │  max 2 attempts)
     ↓                   ↓
-[Details Agent] ←─── optional based on detail level
+[Details Agent] ←─── optional: "detailed" or "reviews" level
     ↓
-[Sentiment Agent] ←─── only for "reviews" level
+[Sentiment Agent] ←─── optional: only for "reviews" level
     ↓
 Summary Agent
+    ↓
+Supervisor Approval ←─── can request revisions (max 2 attempts)
     ↓
 Final Report
 ```
@@ -55,11 +55,11 @@ Final Report
 | Agent | Purpose | When It Runs |
 |-------|---------|--------------|
 | **Clarification** | Extracts query, location, and detail level from user input | Always (first step) |
-| **Supervisor** | Plans which agents to activate based on requirements | Always (after clarification) |
-| **Search** | Finds businesses using Yelp API via Pipeline 1 | Always |
-| **Details** | Fetches website content via Pipeline 2 | Only for "detailed" or "reviews" level |
-| **Sentiment** | Analyzes customer reviews via Pipeline 3 | Only for "reviews" level |
-| **Summary** | Synthesizes all results into readable report | Always (final step) |
+| **Search** | Finds businesses using Yelp API via Pipeline 1 | Always (after clarification) |
+| **Details** | Fetches website content via Pipeline 2 | Conditionally: "detailed" or "reviews" level |
+| **Sentiment** | Analyzes customer reviews via Pipeline 3 | Conditionally: only for "reviews" level |
+| **Summary** | Synthesizes all results into readable report | Always (before approval) |
+| **Supervisor Approval** | Reviews summary quality and can request revisions | Always (final step) |
 
 ## Prerequisites
 
@@ -113,9 +113,9 @@ The notebook includes 4 example scenarios. Run them one at a time to see how the
 
 **Expected behavior:**
 - Clarification agent identifies: "Mexican restaurants", "Austin, Texas", "general" detail level
-- Supervisor activates only Search Agent
-- Search Agent calls Pipeline 1
-- Summary Agent creates final report
+- Search Agent calls Pipeline 1 and finds businesses
+- Summary Agent creates report (no Details or Sentiment agents activated)
+- Supervisor Approval reviews and approves the summary
 
 ---
 
@@ -125,9 +125,10 @@ The notebook includes 4 example scenarios. Run them one at a time to see how the
 
 **Expected behavior:**
 - Clarification agent identifies: "Italian restaurants", "San Francisco", "detailed" level
-- Supervisor activates Search Agent → Details Agent
-- Details Agent calls Pipeline 2 for website content
+- Search Agent calls Pipeline 1 and finds businesses
+- Details Agent (activated due to "detailed" level) calls Pipeline 2 for website content
 - Summary includes business info + website summaries
+- Supervisor Approval reviews and approves
 
 
 ---
@@ -138,9 +139,11 @@ The notebook includes 4 example scenarios. Run them one at a time to see how the
 
 **Expected behavior:**
 - Clarification agent identifies: "coffee shops", "Portland, Oregon", "reviews" level
-- Supervisor activates all agents: Search → Details → Sentiment
-- Sentiment Agent calls Pipeline 3 for review analysis
+- Search Agent calls Pipeline 1 and finds businesses
+- Details Agent (activated due to "reviews" level) calls Pipeline 2 for website content
+- Sentiment Agent (activated due to "reviews" level) calls Pipeline 3 for review analysis
 - Summary includes everything: basic info, websites, and review sentiment
+- Supervisor Approval reviews and approves (or requests revisions)
 
 
 ---
