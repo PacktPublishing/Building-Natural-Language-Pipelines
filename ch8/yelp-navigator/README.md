@@ -7,8 +7,8 @@ This folder contains resources for building an advanced multi-agent orchestratio
 The primary goal of these resources is to teach you how to:
 
 1. **Build Chained Haystack Pipelines**: Create modular pipelines that pass data between each other for complex workflows
-2. **Orchestrate Multi-Agent Systems**: Use LangGraph to coordinate specialized agents that delegate tasks intelligently
-3. **Implement Agent Supervision Patterns**: Build supervisor agents that route work to specialized agents based on requirements
+2. **Orchestrate Multi-Agent Systems**: Use LangGraph to coordinate specialized agents with conditional routing
+3. **Implement Quality Control Patterns**: Build supervisor approval agents that review outputs and request revisions
 4. **Integrate External APIs**: Connect multiple third-party services (Yelp, web scraping, NER, sentiment analysis)
 5. **Deploy with Hayhooks**: Expose Haystack pipelines as REST API endpoints for agent consumption
 6. **Handle Ambiguous Inputs**: Implement clarification mechanisms and fallback behaviors for robust agent interactions
@@ -74,18 +74,19 @@ Pipeline 4: Report Generator
 ```
 User Query
     ↓
-Clarification Agent → Supervisor Agent
-                           ↓
-        ┌──────────────────┼──────────────────┐
-        ↓                  ↓                   ↓
-   Search Agent      Details Agent     Sentiment Agent
-   (Pipeline 1)      (Pipeline 2)      (Pipeline 3)
-        │                  │                   │
-        └──────────────────┼───────────────────┘
-                           ↓
-                    Summary Agent
-                           ↓
-                  Final Report to User
+Clarification Agent
+    ↓
+Search Agent (Pipeline 1) - always runs
+    ↓
+    ├─→ Details Agent (Pipeline 2) - conditional: "detailed" or "reviews"
+    │       ↓
+    └─→ Sentiment Agent (Pipeline 3) - conditional: "reviews" only
+            ↓
+        Summary Agent
+            ↓
+    Supervisor Approval - reviews quality, can request revisions
+            ↓
+      Final Report to User
 ```
 
 ---
@@ -133,7 +134,8 @@ source .venv/bin/activate
 
 - **Modular Pipeline Design**: Each pipeline is independent and reusable
 - **REST API Endpoints**: Pipelines exposed via Hayhooks for easy integration
-- **Intelligent Agent Routing**: Supervisor pattern dynamically activates agents based on requirements
+- **Conditional Agent Routing**: Agents activate based on detail level requirements (general/detailed/reviews)
+- **Quality Control Loop**: Supervisor approval reviews summaries and can request revisions (max 2 attempts)
 - **Fallback Mechanisms**: Handles ambiguous queries and prevents infinite loops
 - **Flexible Report Generation**: Adapts output depth based on available data
 - **Production-Ready**: Includes error handling, logging, and configuration management
