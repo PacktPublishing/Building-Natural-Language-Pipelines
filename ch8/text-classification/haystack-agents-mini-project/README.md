@@ -4,7 +4,7 @@
 
 ### 1. Setup 
 
-Complete the setup [in the readme](../README.md#setup-instructions)
+Complete the setup [in the readme](../../README.md#setup-instructions)
 
 ### 2. Complete the Exercise (2-4 hours)
 
