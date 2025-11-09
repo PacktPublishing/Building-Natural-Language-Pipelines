@@ -8,11 +8,8 @@ Complete the setup [in the readme](../README.md#setup-instructions)
 
 ### 2. Start the Exercise (2 minutes)
 
-Open the Jupyter notebook:
+Open the Jupyter notebook [classification-ner-agent-exercise.ipynb](./classification-ner-agent-exercise.ipynb)
 
-```bash
-jupyter notebook classification-ner-agent-exercise.ipynb
-```
 
 ### 3. Refactor your code and populate the `pipelines/` 
 
