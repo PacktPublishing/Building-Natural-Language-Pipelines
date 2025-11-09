@@ -68,7 +68,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Indexing Pipelines**: Automated document ingestion and preprocessing workflows
 - **Naive RAG**: Semantic search using sentence transformers and embedding models
 - **Hybrid RAG**: Combining keyword (BM25) and semantic (vector) search strategies
-- **Reranking and RAG fusion**: Advanced retrieval techniques using reranking
+- **Reranking**: Advanced retrieval techniques using ranker models
 - **Pipelines as tools for an Agent**: Package advanced RAG as a tool for an autonomous Agent
 
 ### **[Chapter 5: Haystack pipeline development with custom components](./ch5/)**
@@ -112,12 +112,14 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Pre-trained NER Models**: Using transformer models to identify people, organizations, and locations
 - **Custom Component Creation**: Developing reusable components for text processing
 - **Web Content Processing**: Building pipelines that extract entities from web search results
+- **SuperComponents and Agents**: Wrapping pipelines as tools and building agents for natural language interaction
 
 #### **[Text Classification & Sentiment Analysis - Intermediate](./ch8/text-classification/)**
 - **Zero-Shot Classification**: Categorizing content without training data using LLMs
 - **External API Integration**: Connecting Haystack pipelines with the Yelp API
 - **Model Performance Evaluation**: Assessing classification accuracy on labeled datasets
 - **Sentiment Analysis Pipelines**: Building custom components for analyzing review sentiment
+- **Haystack Agent Mini Project**: Hands-on exercise combining NER and classification pipelines with agent orchestration and Hayhooks deployment
 
 #### **[Yelp Navigator - Multi-Agent System - Advanced](./ch8/yelp-navigator/)**
 - **Pipeline Chaining**: Connecting multiple specialized Haystack pipelines into complex workflows
