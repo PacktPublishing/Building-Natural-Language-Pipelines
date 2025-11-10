@@ -2,7 +2,7 @@
 
 Further reading:
 1. ["Introduction to Data Analysis with Python" by Dr. Thomas Wiecki](https://nbviewer.org/github/twiecki/pydata_ninja/blob/master/PyData%20Ninja.ipynb)
-2. ["Intro to the Python scientific stack](https://barbagroup.github.io/essential_skills_RRC/jupyter/1/)
+2. ["Intro to the Python scientific stack"](https://barbagroup.github.io/essential_skills_RRC/jupyter/1/)
 3. ["Essential Python Libraries for Full-Stack Data Scientists" by Nathan Rosidi](https://www.stratascratch.com/blog/essential-python-libraries-for-full-stack-data-scientists/)
 
 ## Datasets worked with in this notebook
