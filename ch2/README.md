@@ -54,13 +54,23 @@ ollama pull nomic-embed-text
 
 ## Contents
 
+### Beginner Notebooks
+
 | Notebook | Link | Description |
 |---|---|---|
 | **01** Interactive Prompting with Ollama | [01_prompt-ollama-model.ipynb](./jupyter-notebooks/01_prompt-ollama-model.ipynb) | 🔌 Prompt Mistral-Nemo locally with Ollama |
 | **02** Your First Agent | [02_create-simple-agent.ipynb](./jupyter-notebooks/02_create-simple-agent.ipynb) | 🎯 Build your first AI agent with tools and memory |
 | **03** Document Q&A with LangChain | [03_document-qa-langchain.ipynb](./jupyter-notebooks/03_document-qa-langchain.ipynb) | 📚 Build a retrieval-augmented Document Q&A pipeline |
 
+### Advanced: LangChain & LangGraph
 
+| Notebook | Link | Description |
+|---|---|---|
+| **02** Middleware Tutorial | [02_middleware-tutorial.ipynb](./jupyter-notebooks/advanced-langchain-langgraph/02_middleware-tutorial.ipynb) | Understanding middleware patterns in LangGraph |
+| **03** Multi-Agent Workflow | [03_multi-agent-workflow.ipynb](./jupyter-notebooks/advanced-langchain-langgraph/03_multi-agent-workflow.ipynb) | Coordinate multiple agents in workflows |
+| **04** Understanding State Graph | [04_understanding-state-graph.ipynb](./jupyter-notebooks/advanced-langchain-langgraph/04_understanding-state-graph.ipynb) | Build state machines with LangGraph |
+| **05** Graph-Based Agent with Tools | [05_graph-based-agent-with-tools.ipynb](./jupyter-notebooks/advanced-langchain-langgraph/05_graph-based-agent-with-tools.ipynb) | Create agents using state graphs and tools |
+| **06** Multi-Agent Systems Middleware | [06_multi-agent-systems-middleware.ipynb](./jupyter-notebooks/advanced-langchain-langgraph/06_multi-agent-systems-middleware.ipynb) | Advanced multi-agent coordination patterns with middleware |
 
 ---
 
@@ -94,6 +104,14 @@ ollama pull nomic-embed-text
    - Running Mistral-Nemo locally
    - When to use local vs. cloud models
    - Setting up local embeddings for RAG
+
+### 5. **Advanced: LangGraph & Multi-Agent Systems**
+   - Understanding LangGraph state machines and graphs
+   - Building middleware for agent coordination
+   - Creating multi-agent workflows and collaboration patterns
+   - Using state graphs to control agent behavior
+   - Implementing graph-based agents with tools
+   - Advanced multi-agent system architectures
 
 ---
 
