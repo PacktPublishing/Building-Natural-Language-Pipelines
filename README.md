@@ -35,7 +35,7 @@ cd Building-Natural-Language-Pipelines/
 
 Each chapter contains a `pyproject.toml` file with the folder's dependencies. **(Recommended) Open each folder in a new VS Code window.**
 
-1. **Install [uv](https://github.com/astral-sh/uv):**
+1. **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
 	```sh
 	pip install uv
 	```

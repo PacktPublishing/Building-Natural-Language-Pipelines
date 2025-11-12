@@ -18,7 +18,7 @@ Each project includes detailed notebooks, documentation, and example outputs to 
 
 ## Setup Instructions
 
-1. **Install [uv](https://github.com/astral-sh/uv):**
+1. **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
 	```sh
 	pip install uv
 	```

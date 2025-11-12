@@ -4,7 +4,7 @@ This repository contains beginner-friendly notebooks for Chapter 2, introducing 
 
 ## Setup Instructions
 
-1. **Install [uv](https://github.com/astral-sh/uv):**
+1. **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
 	```sh
 	pip install uv
 	```

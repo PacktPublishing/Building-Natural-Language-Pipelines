@@ -180,7 +180,7 @@ Both pipelines are exposed through Hayhooks as REST API endpoints, making them e
 ## Prerequisites
 
 - Python 3.11+
-- [uv](https://github.com/astral-sh/uv) package manager
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) package manager
 - Docker and Docker Compose
 - OpenAI API key
 

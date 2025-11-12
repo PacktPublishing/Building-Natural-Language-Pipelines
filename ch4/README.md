@@ -4,7 +4,7 @@ This repository contains exercises and interactive notebooks for Chapter 4, focu
 
 ## Setup Instructions
 
-1. **Install [uv](https://github.com/astral-sh/uv):**
+1. **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
 	```sh
 	pip install uv
 	```

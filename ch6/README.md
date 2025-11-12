@@ -25,7 +25,7 @@ This repository contains exercises and interactive notebooks for Chapter 6, focu
 
 **Preferred**: install [Docker Desktop](https://docs.docker.com/desktop/)
 
-2. **Install [uv](https://github.com/astral-sh/uv):**
+2. **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
 	```sh
 	pip install uv
 	```
