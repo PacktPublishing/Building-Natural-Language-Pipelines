@@ -23,7 +23,7 @@ This repository contains beginner-friendly notebooks for Chapter 2, introducing 
 
 6. **Set up API keys:**
 
-Create a `.env` file in the `jupyter-notebooks/langgraph-agents/` directory with your API key:
+Create a `.env` file in the `jupyter-notebooks/` directory with your API key:
 ```sh
 TAVILY_API_KEY=your_tavily_key_here
 ```
