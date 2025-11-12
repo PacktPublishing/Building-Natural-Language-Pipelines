@@ -9,6 +9,7 @@ Author: Laura Funderburk
 - [What You'll Learn to Build](#what-youll-learn-to-build)
 - [Setting Up](#setting-up)
 - [Chapter Breakdown](#chapter-breakdown)
+  - [Chapter 2: Introduction to LangGraph and Agent Development](#chapter-2-introduction-to-langgraph-and-agent-development)
   - [Chapter 3: Introduction to Haystack](#chapter-3-introduction-to-haystack)
   - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
   - [Chapter 5: Haystack pipeline development with custom components](#chapter-5-haystack-pipeline-development-with-custom-components)
@@ -19,7 +20,7 @@ Author: Laura Funderburk
 
 ## What You'll Learn to Build
 
-This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** systems and **multi-agent applications** using the [Haystack 2.0](https://haystack.deepset.ai/), [Ragas](https://docs.ragas.io/en/stable/) and [LangGraph](https://www.langchain.com/langgraph) frameworks. Starting with NLP fundamentals and Haystack's component architecture, you'll progress through creating intelligent search systems with semantic and hybrid retrieval, building custom components for specialized tasks, and implementing comprehensive evaluation frameworks. The journey advances through production deployment strategies with Docker and REST APIs, culminating in hands-on projects including named entity recognition systems, zero-shot text classification pipelines, sentiment analysis tools, and sophisticated multi-agent orchestration systems that coordinate multiple specialized Haystack pipelines through LangGraph supervisors.
+This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** systems and **multi-agent applications** using the [Haystack 2.0](https://haystack.deepset.ai/), [Ragas](https://docs.ragas.io/en/stable/) and [LangGraph](https://www.langchain.com/langgraph) frameworks. Beginning with **state-based agent development** using LangGraph, you'll learn to build intelligent agents with tool integration, middleware patterns, and multi-agent coordination. You'll then master **Haystack's component architecture**, progressing through creating intelligent search systems with semantic and hybrid retrieval, building custom components for specialized tasks, and implementing comprehensive evaluation frameworks. The journey advances through production deployment strategies with Docker and REST APIs, culminating in hands-on projects including named entity recognition systems, zero-shot text classification pipelines, sentiment analysis tools, and sophisticated multi-agent orchestration systems that coordinate multiple specialized Haystack pipelines through LangGraph supervisors.
 
 ## Setting up
 
@@ -54,6 +55,15 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 ---
 
 ## Chapter breakdown
+
+### **[Chapter 2: Introduction to LangGraph and Agent Development](./ch2/)**
+**Agent Foundations & State Management**
+- **LangGraph Fundamentals**: Understanding state-based agent frameworks and graph architecture
+- **Building Simple Agents**: Creating agents with state management using MessagesState and reducers
+- **Tool Integration**: Connecting agents with external tools (search APIs, databases, custom functions)
+- **Multi-Agent Systems**: Designing and coordinating multiple specialized agents in workflows
+- **Middleware Patterns**: Implementing logging, authentication, and monitoring layers for agent systems
+- **Local vs Cloud LLMs**: Running agents with OpenAI APIs or locally with Ollama (Qwen2, Llama, Mistral)
 
 ### **[Chapter 3: Introduction to Haystack](./ch3/)**
 **Core Concepts & Foundation**
