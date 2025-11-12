@@ -110,9 +110,6 @@ ollama pull nomic-embed-text
   - ✅ Great for learning
   - ✅ Good tool-calling support
 
-```sh
-ollama pull mistral-nemo:12b
-```
 
 ### Why Local Models?
 - 💰 **No API costs** - Learn without worrying about bills
