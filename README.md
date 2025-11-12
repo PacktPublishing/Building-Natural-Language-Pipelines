@@ -1,4 +1,4 @@
-# Building RAG Applications with Haystack 2.0
+# Building RAG and Agentic Applications with LangChain/LangGraph 1.0 Haystack 2.0
 
 Supplementary material for the book *"Building Natural Language Pipelines"* published by Packt
 
