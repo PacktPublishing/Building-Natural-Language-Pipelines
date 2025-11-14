@@ -1,4 +1,4 @@
-# Chapter 2: Your First AI Agents
+# Chapter 2: Diving Deep into Large Language Models 
 
 This repository contains beginner-friendly notebooks for Chapter 2, introducing you to building AI agents that can think, use tools, and answer questions.
 

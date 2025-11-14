@@ -9,7 +9,7 @@ Author: Laura Funderburk
 - [What You'll Learn to Build](#what-youll-learn-to-build)
 - [Setting Up](#setting-up)
 - [Chapter Breakdown](#chapter-breakdown)
-  - [Chapter 2: Introduction to LangGraph and Agent Development](#chapter-2-introduction-to-langgraph-and-agent-development)
+  - [Chapter 2: Diving Deep into Large Language Models](#chapter-2-diving-deep-into-large-language-models)
   - [Chapter 3: Introduction to Haystack](#chapter-3-introduction-to-haystack)
   - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
   - [Chapter 5: Haystack pipeline development with custom components](#chapter-5-haystack-pipeline-development-with-custom-components)
@@ -56,7 +56,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 
 ## Chapter breakdown
 
-### **[Chapter 2: Introduction to LangGraph and Agent Development](./ch2/)**
+### **[Chapter 2: Diving Deep into Large Language Models](./ch2/)**
 **Agent Foundations & State Management**
 - **LangGraph Fundamentals**: Understanding state-based agent frameworks and graph architecture
 - **Building Simple Agents**: Creating agents with state management using MessagesState and reducers
