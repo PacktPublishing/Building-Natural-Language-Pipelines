@@ -180,8 +180,14 @@ class BatchSentimentAnalyzer:
         - documents (List[Document]): Documents with sentiment metadata
     """
     
-    def __init__(self):
-        """Initialize the batch sentiment analyzer."""
+    def __init__(self, max_length: int = 500):
+        """
+        Initialize the batch sentiment analyzer.
+        
+        Args:
+            max_length: Maximum number of characters to use for sentiment analysis
+                       (model has a token limit of 514, roughly 500 chars is safe)
+        """
         self.router = TransformersTextRouter(
             model="cardiffnlp/twitter-roberta-base-sentiment"
         )
@@ -192,6 +198,7 @@ class BatchSentimentAnalyzer:
             "LABEL_1": "neutral",
             "LABEL_2": "positive"
         }
+        self.max_length = max_length
         self.logger = logging.getLogger(__name__ + ".BatchSentimentAnalyzer")
     
     @component.output_types(documents=List[Document])
@@ -205,34 +212,62 @@ class BatchSentimentAnalyzer:
         Returns:
             Dictionary with sentiment-enriched documents
         """
+        # Handle None documents
+        if documents is None:
+            self.logger.warning("Received None for documents, using empty list")
+            documents = []
+            
         self.logger.info(f"Analyzing sentiment for {len(documents)} documents")
         enriched_docs = []
         
-        for doc in documents:
-            # Run sentiment analysis
-            result = self.router.run(text=doc.content)
-            
-            # Extract the label from the result
-            # The router outputs to different sockets (LABEL_0, LABEL_1, LABEL_2)
-            sentiment_label = None
-            for label in ["LABEL_0", "LABEL_1", "LABEL_2"]:
-                if label in result and result[label]:
-                    sentiment_label = label
-                    break
-            
-            # Map to human-readable sentiment
-            sentiment = self.sentiment_map.get(sentiment_label, "unknown")
-            
-            # Create enriched document
-            enriched_doc = Document(
-                content=doc.content,
-                meta={
-                    **doc.meta,
-                    "sentiment": sentiment,
-                    "sentiment_label": sentiment_label
-                }
-            )
-            enriched_docs.append(enriched_doc)
+        for i, doc in enumerate(documents):
+            try:
+                # Handle None content
+                content = doc.content if doc.content is not None else ""
+                
+                # Truncate text to max_length to avoid token limit errors
+                truncated_text = content[:self.max_length] if len(content) > self.max_length else content
+                
+                if len(content) > self.max_length:
+                    self.logger.debug(f"Truncated review {i+1} from {len(content)} to {self.max_length} chars")
+                
+                # Run sentiment analysis on truncated text
+                result = self.router.run(text=truncated_text)
+                
+                # Extract the label from the result
+                # The router outputs to different sockets (LABEL_0, LABEL_1, LABEL_2)
+                sentiment_label = None
+                for label in ["LABEL_0", "LABEL_1", "LABEL_2"]:
+                    if label in result and result[label]:
+                        sentiment_label = label
+                        break
+                
+                # Map to human-readable sentiment
+                sentiment = self.sentiment_map.get(sentiment_label, "unknown")
+                
+                # Create enriched document (keep original full content)
+                enriched_doc = Document(
+                    content=content,  # Keep original full content
+                    meta={
+                        **doc.meta,
+                        "sentiment": sentiment,
+                        "sentiment_label": sentiment_label
+                    }
+                )
+                enriched_docs.append(enriched_doc)
+                
+            except Exception as e:
+                self.logger.error(f"Error analyzing sentiment for document {i+1}: {e}")
+                # Create document with unknown sentiment on error
+                enriched_doc = Document(
+                    content=doc.content if doc.content is not None else "",
+                    meta={
+                        **doc.meta,
+                        "sentiment": "unknown",
+                        "sentiment_label": None
+                    }
+                )
+                enriched_docs.append(enriched_doc)
         
         self.logger.info(f"Sentiment analysis complete - enriched {len(enriched_docs)} documents")
         return {"documents": enriched_docs}
@@ -271,6 +306,11 @@ class ReviewsAggregatorByBusiness:
         Returns:
             Dictionary with one document per business containing review summaries
         """
+        # Handle None documents
+        if documents is None:
+            self.logger.warning("Received None for documents, using empty list")
+            documents = []
+            
         self.logger.info(f"Aggregating {len(documents)} reviews by business")
         
         # Group reviews by business_id

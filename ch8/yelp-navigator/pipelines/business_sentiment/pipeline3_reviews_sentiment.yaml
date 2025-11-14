@@ -11,7 +11,8 @@ components:
       max_reviews_per_business: 10
     type: pipelines.business_sentiment.components.YelpReviewsFetcher
   sentiment_analyzer:
-    init_parameters: {}
+    init_parameters:
+      max_length: 500
     type: pipelines.business_sentiment.components.BatchSentimentAnalyzer
 connection_type_validation: true
 connections:

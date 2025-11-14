@@ -190,6 +190,11 @@ class DocumentMetadataEnricher:
         Returns:
             Dictionary with enriched documents
         """
+        # Handle None documents
+        if documents is None:
+            self.logger.warning("Received None for documents, using empty list")
+            documents = []
+        
         self.logger.info(f"Enriching {len(documents)} documents with business metadata")
         
         enriched_documents = []
@@ -203,9 +208,12 @@ class DocumentMetadataEnricher:
                 
                 self.logger.debug(f"Enriching document {i+1} for business: '{business_name}'")
                 
+                # Handle None content
+                content = doc.content if doc.content is not None else ""
+                
                 # Create enriched document
                 enriched_doc = Document(
-                    content=doc.content,
+                    content=content,
                     meta={
                         **doc.meta,  # Keep original metadata (URL, etc.)
                         **meta       # Add business metadata
@@ -213,7 +221,7 @@ class DocumentMetadataEnricher:
                 )
                 enriched_documents.append(enriched_doc)
                 
-                content_length = len(doc.content)
+                content_length = len(content)
                 self.logger.info(f"Successfully enriched document for '{business_name}' (content length: {content_length} chars)")
             else:
                 # If no matching metadata, keep original document

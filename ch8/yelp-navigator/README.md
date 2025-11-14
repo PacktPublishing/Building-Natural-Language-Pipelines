@@ -46,7 +46,7 @@ Complete the [setup instructions](../README.md#setup-instructions)
 ### Quick Start
 
 **Option 1: Pipeline Chaining (Intermediate)**
-1. Deploy pipelines: `sh build_all_pipelines.sh && uv run hayhooks run --pipelines-dir pipelines`
+1. Deploy pipelines: `uv run sh build_all_pipelines.sh && uv run hayhooks run --pipelines-dir pipelines`
 2. Open: [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb)
 3. Learn to chain Haystack pipeline API calls
 
