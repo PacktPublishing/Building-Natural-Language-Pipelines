@@ -68,7 +68,6 @@ Learn the fundamentals of building Haystack pipelines by extracting named entiti
 - Processing web content
 
 **Projects:**
-- [Extracting entities from a dataset](./named-entity-recognition/ner-with-haystack-search-pipeline.ipynb) - Stand-alone component usage
 - [Web search + NER pipeline with an Agent](./named-entity-recognition/ner-with-haystack-search-pipeline.ipynb) - Pipeline with custom components, supercomponent definition, and single-agent capabilities.
 
 ---
