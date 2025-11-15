@@ -4,7 +4,7 @@ version = "0.1"
 description = "Building pipelines with Haystack"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {file = "LICENSE"}
+license = "MIT"
 keywords = ["llm", "rag", "nlp", "pipelines"]
 authors = [
   {name = "Laura Funderburk"}
