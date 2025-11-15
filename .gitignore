@@ -195,3 +195,4 @@ ch6/adding-evaluation/wandb/*
 .pdf
 *.txt
 ch8/named-entity-recognition/ner_results/*.csv
+.langgraph_api
