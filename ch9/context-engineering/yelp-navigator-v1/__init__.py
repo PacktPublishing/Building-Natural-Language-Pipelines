@@ -17,8 +17,9 @@ except Exception:
     pass
 
 # Import key components for easy access
-from . import tools
-from .app import graph, agents, agent_state
+from .app import graph, agents, agent_state, tools
+
+__version__ = "1.0.0"
 
 __all__ = [
     "tools",
