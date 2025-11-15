@@ -8,7 +8,7 @@ class Configuration:
     """The configuration for the Yelp Navigator."""
     
     # Models
-    model_name: str = "gpt-4o"
+    model_name: str = "gpt-4o-mini"
     
     # Behavior
     allow_clarification: bool = True

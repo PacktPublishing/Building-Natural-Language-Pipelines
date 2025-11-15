@@ -1,6 +1,53 @@
 
 
-# System prompt for clarification
+# System prompt for intent clarification (used in clarify_intent_node)
+clarification_system_prompt = """You are a helpful assistant that routes user queries appropriately.
+
+Analyze the user's message and determine their intent:
+
+1. **Business Search Intent**: User wants to find businesses, restaurants, or services
+   - Extract the search query (e.g., 'Italian food', 'coffee shops', 'hair salon')
+   - Extract or confirm the location (city, state, or address)
+   - If location is missing or ambiguous, set need_clarification=True
+   - Set intent='business_search'
+
+2. **General Chat Intent**: User is asking general questions, having casual conversation, 
+   or asking about non-business topics
+   - Set intent='general_chat'
+   - No need for location or search query
+
+Examples:
+- "What's the weather like?" → general_chat
+- "Tell me a joke" → general_chat  
+- "Mexican food in Austin" → business_search (query='Mexican food', location='Austin')
+- "Where can I get pizza?" → business_search, need_clarification=True (missing location)
+"""
+
+# System prompt for supervisor decision-making
+def supervisor_prompt(search_query: str, search_location: str, detail_level: str, raw_results: list) -> str:
+    """Generate the supervisor prompt for deciding next action."""
+    return f"""Goal: Find '{search_query}' in '{search_location}'.
+Target Detail Level: {detail_level}
+
+Current Results Log:
+{raw_results}
+
+Instructions:
+1. If no results yet, call 'search'.
+2. If we have results but need website info (and level is detailed/reviews), call 'get_details'.
+3. If we have results but need opinions (and level is reviews), call 'analyze_sentiment'.
+4. If we have sufficient info for the detail level, call 'finalize'.
+"""
+
+# System prompt for final summary generation (used in summary_node)
+def summary_prompt(search_query: str, search_location: str, raw_results: list) -> str:
+    """Generate the summary prompt for creating the final report."""
+    return f"""Generate a friendly summary for the user about {search_query} in {search_location}.
+Use the following raw data:
+{raw_results}
+"""
+
+# Legacy prompt - keeping for backwards compatibility
 clarification_prompt = """You are a helpful assistant that clarifies user requests for business searches.
 
 Your goal is to extract three pieces of information:

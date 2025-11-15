@@ -38,5 +38,8 @@ class AgentState(MessagesState):
     # Search Results Storage (Accumulated)
     raw_results: Annotated[List[str], operator.add] = [] 
     
+    # Pipeline Data (Full Output for Downstream Tools)
+    pipeline_data: Dict[str, Any] = {}
+    
     # Final Output
     final_summary: str = ""

@@ -60,7 +60,7 @@ Once you've built and serialized the pipelines, you can deploy them with Hayhook
 
 ```bash
 # From the yelp-navigator directory
-hayhooks run --pipelines-dir pipelines
+uv run hayhooks run --pipelines-dir pipelines
 ```
 
 This will:

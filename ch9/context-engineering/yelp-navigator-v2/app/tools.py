@@ -6,15 +6,37 @@ BASE_URL = "http://localhost:1416"
 
 # Hayhooks Chat Completion Tool
 @tool
-def chat_completion(messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo", stream: bool = False, base_url: str = BASE_URL) -> Dict[str, Any]:
-    """Send a general chat completion request to the Hayhooks endpoint.
+def chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4o-mini", stream: bool = False, base_url: str = BASE_URL) -> Dict[str, Any]:
+    """Send a general chat completion request to the Hayhooks OpenAI-compatible endpoint.
+    
     Args:
         messages: List of message dicts, e.g. [{"role": "user", "content": "Hello!"}]
-        model: Model name to use (default: gpt-3.5-turbo)
+        model: Model name to use (default: gpt-4o-mini)
         stream: Whether to stream the response (default: False)
         base_url: Base URL for the API endpoint
+        
     Returns:
-        Dictionary containing the chat completion response.
+        Dictionary containing the chat completion response in OpenAI format:
+        {
+            "success": True/False,
+            "response": {
+                "id": "string",
+                "object": "chat.completion",
+                "created": int,
+                "model": "string",
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": "string"
+                        },
+                        "finish_reason": "stop"
+                    }
+                ]
+            },
+            "error": "error message" (only if success is False)
+        }
     """
     try:
         response = requests.post(
@@ -26,12 +48,25 @@ def chat_completion(messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo"
             },
             timeout=30
         )
+        
         if response.status_code == 200:
-            return {"success": True, "output": response.json()}
+            data = response.json()
+            return {"success": True, "response": data}
         else:
-            return {"success": False, "error": f"API returned status {response.status_code}"}
+            error_msg = f"API returned status {response.status_code}"
+            try:
+                error_detail = response.json()
+                error_msg += f": {error_detail}"
+            except:
+                error_msg += f": {response.text}"
+            return {"success": False, "error": error_msg}
+            
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timed out after 30 seconds"}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "error": f"Could not connect to {base_url}. Is the server running?"}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 @tool
 def search_businesses(query: str, base_url: str = BASE_URL) -> Dict[str, Any]:

@@ -1,8 +1,22 @@
-from typing import Dict, Any
-from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from .state import AgentState
 from .tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
+from .prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+
+load_dotenv(".env")
+
+# Initialize the language model (should be configured with API key)
+# Create a local model with Ollama
+
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0
+)
+
+
 # Chat completion agent node for general queries
 def chat_completion_agent_node(state: AgentState) -> AgentState:
     """Agent node that handles general queries using the Hayhooks chat completion endpoint."""
@@ -36,18 +50,6 @@ def chat_completion_agent_node(state: AgentState) -> AgentState:
         "agent_outputs": agent_outputs,
         "next_agent": "end"
     }
-from .prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
-# Initialize the language model (should be configured with API key)
-# Create a local model with Ollama
-from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
-
-load_dotenv()
-
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    temperature=0
-)
 
 
 def clarification_agent(state: AgentState) -> AgentState:
