@@ -196,3 +196,6 @@ ch6/adding-evaluation/wandb/*
 *.txt
 ch8/named-entity-recognition/ner_results/*.csv
 .langgraph_api
+
+# Allow langgraph.json in context-engineering
+!ch9/context-engineering/langgraph.json
