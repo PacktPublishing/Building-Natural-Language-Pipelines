@@ -4,17 +4,17 @@ This document compares two architectural approaches for the Yelp Navigator agent
 
 ## Architectural Overview
 
-### V1: Monolithic Agent-Centric Design
+### V1: Sequential Node-Based Design
 ```
 START → Clarification → Search → Details → Sentiment → Summary → Supervisor → END
                 ↑                                                     ↓
                 └─────────────── Approval Loop ──────────────────────┘
 ```
 
-- **Tightly coupled agents**: Each agent handles both tool execution and decision-making
+- **Sequential nodes**: Each node handles both tool execution and decision-making
 - **Single state object**: All data in one TypedDict with 13+ fields
 - **Hard-coded routing**: Conditional edges define workflow
-- **Agent-driven**: Agents decide next steps via `next_agent` field
+- **State-driven**: Nodes decide next steps via `next_agent` field
 
 ### V2: Supervisor Pattern with Tool Separation
 ```
@@ -36,6 +36,8 @@ START → Clarify → ┌─ Supervisor ─┐ → Summary → END
 ## State Management Comparison
 
 ### V1 State: Monolithic Dictionary
+**Location:** `yelp-navigator-v1/app/state.py`
+
 ```python
 class AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add]
@@ -56,6 +58,8 @@ class AgentState(TypedDict):
 - No clear separation of concerns
 
 ### V2 State: Structured and Purposeful
+**Location:** `yelp-navigator-v2/app/state.py`
+
 ```python
 class AgentState(MessagesState):
     search_query: str = ""
@@ -141,10 +145,15 @@ V2's state management demonstrates how **architectural decisions directly impact
 - **Better testability** via stateless, composable tools
 - **Easier maintenance** with clear separation of concerns
 
+**Note:** Both V1 and V2 use a node-based architecture (`nodes.py`). The key difference is not in the code organization, but in:
+1. **State structure**: V1 uses monolithic state with `agent_outputs` blob; V2 uses dual context streams
+2. **Routing control**: V1 uses state-driven routing (`next_agent` field); V2 uses supervisor-driven routing with Commands
+3. **Context management**: V1 passes full state to each node; V2 uses progressive disclosure
+
 **Measurement Methodology:** Token counts obtained using `tiktoken` with actual V1/V2 prompt templates and realistic pipeline data. Run your own measurements:
 
 ```bash
-python measure_token_usage.py --run-all-tests
+uv run python measure_token_usage.py --run-all-tests
 ```
 
 See [TOKEN_MEASUREMENT_README.md](TOKEN_MEASUREMENT_README.md) for detailed instructions.
