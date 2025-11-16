@@ -1,7 +1,7 @@
 from typing import Dict, Any
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 
-from .agent_state import AgentState
+from .state import AgentState
 from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment
 from shared.prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
 from shared.config import get_llm
@@ -10,8 +10,8 @@ from shared.config import get_llm
 llm = get_llm()
 
 
-def clarification_agent(state: AgentState) -> AgentState:
-    """Agent that clarifies user intent before delegating to specialized agents."""
+def clarification_node(state: AgentState) -> AgentState:
+    """Node that clarifies user intent before delegating to specialized agents."""
     
     # Check if this is the first interaction
     user_query = state.get("user_query", "")
@@ -76,8 +76,8 @@ def clarification_agent(state: AgentState) -> AgentState:
         }
 
 
-def search_agent_node(state: AgentState) -> AgentState:
-    """Search agent that finds businesses."""
+def search_node(state: AgentState) -> AgentState:
+    """Node that finds businesses using search tool."""
     
     clarified_query = state.get("clarified_query", "")
     clarified_location = state.get("clarified_location", "")
@@ -119,8 +119,8 @@ def search_agent_node(state: AgentState) -> AgentState:
     }
 
 
-def details_agent_node(state: AgentState) -> AgentState:
-    """Details agent that fetches website information."""
+def details_node(state: AgentState) -> AgentState:
+    """Node that fetches website information."""
     
     agent_outputs = state.get("agent_outputs", {})
     search_output = agent_outputs.get("search", {})
@@ -163,8 +163,8 @@ def details_agent_node(state: AgentState) -> AgentState:
     }
 
 
-def sentiment_agent_node(state: AgentState) -> AgentState:
-    """Sentiment agent that analyzes reviews."""
+def sentiment_node(state: AgentState) -> AgentState:
+    """Node that analyzes reviews for sentiment."""
     
     agent_outputs = state.get("agent_outputs", {})
     search_output = agent_outputs.get("search", {})
@@ -206,8 +206,9 @@ def sentiment_agent_node(state: AgentState) -> AgentState:
         "next_agent": "summary"
     }
 
-def supervisor_approval_agent(state: AgentState) -> AgentState:
-    """Supervisor reviews the summary and decides if it's complete or needs revision."""
+
+def supervisor_approval_node(state: AgentState) -> AgentState:
+    """Node where supervisor reviews the summary and decides if it's complete or needs revision."""
     
     final_summary = state.get("final_summary", "")
     detail_level = state.get("detail_level", "general")
@@ -275,8 +276,9 @@ def supervisor_approval_agent(state: AgentState) -> AgentState:
         "approval_attempts": approval_attempts + 1
     }
 
-def summary_agent_node(state: AgentState) -> AgentState:
-    """Summary agent that creates the final human-readable response."""
+
+def summary_node(state: AgentState) -> AgentState:
+    """Node that creates the final human-readable response."""
     
     agent_outputs = state.get("agent_outputs", {})
     clarified_query = state.get("clarified_query", "")

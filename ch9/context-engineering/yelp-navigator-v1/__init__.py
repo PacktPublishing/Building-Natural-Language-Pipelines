@@ -17,13 +17,13 @@ except Exception:
     pass
 
 # Import key components for easy access
-from .app import graph, agents, agent_state, tools
+from .app import graph, nodes, state, tools
 
 __version__ = "1.0.0"
 
 __all__ = [
     "tools",
     "graph",
-    "agents",
-    "agent_state",
+    "nodes",
+    "state",
 ] 

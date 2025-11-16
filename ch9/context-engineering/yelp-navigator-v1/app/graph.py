@@ -1,9 +1,9 @@
 from langgraph.graph import StateGraph, START, END
-from .agents import (
-    clarification_agent, search_agent_node, details_agent_node,
-    sentiment_agent_node, summary_agent_node, supervisor_approval_agent
+from .nodes import (
+    clarification_node, search_node, details_node,
+    sentiment_node, summary_node, supervisor_approval_node
 )
-from .agent_state import AgentState
+from .state import AgentState
 
 
 def route_after_clarification(state: AgentState) -> str:
@@ -39,12 +39,12 @@ def build_workflow_graph() -> StateGraph[AgentState]:
     workflow = StateGraph(AgentState)
 
     # Add nodes
-    workflow.add_node("clarification", clarification_agent)
-    workflow.add_node("search", search_agent_node)
-    workflow.add_node("details", details_agent_node)
-    workflow.add_node("sentiment", sentiment_agent_node)
-    workflow.add_node("summary", summary_agent_node)
-    workflow.add_node("supervisor_approval", supervisor_approval_agent)
+    workflow.add_node("clarification", clarification_node)
+    workflow.add_node("search", search_node)
+    workflow.add_node("details", details_node)
+    workflow.add_node("sentiment", sentiment_node)
+    workflow.add_node("summary", summary_node)
+    workflow.add_node("supervisor_approval", supervisor_approval_node)
 
     # Add edges
     workflow.add_edge(START, "clarification")
