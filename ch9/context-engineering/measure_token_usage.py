@@ -5,12 +5,9 @@ This script measures actual token usage across both architectures to validate
 the theoretical performance improvements documented in ARCHITECTURE_COMPARISON.md.
 
 Usage:
-    python measure_token_usage.py --test-query "Italian restaurants in Boston"
-    python measure_token_usage.py --run-all-tests
-    python measure_token_usage.py --compare-only
-
-Requirements:
-    pip install tiktoken pandas tabulate
+    uv run python measure_token_usage.py --test-query "Italian restaurants in Boston"
+    uv run python measure_token_usage.py --run-all-tests
+    uv run python measure_token_usage.py --compare-only
 """
 
 import sys
