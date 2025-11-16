@@ -37,43 +37,43 @@ def supervisor_approval_prompt(clarified_query: str, clarified_location: str, de
     
     return f"""You are a supervisor reviewing a summary for quality and completeness.
 
-USER REQUEST:
-- Query: {clarified_query} in {clarified_location}
-- Detail level: {detail_level}
+    `    USER REQUEST:
+        - Query: {clarified_query} in {clarified_location}
+        - Detail level: {detail_level}
 
-AVAILABLE DATA:
-- Search results: {search_available}
-- Website details: {details_available}
-- Review sentiment: {sentiment_available}
+        AVAILABLE DATA:
+        - Search results: {search_available}
+        - Website details: {details_available}
+        - Review sentiment: {sentiment_available}
 
-SUMMARY TO REVIEW:
-{final_summary}
+        SUMMARY TO REVIEW:
+        {final_summary}
 
-EVALUATION CRITERIA:
-1. CRITICAL: Does it discuss businesses/restaurants related to "{clarified_query} in {clarified_location}"?
-   If the summary discusses unrelated topics (programming, variables, JavaScript, etc.), it MUST be rejected.
-2. Does it directly answer the user's question?
-3. Are the top recommendations clearly highlighted with business names?
-4. If detail_level is "detailed", does it mention website information?
-5. If detail_level is "reviews", does it discuss customer sentiment and reviews?
-6. Is it well-structured and easy to read?
-7. Does it have a helpful closing statement?
+        EVALUATION CRITERIA:
+        1. CRITICAL: Does it discuss businesses/restaurants related to "{clarified_query} in {clarified_location}"?
+        If the summary discusses unrelated topics (programming, variables, JavaScript, etc.), it MUST be rejected.
+        2. Does it directly answer the user's question?
+        3. Are the top recommendations clearly highlighted with business names?
+        4. If detail_level is "detailed", does it mention website information?
+        5. If detail_level is "reviews", does it discuss customer sentiment and reviews?
+        6. Is it well-structured and easy to read?
+        7. Does it have a helpful closing statement?
 
-IMPORTANT: If the summary is about a completely different topic (not business search), respond with:
-NEEDS_REVISION
-FEEDBACK: The summary is completely off-topic. It must discuss business search results for {clarified_query} in {clarified_location}.
-RERUN_AGENT: summary
+        IMPORTANT: If the summary is about a completely different topic (not business search), respond with:
+        NEEDS_REVISION
+        FEEDBACK: The summary is completely off-topic. It must discuss business search results for {clarified_query} in {clarified_location}.
+        RERUN_AGENT: summary
 
-Based on your evaluation, respond in ONE of these formats:
+        Based on your evaluation, respond in ONE of these formats:
 
-If the summary is complete and satisfactory:
-APPROVED
+        If the summary is complete and satisfactory:
+        APPROVED
 
-If the summary needs improvement:
-NEEDS_REVISION
-FEEDBACK: [specific feedback on what to improve]
-RERUN_AGENT: [which agent to rerun: "search", "details", "sentiment", or "summary"]
-"""
+        If the summary needs improvement:
+        NEEDS_REVISION
+        FEEDBACK: [specific feedback on what to improve]
+        RERUN_AGENT: [which agent to rerun: "search", "details", "sentiment", or "summary"]
+        """
 
 # System prompt for summary generation
 def summary_generation_prompt(clarified_query: str, clarified_location: str, detail_level: str,
@@ -83,9 +83,9 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
     
     context = f"""Create a comprehensive, human-readable summary based on the following information:
 
-User was looking for: {clarified_query} in {clarified_location}
-Detail level requested: {detail_level}
-"""
+                User was looking for: {clarified_query} in {clarified_location}
+                Detail level requested: {detail_level}
+                """
     
     # Add revision feedback if this is a revision
     if needs_revision and revision_feedback:
@@ -130,19 +130,19 @@ Detail level requested: {detail_level}
                 context += f"   Critical Review: {biz['bottom_negative_reviews'][0].get('text', '')[:150]}...\n"
     
     context += f"""\n\nIMPORTANT INSTRUCTIONS:
-You MUST create a summary about the business search results provided above.
-DO NOT write about unrelated topics like programming, variables, or JavaScript.
-ONLY use the business information provided in the SEARCH RESULTS, DETAILED INFORMATION, and REVIEW SENTIMENT ANALYSIS sections above.
+                You MUST create a summary about the business search results provided above.
+                DO NOT write about unrelated topics like programming, variables, or JavaScript.
+                ONLY use the business information provided in the SEARCH RESULTS, DETAILED INFORMATION, and REVIEW SENTIMENT ANALYSIS sections above.
 
-Write a comprehensive, friendly summary that:
-1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
-2. Highlights the top 3-5 business recommendations from the search results
-3. Includes relevant details based on what was requested (ratings, prices, sentiment)
-4. Is easy to read and conversational
-5. Ends with a helpful closing statement
+                Write a comprehensive, friendly summary that:
+                1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
+                2. Highlights the top 3-5 business recommendations from the search results
+                3. Includes relevant details based on what was requested (ratings, prices, sentiment)
+                4. Is easy to read and conversational
+                5. Ends with a helpful closing statement
 
-Do NOT include any information that is not in the data above.
-"""
+                Do NOT include any information that is not in the data above.
+                """
     
     return context
 

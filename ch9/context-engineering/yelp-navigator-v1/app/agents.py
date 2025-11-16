@@ -149,9 +149,10 @@ def details_agent_node(state: AgentState) -> AgentState:
     # Create summary message
     if result.get("success"):
         details = result.get("businesses_with_details", [])
-        summary = f"""Details Agent Results:
-Retrieved detailed information for {result.get('document_count', 0)} businesses:
-"""
+        summary = f"""Details Agent Results:\
+                    Retrieved detailed information for \
+                        {result.get('document_count', 0)} businesses:"""
+        
         for i, biz in enumerate(details[:3], 1):
             website_status = "[Website content available]" if biz['has_website_info'] else "[No website info]"
             summary += f"\n{i}. {biz['name']} - {website_status}"
@@ -193,14 +194,16 @@ def sentiment_agent_node(state: AgentState) -> AgentState:
     if result.get("success"):
         sentiments = result.get("sentiment_summaries", [])
         summary = f"""Sentiment Agent Results:
-Analyzed reviews for {result.get('analyzed_count', 0)} businesses:
-"""
+                    Analyzed reviews for {result.get('analyzed_count', 0)} businesses:
+                    """
         for i, biz in enumerate(sentiments[:3], 1):
             total = biz['positive_count'] + biz['neutral_count'] + biz['negative_count']
             if total > 0:
                 positive_pct = (biz['positive_count'] / total) * 100
                 summary += f"\n{i}. {biz['name']}"
-                summary += f"\n   Sentiment: Positive: {biz['positive_count']}, Neutral: {biz['neutral_count']}, Negative: {biz['negative_count']} ({positive_pct:.0f}% positive)"
+                summary += f"\n   Sentiment: Positive: {biz['positive_count']},\
+                                    Neutral: {biz['neutral_count']}, \
+                                    Negative: {biz['negative_count']} ({positive_pct:.0f}% positive)"
     else:
         summary = f"ERROR: Sentiment analysis failed: {result.get('error', 'Unknown error')}"
     
@@ -268,9 +271,9 @@ def supervisor_approval_agent(state: AgentState) -> AgentState:
         feedback = "Please improve the summary to better address the user's requirements."
     
     supervisor_message = f"""NEEDS_REVISION: Supervisor: Summary needs revision.
-Feedback: {feedback}
-Action: Re-running {rerun_agent} agent..."""
-    
+                            Feedback: {feedback}
+                            Action: Re-running {rerun_agent} agent..."""
+                                
     return {
         "messages": [AIMessage(content=supervisor_message)],
         "next_agent": rerun_agent,
