@@ -20,16 +20,9 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 import tiktoken
+import pandas as pd
+from tabulate import tabulate
 
-try:
-    import pandas as pd
-    from tabulate import tabulate
-except ImportError:
-    print("Installing required packages...")
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas", "tabulate"])
-    import pandas as pd
-    from tabulate import tabulate
 
 
 @dataclass
@@ -139,7 +132,7 @@ def simulate_v1_workflow(query: str, location: str, detail_level: str = "general
             supervisor_approval_prompt,
             summary_generation_prompt
         )
-        from app.agent_state import AgentState
+        from app.state import AgentState
     except ImportError as e:
         print(f"WARNING: Could not import V1 modules: {e}")
         print("Make sure yelp-navigator-v1 is in the correct location.")
