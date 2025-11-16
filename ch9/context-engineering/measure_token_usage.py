@@ -523,8 +523,9 @@ def generate_report(df: pd.DataFrame, output_file: str = "token_usage_report.md"
     report.append(tabulate(df, headers='keys', tablefmt='pipe', showindex=False))
     report.append("\n")
     
-    # Write to file
-    output_path = Path(__file__).parent / output_file
+    # Write to file in docs folder
+    output_path = Path(__file__).parent / "docs" / output_file
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(report))
     print(f"\n[SUCCESS] Report saved to: {output_path}")
     

@@ -85,9 +85,8 @@ https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
 - [`ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) - Detailed comparison of V1 vs V2 architectures
 - [`REFACTORING_VISUAL.md`](./docs/REFACTORING_VISUAL.md) - Visual guide to code structure improvements
 - [`TOKEN_MEASUREMENT_README.md`](./docs/TOKEN_MEASUREMENT_README.md) - Guide to measuring token usage
-- `measure_token_usage.py` - Token measurement automation script
-- `token_usage_report.md` - Token usage analysis and recommendations
-- `REFACTORING_SUMMARY.md` - Summary of redundancy elimination refactoring
+- [`measure_token_usage.py'](./measure_token_usage.py) - Token measurement automation script
+- [`token_usage_report.md`](./docs/token_usage_report.md) - Token usage analysis and recommendations
 
 ---
 
