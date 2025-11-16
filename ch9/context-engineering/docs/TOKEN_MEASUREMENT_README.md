@@ -4,11 +4,7 @@ This guide explains how to measure actual token usage between Yelp Navigator V1 
 
 ## Quick Start
 
-### 1. Install Dependencies
-
-```bash
-
-```
+[Assumes you've completed the setup](../../README.md#setup-instructions)
 
 ### 2. Run a Single Test
 
