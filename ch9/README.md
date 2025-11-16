@@ -32,7 +32,7 @@ TAVILY_API_KEY=your_tavily_key_here
 
 To obtain the API keys:
 - OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
-- Yelp Business Review API key: Register at [Yelp Business Review RapidAPI](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviewss)
+- Register at [Yelp Business Review RapidAPI](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
 - Tavily API key: Register at [Tavily](https://tavily.com)
 
 7. **LangGraph Studio (Optional):**
