@@ -21,6 +21,8 @@ Start the Hayhooks server to serve the pipelines:
 uv run hayhooks run --pipelines-dir pipelines
 ```
 
+**Note** Please ensure you have an active Yelp Business Review API key. For more information about how these endpoints work, please review the [Yelp Navigator Hayhooks Guide](../../ch8/yelp-navigator/yelp-navigator-hayhooks-guide.md).
+
 Leave this terminal running.
 
 ### Step 2: Set Up API Keys
@@ -70,8 +72,8 @@ https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
 - **State Management**: Minimal state with focused agent responsibilities
 
 ### Documentation
-- `ARCHITECTURE_COMPARISON.md` - Detailed comparison of V1 vs V2 architectures
-- `TOKEN_MEASUREMENT_README.md` - Guide to measuring token usage
+- [`ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) - Detailed comparison of V1 vs V2 architectures
+- [`TOKEN_MEASUREMENT_README.md`](./docs/TOKEN_MEASUREMENT_README.md) - Guide to measuring token usage
 - `measure_token_usage.py` - Token measurement automation script
 - `token_usage_report.md` - Token usage analysis and recommendations
 
