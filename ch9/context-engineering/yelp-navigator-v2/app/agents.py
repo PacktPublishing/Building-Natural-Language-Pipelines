@@ -42,9 +42,9 @@ def chat_completion_agent_node(state: AgentState) -> AgentState:
             reply = choices[0].get("message", {}).get("content", "")
         else:
             reply = str(output)
-        summary = f"💬 Chat Completion Response:\n{reply}"
+        summary = f"Chat Completion Response:\n{reply}"
     else:
-        summary = f"❌ Chat completion failed: {result.get('error', 'Unknown error')}"
+        summary = f"ERROR: Chat completion failed: {result.get('error', 'Unknown error')}"
     return {
         "messages": [AIMessage(content=summary)],
         "agent_outputs": agent_outputs,
@@ -66,7 +66,7 @@ def clarification_agent(state: AgentState) -> AgentState:
     if clarification_attempts >= 2:
         # Force completion with reasonable defaults
         return {
-            "messages": [AIMessage(content="⚠️ Using default values: searching for restaurants in United States with general detail level.")],
+            "messages": [AIMessage(content="WARNING: Using default values: searching for restaurants in United States with general detail level.")],
             "clarified_query": "restaurants",
             "clarified_location": "United States",
             "detail_level": "general",
@@ -135,14 +135,14 @@ def search_agent_node(state: AgentState) -> AgentState:
     # Create summary message
     if result.get("success"):
         businesses = result.get("businesses", [])
-        summary = f"""🔍 Search Agent Results:
+        summary = f"""Search Agent Results:
 Found {result.get('result_count', 0)} businesses total
 Top {len(businesses)} results retrieved:
 """
         for i, biz in enumerate(businesses[:5], 1):
-            summary += f"\n{i}. {biz['name']} - {biz['rating']}⭐ ({biz['review_count']} reviews) - {biz.get('price_range', 'N/A')}"
+            summary += f"\n{i}. {biz['name']} - Rating: {biz['rating']}/5 ({biz['review_count']} reviews) - {biz.get('price_range', 'N/A')}"
     else:
-        summary = f"❌ Search failed: {result.get('error', 'Unknown error')}"
+        summary = f"ERROR: Search failed: {result.get('error', 'Unknown error')}"
     
     # Determine next agent based on detail level
     detail_level = state.get("detail_level", "general")
@@ -169,7 +169,7 @@ def details_agent_node(state: AgentState) -> AgentState:
     
     if not search_output.get("success"):
         return {
-            "messages": [AIMessage(content="⚠️ Skipping details - no search results available")],
+            "messages": [AIMessage(content="WARNING: Skipping details - no search results available")],
             "next_agent": "summary"
         }
     
@@ -184,14 +184,14 @@ def details_agent_node(state: AgentState) -> AgentState:
     # Create summary message
     if result.get("success"):
         details = result.get("businesses_with_details", [])
-        summary = f"""🌐 Details Agent Results:
+        summary = f"""Details Agent Results:
 Retrieved detailed information for {result.get('document_count', 0)} businesses:
 """
         for i, biz in enumerate(details[:3], 1):
-            website_status = "✅ Has website content" if biz['has_website_info'] else "❌ No website info"
+            website_status = "[Website content available]" if biz['has_website_info'] else "[No website info]"
             summary += f"\n{i}. {biz['name']} - {website_status}"
     else:
-        summary = f"❌ Details fetch failed: {result.get('error', 'Unknown error')}"
+        summary = f"ERROR: Details fetch failed: {result.get('error', 'Unknown error')}"
     
     # Determine next agent
     detail_level = state.get("detail_level", "general")
@@ -212,7 +212,7 @@ def sentiment_agent_node(state: AgentState) -> AgentState:
     
     if not search_output.get("success"):
         return {
-            "messages": [AIMessage(content="⚠️ Skipping sentiment analysis - no search results available")],
+            "messages": [AIMessage(content="WARNING: Skipping sentiment analysis - no search results available")],
             "next_agent": "summary"
         }
     
@@ -227,7 +227,7 @@ def sentiment_agent_node(state: AgentState) -> AgentState:
     # Create summary message
     if result.get("success"):
         sentiments = result.get("sentiment_summaries", [])
-        summary = f"""💬 Sentiment Agent Results:
+        summary = f"""Sentiment Agent Results:
 Analyzed reviews for {result.get('analyzed_count', 0)} businesses:
 """
         for i, biz in enumerate(sentiments[:3], 1):
@@ -235,9 +235,9 @@ Analyzed reviews for {result.get('analyzed_count', 0)} businesses:
             if total > 0:
                 positive_pct = (biz['positive_count'] / total) * 100
                 summary += f"\n{i}. {biz['name']}"
-                summary += f"\n   Sentiment: {biz['positive_count']}😊 {biz['neutral_count']}😐 {biz['negative_count']}😞 ({positive_pct:.0f}% positive)"
+                summary += f"\n   Sentiment: Positive: {biz['positive_count']}, Neutral: {biz['neutral_count']}, Negative: {biz['negative_count']} ({positive_pct:.0f}% positive)"
     else:
-        summary = f"❌ Sentiment analysis failed: {result.get('error', 'Unknown error')}"
+        summary = f"ERROR: Sentiment analysis failed: {result.get('error', 'Unknown error')}"
     
     return {
         "messages": [AIMessage(content=summary)],
@@ -260,7 +260,7 @@ def supervisor_approval_agent(state: AgentState) -> AgentState:
     
     if approval_attempts >= MAX_APPROVAL_ATTEMPTS:
         return {
-            "messages": [AIMessage(content="✅ Supervisor: Approval limit reached. Accepting current summary.")],
+            "messages": [AIMessage(content="APPROVED: Supervisor: Approval limit reached. Accepting current summary.")],
             "next_agent": "end",
             "approval_attempts": approval_attempts + 1
         }
@@ -281,7 +281,7 @@ def supervisor_approval_agent(state: AgentState) -> AgentState:
     if "APPROVED" in evaluation_text and "NEEDS_REVISION" not in evaluation_text:
         # Summary approved!
         return {
-            "messages": [AIMessage(content="✅ Supervisor: Summary approved! All requirements met.")],
+            "messages": [AIMessage(content="APPROVED: Supervisor: Summary approved! All requirements met.")],
             "next_agent": "end",
             "approval_attempts": approval_attempts + 1
         }
@@ -302,7 +302,7 @@ def supervisor_approval_agent(state: AgentState) -> AgentState:
     if not feedback:
         feedback = "Please improve the summary to better address the user's requirements."
     
-    supervisor_message = f"""⚠️ Supervisor: Summary needs revision.
+    supervisor_message = f"""NEEDS_REVISION: Supervisor: Summary needs revision.
 Feedback: {feedback}
 Action: Re-running {rerun_agent} agent..."""
     
@@ -339,7 +339,7 @@ def summary_agent_node(state: AgentState) -> AgentState:
     final_summary = response.content
     
     return {
-        "messages": [AIMessage(content=f"\n\n📝 SUMMARY DRAFT:\n\n{final_summary}")],
+        "messages": [AIMessage(content=f"\n\nSUMMARY DRAFT:\n\n{final_summary}")],
         "final_summary": final_summary,
         "next_agent": "supervisor_approval",
         "needs_revision": False  # Reset flag after generating new summary

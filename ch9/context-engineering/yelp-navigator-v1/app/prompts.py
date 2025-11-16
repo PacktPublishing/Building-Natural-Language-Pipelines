@@ -31,9 +31,9 @@ def supervisor_approval_prompt(clarified_query: str, clarified_location: str, de
                                 agent_outputs: dict, final_summary: str) -> str:
     """Generate the supervisor approval prompt with current state information."""
     
-    search_available = "✓ Available" if agent_outputs.get("search", {}).get("success") else "✗ Not available"
-    details_available = "✓ Available" if agent_outputs.get("details", {}).get("success") else "✗ Not available"
-    sentiment_available = "✓ Available" if agent_outputs.get("sentiment", {}).get("success") else "✗ Not available"
+    search_available = "[Available]" if agent_outputs.get("search", {}).get("success") else "[Not available]"
+    details_available = "[Available]" if agent_outputs.get("details", {}).get("success") else "[Not available]"
+    sentiment_available = "[Available]" if agent_outputs.get("sentiment", {}).get("success") else "[Not available]"
     
     return f"""You are a supervisor reviewing a summary for quality and completeness.
 
@@ -89,7 +89,7 @@ Detail level requested: {detail_level}
     
     # Add revision feedback if this is a revision
     if needs_revision and revision_feedback:
-        context += f"\n⚠️ SUPERVISOR FEEDBACK (please address this):\n{revision_feedback}\n"
+        context += f"\n*** SUPERVISOR FEEDBACK (please address this): ***\n{revision_feedback}\n"
     
     context += "\nAgent Results:\n"
     
@@ -111,9 +111,9 @@ Detail level requested: {detail_level}
         for i, biz in enumerate(details.get("businesses_with_details", [])[:3], 1):
             context += f"{i}. {biz['name']}\n"
             if biz['has_website_info']:
-                context += f"   ✓ Website information available ({biz['website_content_length']} chars)\n"
+                context += f"   [Website information available ({biz['website_content_length']} chars)]\n"
             else:
-                context += f"   ✗ No website information found\n"
+                context += f"   [No website information found]\n"
     
     # Add sentiment if available
     if "sentiment" in agent_outputs and agent_outputs["sentiment"].get("success"):

@@ -141,7 +141,7 @@ def simulate_v1_workflow(query: str, location: str, detail_level: str = "general
         )
         from app.agent_state import AgentState
     except ImportError as e:
-        print(f"⚠️  Could not import V1 modules: {e}")
+        print(f"WARNING: Could not import V1 modules: {e}")
         print("Make sure yelp-navigator-v1 is in the correct location.")
         return tracer
     
@@ -162,7 +162,7 @@ def simulate_v1_workflow(query: str, location: str, detail_level: str = "general
     
     # 2. Search Agent - simulate with mock data
     search_context = f"Search for: {query} in {location}\n" + "Found 10 businesses..."
-    search_output = "🔍 Search Agent Results:\nFound 10 businesses..."
+    search_output = "Search Agent Results:\nFound 10 businesses..."
     tracer.measure_prompt("search", search_context, search_output)
     
     # Simulate storing search results in state using actual pipeline structure
@@ -214,7 +214,7 @@ def simulate_v1_workflow(query: str, location: str, detail_level: str = "general
     # 3. Details Agent (if detail_level requires it)
     if detail_level in ["detailed", "reviews"]:
         details_context = f"Get details for businesses from search\n{json.dumps(state['agent_outputs']['search'], indent=2)}"
-        details_output = "🌐 Details Agent Results:\nRetrieved detailed information..."
+        details_output = "Details Agent Results:\nRetrieved detailed information..."
         tracer.measure_prompt("details", details_context, details_output)
         
         state["agent_outputs"]["details"] = {
@@ -252,7 +252,7 @@ def simulate_v1_workflow(query: str, location: str, detail_level: str = "general
     # 4. Sentiment Agent (if reviews requested)
     if detail_level == "reviews":
         sentiment_context = f"Analyze sentiment for businesses\n{json.dumps(state['agent_outputs']['search'], indent=2)}"
-        sentiment_output = "💬 Sentiment Agent Results:\nAnalyzed reviews for 5 businesses..."
+        sentiment_output = "Sentiment Agent Results:\nAnalyzed reviews for 5 businesses..."
         tracer.measure_prompt("sentiment", sentiment_context, sentiment_output)
         
         state["agent_outputs"]["sentiment"] = {
@@ -346,7 +346,7 @@ def simulate_v2_workflow(query: str, location: str, detail_level: str = "general
         )
         from app.state import AgentState, ClarificationDecision, SupervisorDecision
     except ImportError as e:
-        print(f"⚠️  Could not import V2 modules: {e}")
+        print(f"WARNING: Could not import V2 modules: {e}")
         print(f"V2 Path: {v2_path}")
         print("Make sure yelp-navigator-v2 is in the correct location.")
         return tracer
@@ -460,12 +460,12 @@ def compare_workflows(test_cases: List[Dict[str, str]]) -> pd.DataFrame:
         print(f"{'='*80}")
         
         # Run V1
-        print("\n🏗️  Running V1 workflow...")
+        print("\n[Running V1 workflow...]")
         v1_tracer = simulate_v1_workflow(query, location, detail_level)
         v1_total = v1_tracer.get_total_tokens()
         
         # Run V2
-        print("🏗️  Running V2 workflow...")
+        print("[Running V2 workflow...]")
         v2_tracer = simulate_v2_workflow(query, location, detail_level)
         v2_total = v2_tracer.get_total_tokens()
         
@@ -483,17 +483,17 @@ def compare_workflows(test_cases: List[Dict[str, str]]) -> pd.DataFrame:
         })
         
         # Print breakdown
-        print(f"\n📊 V1 Breakdown:")
+        print(f"\n[V1 Breakdown]")
         for m in v1_tracer.measurements:
             print(f"  {m.operation:25s} {m.total_tokens:6d} tokens")
         print(f"  {'TOTAL':25s} {v1_total:6d} tokens")
         
-        print(f"\n📊 V2 Breakdown:")
+        print(f"\n[V2 Breakdown]")
         for m in v2_tracer.measurements:
             print(f"  {m.operation:25s} {m.total_tokens:6d} tokens")
         print(f"  {'TOTAL':25s} {v2_total:6d} tokens")
         
-        print(f"\n✨ Reduction: {reduction_tokens} tokens ({reduction_pct:.1f}%)")
+        print(f"\n[Reduction: {reduction_tokens} tokens ({reduction_pct:.1f}%)]")
     
     return pd.DataFrame(results)
 
@@ -536,7 +536,7 @@ def generate_report(df: pd.DataFrame, output_file: str = "token_usage_report.md"
     # Write to file
     output_path = Path(__file__).parent / output_file
     output_path.write_text("\n".join(report))
-    print(f"\n✅ Report saved to: {output_path}")
+    print(f"\n[SUCCESS] Report saved to: {output_path}")
     
     return "\n".join(report)
 

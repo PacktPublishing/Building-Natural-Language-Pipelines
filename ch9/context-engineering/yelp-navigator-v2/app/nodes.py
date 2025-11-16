@@ -124,11 +124,11 @@ def general_chat_node(state: AgentState):
             
         if not reply:
             # Fallback if structure is unexpected
-            reply = f"⚠️ Received response but couldn't extract content: {response_data}"
+            reply = f"WARNING: Received response but couldn't extract content: {response_data}"
     else:
         # Handle error case
         error_msg = response.get('error', 'Unknown error')
-        reply = f"❌ Chat completion failed: {error_msg}"
+        reply = f"ERROR: Chat completion failed: {error_msg}"
 
     return Command(
         goto=END,
