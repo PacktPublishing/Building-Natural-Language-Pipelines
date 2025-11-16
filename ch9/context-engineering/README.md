@@ -8,6 +8,8 @@ This project uses serialized Haystack pipelines from the `ch8/yelp-navigator` di
 
 ### Step 1: Build and Run Haystack Pipelines
 
+Complete the [setup instructions](../README.md#setup-instructions)
+
 Navigate to the `ch8` directory and build the pipelines:
 
 ```sh
