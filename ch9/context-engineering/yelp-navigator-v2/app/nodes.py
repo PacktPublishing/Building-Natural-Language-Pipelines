@@ -11,7 +11,7 @@ from .prompts import clarification_system_prompt, supervisor_prompt, summary_pro
 from shared.config import get_llm
 
 # Initialize the language model
-llm = get_llm(model="gpt-4o")
+llm = get_llm()
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat", END]]:
     """
