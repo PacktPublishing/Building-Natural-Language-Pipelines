@@ -8,12 +8,10 @@ from .state import AgentState, ClarificationDecision, SupervisorDecision
 from .configuration import Configuration
 from .tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
 from .prompts import clarification_system_prompt, supervisor_prompt, summary_prompt
+from shared.config import get_llm
 
-# Initialize your model (ensure you have your LLM setup here)
-from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
-load_dotenv(".env")  # Load environment variables from .env file
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+# Initialize the language model
+llm = get_llm(model="gpt-4o")
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat", END]]:
     """
@@ -150,7 +148,6 @@ def summary_node(state: AgentState):
     )
 
 # --- Wrapper Nodes for Tools (Adapters) ---
-# These adapt your existing tools to the graph state
 
 def search_tool_node(state: AgentState):
     query = f"{state['search_query']} in {state['search_location']}"

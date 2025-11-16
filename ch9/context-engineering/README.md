@@ -63,21 +63,31 @@ https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
 
 ## Contents
 
+### Shared Module
+- **Location**: `shared/`
+- **Purpose**: Common tools, prompts, and configuration used by both V1 and V2
+- **Files**: `tools.py`, `prompts.py`, `config.py`
+- **Benefits**: Eliminates code duplication, single source of truth for API tools
+
 ### Yelp Navigator V1
 - **Location**: `yelp-navigator-v1/`
 - **Architecture**: Monolithic agent-centric design with tightly coupled agents
 - **State Management**: Single state object with all fields
+- **Dependencies**: Uses shared module for tools and prompts
 
 ### Yelp Navigator V2
 - **Location**: `yelp-navigator-v2/`
 - **Architecture**: Supervisor pattern with tool separation
 - **State Management**: Minimal state with focused agent responsibilities
+- **Dependencies**: Uses shared module for tools and prompts
 
 ### Documentation
 - [`ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) - Detailed comparison of V1 vs V2 architectures
+- [`REFACTORING_VISUAL.md`](./docs/REFACTORING_VISUAL.md) - Visual guide to code structure improvements
 - [`TOKEN_MEASUREMENT_README.md`](./docs/TOKEN_MEASUREMENT_README.md) - Guide to measuring token usage
 - `measure_token_usage.py` - Token measurement automation script
 - `token_usage_report.md` - Token usage analysis and recommendations
+- `REFACTORING_SUMMARY.md` - Summary of redundancy elimination refactoring
 
 ---
 

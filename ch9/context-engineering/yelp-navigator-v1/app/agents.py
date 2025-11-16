@@ -2,19 +2,12 @@ from typing import Dict, Any
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 
 from .agent_state import AgentState
-from .tools import search_businesses, get_business_details, analyze_reviews_sentiment
-from .prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
-# Initialize the language model (should be configured with API key)
-# Create a local model with Ollama
-from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
+from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment
+from shared.prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
+from shared.config import get_llm
 
-load_dotenv()
-
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    temperature=0
-)
+# Initialize the language model
+llm = get_llm()
 
 
 def clarification_agent(state: AgentState) -> AgentState:
