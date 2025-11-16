@@ -101,9 +101,9 @@ def search_agent_node(state: AgentState) -> AgentState:
     if result.get("success"):
         businesses = result.get("businesses", [])
         summary = f"""Search Agent Results:
-Found {result.get('result_count', 0)} businesses total
-Top {len(businesses)} results retrieved:
-"""
+                    Found {result.get('result_count', 0)} businesses total
+                    Top {len(businesses)} results retrieved:
+                    """
         for i, biz in enumerate(businesses[:5], 1):
             summary += f"\n{i}. {biz['name']} - Rating: {biz['rating']}/5 ({biz['review_count']} reviews) - {biz.get('price_range', 'N/A')}"
     else:
