@@ -37,7 +37,7 @@ To obtain the API keys:
 
 7. **LangGraph Studio (Optional):**
 
-For visual debugging and testing of LangGraph agents, download [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio).
+For visual debugging and testing of LangGraph agents, get a LangSmith API key [LangSmith Observability](https://www.langchain.com/langsmith/observability).
 
 ---
 
