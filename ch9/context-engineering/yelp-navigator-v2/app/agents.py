@@ -5,6 +5,7 @@ from .tools import search_businesses, get_business_details, analyze_reviews_sent
 from .prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
+import os
 
 load_dotenv(".env")
 
@@ -12,7 +13,7 @@ load_dotenv(".env")
 # Create a local model with Ollama
 
 llm = ChatOpenAI(
-    model="gpt-4o-mini",
+    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
     temperature=0
 )
 

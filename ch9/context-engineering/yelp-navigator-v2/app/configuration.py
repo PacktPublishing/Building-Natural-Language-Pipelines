@@ -1,14 +1,16 @@
 import os
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass,fields
 from typing import Any, Optional
 from langchain_core.runnables import RunnableConfig
+from dotenv import load_dotenv
+load_dotenv(".env")  # Load environment variables from .env file
 
 @dataclass(kw_only=True)
 class Configuration:
     """The configuration for the Yelp Navigator."""
     
     # Models
-    model_name: str = "gpt-4o-mini"
+    model_name: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     
     # Behavior
     allow_clarification: bool = True
