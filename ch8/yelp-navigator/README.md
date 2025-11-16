@@ -132,7 +132,6 @@ Search Agent (Pipeline 1) - always runs
 - **Quality Control Loop**: Supervisor approval reviews summaries and can request revisions (max 2 attempts)
 - **Fallback Mechanisms**: Handles ambiguous queries and prevents infinite loops
 - **Flexible Report Generation**: Adapts output depth based on available data
-- **Production-Ready**: Includes error handling, logging, and configuration management
 
 ---
 
