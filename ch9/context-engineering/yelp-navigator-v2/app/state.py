@@ -41,5 +41,8 @@ class AgentState(MessagesState):
     # Pipeline Data (Full Output for Downstream Tools)
     pipeline_data: Dict[str, Any] = {}
     
+    # Agent Outputs (Compatible with v1 format for detailed summaries)
+    agent_outputs: Dict[str, Any] = {}
+    
     # Final Output
     final_summary: str = ""

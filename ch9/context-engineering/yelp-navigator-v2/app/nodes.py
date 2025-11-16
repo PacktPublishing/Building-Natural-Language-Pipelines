@@ -8,6 +8,7 @@ from .state import AgentState, ClarificationDecision, SupervisorDecision
 from .configuration import Configuration
 from .tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
 from .prompts import clarification_system_prompt, supervisor_prompt, summary_prompt
+from shared.prompts import summary_generation_prompt
 from shared.config import get_llm
 
 # Initialize the language model
@@ -134,13 +135,18 @@ def general_chat_node(state: AgentState):
     )
 
 def summary_node(state: AgentState):
-    """Generates the final report."""
-    # Use prompt from prompts.py
-    prompt = summary_prompt(
-        search_query=state['search_query'],
-        search_location=state['search_location'],
-        raw_results=state['raw_results']
+    """Generates the final report using the detailed v1-style prompt."""
+    # Use the detailed v1 prompt from shared/prompts.py
+    # agent_outputs is now stored directly in state by the tool nodes
+    prompt = summary_generation_prompt(
+        clarified_query=state['search_query'],
+        clarified_location=state['search_location'],
+        detail_level=state['detail_level'],
+        agent_outputs=state.get('agent_outputs', {}),
+        needs_revision=False,
+        revision_feedback=""
     )
+    
     response = llm.invoke([SystemMessage(content=prompt)])
     return Command(
         goto=END,
@@ -154,12 +160,21 @@ def search_tool_node(state: AgentState):
     result = search_businesses.invoke({"query": query})
     # Store the full output for downstream pipelines
     full_output = result.get('full_output', {}) if result.get('success') else {}
-    # Also store a human-readable summary in raw_results
+    
+    # Store in state as agent_outputs dict (v1 compatible format)
+    existing_outputs = state.get('agent_outputs', {})
+    existing_outputs['search'] = result
+    
+    # Also store a human-readable summary in raw_results for supervisor
+    raw_results = state.get('raw_results', [])
+    raw_results.append(f"Search Results: {str(result)}")
+    
     return Command(
         goto="supervisor", # Return to supervisor to decide next step
         update={
-            "raw_results": [f"Search Results: {str(result)}"],
-            "pipeline_data": full_output
+            "raw_results": raw_results,
+            "pipeline_data": full_output,
+            "agent_outputs": existing_outputs
         }
     )
 
@@ -167,16 +182,38 @@ def details_tool_node(state: AgentState):
     # Use the actual pipeline data from search results
     pipeline1_output = state.get('pipeline_data', {})
     result = get_business_details.invoke({"pipeline1_output": pipeline1_output})
+    
+    # Store in state as agent_outputs dict (v1 compatible format)
+    existing_outputs = state.get('agent_outputs', {})
+    existing_outputs['details'] = result
+    
+    raw_results = state.get('raw_results', [])
+    raw_results.append(f"Details: {str(result)}")
+    
     return Command(
         goto="supervisor",
-        update={"raw_results": [f"Details: {str(result)}"]}
+        update={
+            "raw_results": raw_results,
+            "agent_outputs": existing_outputs
+        }
     )
 
 def sentiment_tool_node(state: AgentState):
     # Use the actual pipeline data from search results
     pipeline1_output = state.get('pipeline_data', {})
     result = analyze_reviews_sentiment.invoke({"pipeline1_output": pipeline1_output})
+    
+    # Store in state as agent_outputs dict (v1 compatible format)
+    existing_outputs = state.get('agent_outputs', {})
+    existing_outputs['sentiment'] = result
+    
+    raw_results = state.get('raw_results', [])
+    raw_results.append(f"Sentiment: {str(result)}")
+    
     return Command(
         goto="supervisor",
-        update={"raw_results": [f"Sentiment: {str(result)}"]}
+        update={
+            "raw_results": raw_results,
+            "agent_outputs": existing_outputs
+        }
     )
