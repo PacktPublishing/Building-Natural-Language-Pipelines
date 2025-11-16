@@ -254,8 +254,8 @@ def simulate_v1_workflow(query: str, location: str, detail_level: str = "general
                     "positive_count": 80,
                     "neutral_count": 15,
                     "negative_count": 5,
-                    "top_positive_reviews": [{"text": "Great food and service!", "rating": 5}],
-                    "bottom_negative_reviews": [{"text": "Slow service", "rating": 2}]
+                    "top_positive_reviews": ["Great food and service! The atmosphere was wonderful and staff very attentive. Highly recommend!"],
+                    "bottom_negative_reviews": ["Slow service and food was cold when it arrived. Very disappointed with the experience."]
                 }
                 for i in range(5)
             ],
