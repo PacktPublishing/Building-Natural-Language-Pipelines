@@ -39,9 +39,28 @@ class PipelineWrapper(BasePipelineWrapper):
         """Initialize Pipeline 1: Business Search with NER"""
         log.info("Setting up Pipeline 1: Business Search with NER...")
         
+        # Load environment variables
+        from dotenv import load_dotenv
+        load_dotenv()
+        
         # Load the serialized pipeline
         pipeline_yaml = (Path(__file__).parent / "pipeline1_business_search_ner.yaml").read_text()
         self.pipeline = Pipeline.loads(pipeline_yaml)
+        
+        # Reinitialize the YelpBusinessSearch component with the API key
+        rapid_api_key = os.getenv("RAPID_API_KEY")
+        if not rapid_api_key:
+            log.warning("RAPID_API_KEY not found in environment variables")
+        else:
+            log.info(f"Loaded RAPID_API_KEY (length: {len(rapid_api_key)} chars)")
+            # Get the existing component and set its api_key
+            yelp_search_component = self.pipeline.get_component("yelp_search")
+            yelp_search_component.api_key = rapid_api_key
+            yelp_search_component.headers = {
+                "x-rapidapi-key": rapid_api_key,
+                "x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
+            }
+            log.info("Successfully injected API key into YelpBusinessSearch component")
         
         log.info("Pipeline 1 setup complete")
     

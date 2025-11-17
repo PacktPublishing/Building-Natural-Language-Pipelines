@@ -39,7 +39,7 @@ except ImportError:
     )
 
 # Load environment variables
-load_dotenv("../../.env")
+load_dotenv(".env")
 RAPID_API_KEY = os.getenv("RAPID_API_KEY")
 
 

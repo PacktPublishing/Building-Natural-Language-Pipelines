@@ -35,7 +35,7 @@ except ImportError:
     )
 
 # Load environment variables
-load_dotenv("../../.env")
+load_dotenv(".env")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
