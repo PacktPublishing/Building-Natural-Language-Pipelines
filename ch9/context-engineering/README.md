@@ -16,7 +16,7 @@ Navigate to the `ch8` directory and build the pipelines:
 
 ```sh
 cd ../../ch8/yelp-navigator
-uv run ./build_all_pipelines.sh
+uv run sh build_all_pipelines.sh && sh start_hayhooks.sh
 ```
 
 Start the Hayhooks server to serve the pipelines:
