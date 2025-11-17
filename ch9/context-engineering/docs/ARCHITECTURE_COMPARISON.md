@@ -2,17 +2,63 @@
 
 Two approaches to building a context-efficient AI agent, demonstrating how state management impacts token usage and maintainability.
 
-## Core Architectural Difference
+## Core Architectural Differences
 
-### V1: Monolithic State
-Every node receives the full state object with all accumulated data.
+### V1: Agent Nodes
+- **Combined logic**: Each node does tool execution + decision-making + routing
+- **Return dictionaries**: Nodes return state updates with `next_agent` field
+- **Sequential flow**: Hard-coded conditional edges based on `next_agent`
 
-### V2: Dual Context Streams  
-Separates human-readable summaries (for LLM) from structured data (for tools).
+### V2: Supervisor + Tool Nodes  
+- **Separated concerns**: Supervisor makes decisions, tool nodes execute
+- **Return Commands**: Uses LangGraph `Command` pattern for explicit routing
+- **Dynamic flow**: Supervisor decides next step based on accumulated state
+
+## Node Design Comparison
+
+### V1: Agent Nodes (Combined Logic)
+
+```python
+def search_node(state: AgentState) -> AgentState:
+    """Does everything: tool call + routing decision"""
+    # 1. Execute tool
+    result = search_businesses.invoke({"query": full_query})
+    
+    # 2. Store in agent_outputs
+    agent_outputs["search"] = result
+    
+    # 3. Decide next step
+    if detail_level == "general":
+        next_agent = "summary"
+    elif detail_level == "detailed":
+        next_agent = "details"
+    
+    # 4. Return state update with routing
+    return {"agent_outputs": agent_outputs, "next_agent": next_agent}
+```
+
+**Pattern**: Each node contains tool execution, state storage, and routing logic.
+
+### V2: Supervisor + Tool Nodes (Separated)
+
+```python
+def supervisor_node(state: AgentState) -> Command:
+    """Only decides what to do next"""
+    decision = supervisor_model.invoke([SystemMessage(context)])
+    return Command(goto=mapping[decision.next_action])
+
+def search_tool_node(state: AgentState) -> Command:
+    """Only executes the search tool"""
+    result = search_businesses.invoke({"query": query})
+    existing_outputs['search'] = result
+    return Command(goto="supervisor", update={"agent_outputs": existing_outputs})
+```
+
+**Pattern**: Supervisor decides, tools execute, supervisor decides again.
 
 ## State Management
 
-### V1: Monolithic State (13 fields)
+### V1: Monolithic (13 fields)
 
 ```python
 class AgentState(TypedDict):
@@ -21,18 +67,18 @@ class AgentState(TypedDict):
     # ... 11 more fields
 ```
 
-**Issue:** Every node receives the entire `agent_outputs` blob with all accumulated data.
+**Issue:** Every node receives entire `agent_outputs` blob with all accumulated data.
 
-### V2: Dual Context Streams (7 fields)
+### V2: Dual Context (7 fields)
 
 ```python
 class AgentState(MessagesState):
-    raw_results: List[str]       # Summaries for LLM
-    pipeline_data: Dict[str, Any] # Structured data for tools
+    raw_results: List[str]       # Summaries for LLM (unused currently)
+    agent_outputs: Dict[str, Any] # Tool results (same as V1)
     # ... 5 more fields
 ```
 
-**Benefit:** LLM sees only concise summaries; tools access structured data separately.
+**Note:** V2 still uses `agent_outputs` for compatibility with shared summary prompt.
 
 ## Token Efficiency
 
@@ -45,34 +91,28 @@ class AgentState(MessagesState):
 
 ### Why V2 Saves Tokens
 
-1. **Supervisor sees minimal context**: Boolean flags instead of full state
-2. **Summary uses concise data**: `raw_results` summaries vs. nested `agent_outputs`  
-3. **Progressive disclosure**: Each node gets only what it needs
+1. **Supervisor uses boolean flags**: Sees `has_search_data=True` instead of full search results
+2. **Multiple small LLM calls**: Supervisor routes with minimal context (300 tokens) multiple times
+3. **V1 nodes see full state**: Each node receives entire accumulated `agent_outputs` blob
 
 ### Cost Impact (GPT-4 @ $0.03/1K tokens)
 
 - **10K simple queries/month**: ~$56/month savings
 - **10K mixed queries/month**: ~$300/month savings (estimated)
 
-## Example: How Token Usage Differs
+## Example: Token Savings Breakdown
 
-### V1 Summary Prompt (1,200+ tokens)
-```python
-# Summary node receives entire agent_outputs
-summary_prompt = f"""
-Create summary from:
-{json.dumps(state['agent_outputs'])}  # Full nested data
-"""
+### V1 Workflow (1,167 tokens for simple query)
 ```
+Clarification (291) → Search (25) → Summary (482) → Supervisor Approval (379)
+```
+Each node sees full state; summary receives entire `agent_outputs`.
 
-### V2 Summary Prompt (100 tokens)
-```python
-# Summary node receives concise summaries
-summary_prompt = f"""
-Create summary from:
-{state['raw_results']}  # ["Search: Found 10 businesses", "Sentiment: 80% positive"]
-"""
+### V2 Workflow (981 tokens for simple query)  
 ```
+Clarification (310) → Supervisor (311) → Search → Supervisor (311) → Summary (56)
+```
+Supervisor makes multiple routing decisions with boolean flags only (300 tokens each).
 
 ## Key Takeaways
 
