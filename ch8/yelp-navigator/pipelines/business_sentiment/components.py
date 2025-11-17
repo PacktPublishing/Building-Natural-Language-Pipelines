@@ -10,6 +10,10 @@ from haystack import component, Document
 from haystack.components.routers import TransformersTextRouter
 from typing import List, Dict, Any
 import logging
+import time
+import os
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Configure logging
 logging.basicConfig(
@@ -94,22 +98,32 @@ class YelpReviewsFetcher:
         - documents (List[Document]): Documents containing review text and metadata
     """
     
-    def __init__(self, api_key: str, max_reviews_per_business: int = 10):
+    def __init__(self, api_key: str = None, max_reviews_per_business: int = 10):
         """
         Initialize the reviews fetcher.
         
         Args:
-            api_key: RapidAPI key for Yelp Business Reviews API
+            api_key: RapidAPI key for Yelp Business Reviews API (loads from RAPID_API_KEY env var if not provided)
             max_reviews_per_business: Maximum reviews to fetch per business
         """
-        self.api_key = api_key
+        # IMPORTANT: Store None instead of actual key to prevent serialization exposure
+        # The actual key will be loaded at runtime in the run() method
+        self.api_key = None  # Always store None to prevent YAML exposure
+        self._runtime_api_key = api_key or os.getenv('RAPID_API_KEY')
+        
+        if not self._runtime_api_key:
+            raise ValueError("API key must be provided or set in RAPID_API_KEY environment variable")
+        
         self.base_url = "https://yelp-business-reviews.p.rapidapi.com/reviews"
         self.max_reviews = max_reviews_per_business
         self.headers = {
-            "x-rapidapi-key": self.api_key,
+            "x-rapidapi-key": self._runtime_api_key,
             "x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
         }
         self.logger = logging.getLogger(__name__ + ".YelpReviewsFetcher")
+        
+        # Rate limiting: delay between requests (in seconds)
+        self.request_delay = 0.5  # 500ms between requests to avoid rate limits
     
     @component.output_types(documents=List[Document])
     def run(self, business_ids: List[str]) -> Dict[str, List[Document]]:
@@ -122,45 +136,92 @@ class YelpReviewsFetcher:
         Returns:
             Dictionary with 'documents' key containing review Documents
         """
+        # Reload API key at runtime if not already set (for deserialized pipelines)
+        if not hasattr(self, '_runtime_api_key') or not self._runtime_api_key:
+            self._runtime_api_key = os.getenv('RAPID_API_KEY')
+            if not self._runtime_api_key:
+                raise ValueError("RAPID_API_KEY environment variable must be set")
+            self.headers = {
+                "x-rapidapi-key": self._runtime_api_key,
+                "x-rapidapi-host": "yelp-business-reviews.p.rapidapi.com"
+            }
+            self.logger.info("Loaded API key from environment at runtime")
+        
         self.logger.info(f"Fetching reviews for {len(business_ids)} businesses")
         all_documents = []
+        successful_fetches = 0
+        failed_fetches = 0
         
-        for biz_id in business_ids:
+        for idx, biz_id in enumerate(business_ids):
             try:
                 # Construct URL with business ID
                 url = f"{self.base_url}/{biz_id}"
                 
-                self.logger.debug(f"Fetching reviews for business: {biz_id}")
+                self.logger.debug(f"Fetching reviews for business {idx+1}/{len(business_ids)}: {biz_id}")
                 
-                # Execute API request
-                response = requests.get(url, headers=self.headers)
-                response.raise_for_status()
-                results = response.json()
+                # Execute API request with retry logic
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        response = requests.get(url, headers=self.headers, timeout=10)
+                        
+                        # Handle rate limiting
+                        if response.status_code == 429:
+                            retry_after = int(response.headers.get('Retry-After', 2))
+                            self.logger.warning(f"Rate limit hit for {biz_id}, waiting {retry_after}s before retry {attempt+1}/{max_retries}")
+                            time.sleep(retry_after)
+                            continue
+                        
+                        # Handle authentication errors
+                        if response.status_code == 401:
+                            self.logger.error(f"Authentication failed for business {biz_id}. Check API key.")
+                            failed_fetches += 1
+                            break
+                        
+                        response.raise_for_status()
+                        results = response.json()
+                        
+                        # Extract reviews
+                        reviews = results.get('reviews', [])
+                        self.logger.info(f"Fetched {len(reviews)} reviews for business {biz_id}")
+                        
+                        # Create documents for each review (up to max_reviews)
+                        for i, review in enumerate(reviews[:self.max_reviews]):
+                            doc = Document(
+                                content=review.get('text', ''),
+                                meta={
+                                    "business_id": biz_id,
+                                    "review_id": review.get('id', f"{biz_id}_{i}"),
+                                    "rating": review.get('rating', 0),
+                                    "user_name": review.get('user', {}).get('name', 'Anonymous'),
+                                    "review_url": review.get('url', ''),
+                                    "time_created": review.get('timeCreated', ''),
+                                    "review_index": i
+                                }
+                            )
+                            all_documents.append(doc)
+                        
+                        successful_fetches += 1
+                        break  # Success, exit retry loop
+                        
+                    except requests.exceptions.RequestException as e:
+                        if attempt == max_retries - 1:
+                            self.logger.error(f"Failed to fetch reviews for {biz_id} after {max_retries} attempts: {e}")
+                            failed_fetches += 1
+                        else:
+                            self.logger.warning(f"Request failed for {biz_id}, attempt {attempt+1}/{max_retries}: {e}")
+                            time.sleep(1 * (attempt + 1))  # Exponential backoff
                 
-                # Extract reviews
-                reviews = results.get('reviews', [])
-                self.logger.info(f"Fetched {len(reviews)} reviews for business {biz_id}")
-                
-                # Create documents for each review (up to max_reviews)
-                for i, review in enumerate(reviews[:self.max_reviews]):
-                    doc = Document(
-                        content=review.get('text', ''),
-                        meta={
-                            "business_id": biz_id,
-                            "review_id": review.get('id', f"{biz_id}_{i}"),
-                            "rating": review.get('rating', 0),
-                            "user_name": review.get('user', {}).get('name', 'Anonymous'),
-                            "review_url": review.get('url', ''),
-                            "time_created": review.get('timeCreated', ''),
-                            "review_index": i
-                        }
-                    )
-                    all_documents.append(doc)
+                # Add delay between requests to avoid rate limiting
+                if idx < len(business_ids) - 1:  # Don't delay after last request
+                    time.sleep(self.request_delay)
                     
             except Exception as e:
-                self.logger.error(f"Error fetching reviews for business {biz_id}: {e}")
+                self.logger.error(f"Unexpected error fetching reviews for business {biz_id}: {e}")
+                failed_fetches += 1
                 continue
         
+        self.logger.info(f"Review fetching complete: {successful_fetches} successful, {failed_fetches} failed")
         self.logger.info(f"Successfully created {len(all_documents)} review documents")
         return {"documents": all_documents}
 

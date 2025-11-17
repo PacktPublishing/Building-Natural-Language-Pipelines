@@ -38,9 +38,18 @@ except ImportError:
         ReviewsAggregatorByBusiness
     )
 
-# Load environment variables
-load_dotenv(".env")
+# Load environment variables from multiple possible locations
+env_paths = [".env", "../.env", "../../.env"]
+for env_path in env_paths:
+    if Path(env_path).exists():
+        load_dotenv(env_path)
+        break
+
 RAPID_API_KEY = os.getenv("RAPID_API_KEY")
+
+if not RAPID_API_KEY:
+    print("⚠️  Warning: RAPID_API_KEY not found in environment variables")
+    print("   The pipeline will try to load it from environment when running")
 
 
 def build_pipeline():
@@ -50,8 +59,10 @@ def build_pipeline():
     
     # Initialize components
     parser = Pipeline1ResultParser()
+    # IMPORTANT: Always pass api_key=None to prevent exposing the key in the YAML file
+    # The component will load it from RAPID_API_KEY environment variable at runtime
     reviews_fetcher = YelpReviewsFetcher(
-        api_key=RAPID_API_KEY,
+        api_key=None,  # Never serialize the API key
         max_reviews_per_business=10
     )
     sentiment_analyzer = BatchSentimentAnalyzer()
