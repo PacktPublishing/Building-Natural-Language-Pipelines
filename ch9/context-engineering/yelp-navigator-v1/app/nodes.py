@@ -185,6 +185,11 @@ def sentiment_node(state: AgentState) -> AgentState:
     
     # Create summary message
     if result.get("success"):
+        # Create a mapping from business_id to business name from search results
+        business_name_map = {}
+        for business in search_output.get("businesses", []):
+            business_name_map[business.get("id")] = business.get("name", "Unknown Business")
+        
         sentiments = result.get("sentiment_summaries", [])
         summary = f"""Sentiment Agent Results:
                     Analyzed reviews for {result.get('analyzed_count', 0)} businesses:
@@ -193,7 +198,8 @@ def sentiment_node(state: AgentState) -> AgentState:
             total = biz['positive_count'] + biz['neutral_count'] + biz['negative_count']
             if total > 0:
                 positive_pct = (biz['positive_count'] / total) * 100
-                summary += f"\n{i}. {biz['name']}"
+                business_name = business_name_map.get(biz.get('business_id'), f"Business ID: {biz.get('business_id')}")
+                summary += f"\n{i}. {business_name}"
                 summary += f"\n   Sentiment: Positive: {biz['positive_count']},\
                                     Neutral: {biz['neutral_count']}, \
                                     Negative: {biz['negative_count']} ({positive_pct:.0f}% positive)"

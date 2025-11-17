@@ -68,7 +68,8 @@ class PipelineWrapper(BasePipelineWrapper):
         log.info("Processing Pipeline 1 output for review sentiment analysis")
         
         try:
-            # Run the pipeline with Pipeline 1 output
+            # The pipeline1_output parameter already contains the data from the request
+            # No need for extra nesting extraction - just pass it directly
             pipeline_inputs = {
                 "parser": {"pipeline1_output": pipeline1_output}
             }

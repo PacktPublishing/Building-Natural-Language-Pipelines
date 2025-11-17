@@ -35,7 +35,7 @@ HTTP/2 401
    ```bash
    # Stop the current server (Ctrl+C in the terminal)
    # Then restart:
-   uv run hayhooks run --pipelines-dir pipelines
+   sh start_hayhooks.sh
    ```
 
 ### Solution 2: Use Mock Data for Testing (Immediate Testing)
@@ -62,7 +62,7 @@ If you want to test the LangGraph workflow immediately without waiting for API a
 
 3. **Restart hayhooks** (if it's running):
    ```bash
-   uv run hayhooks run --pipelines-dir pipelines
+   sh start_hayhooks.sh
    ```
 
 4. **Test again** - You should now see mock results with 5 sample Mexican restaurants in Austin

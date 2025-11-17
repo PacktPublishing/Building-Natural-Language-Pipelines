@@ -65,7 +65,7 @@ Final Report
 
 ### 1. Yelp Navigator Pipelines
 
-**You must complete the [Yelp Navigator Pipeline Setup](yelp-navigator-hayhooks-guide.md) first.**
+**You must complete the [Yelp Navigator Pipeline Setup](./yelp-navigator-hayhooks-guide.md) first.**
 
 This multi-agent system depends on the Haystack pipelines being built and running:
 
@@ -78,16 +78,7 @@ This multi-agent system depends on the Haystack pipelines being built and runnin
 Start the Hayhooks server to expose pipeline endpoints:
 
 ```bash
-cd /path/to/yelp-navigator
-uv run hayhooks run --pipelines-dir pipelines
-```
-
-Verify it's running:
-```bash
-curl http://localhost:1416/status
-```
-
-You should see pipeline endpoints listed.
+sh start_hayhooks.sh
 
 ### 3. API Keys Configured
 
