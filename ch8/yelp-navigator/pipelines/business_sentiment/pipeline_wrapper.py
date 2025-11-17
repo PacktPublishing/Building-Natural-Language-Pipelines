@@ -18,22 +18,6 @@ current_dir = Path(__file__).parent
 if str(current_dir.parent.parent) not in sys.path:
     sys.path.insert(0, str(current_dir.parent.parent))
 
-# Import custom components from the components module
-try:
-    from .components import (
-        Pipeline1ResultParser,
-        YelpReviewsFetcher,
-        BatchSentimentAnalyzer,
-        ReviewsAggregatorByBusiness
-    )
-except ImportError:
-    # Fallback for when loaded by hayhooks
-    from pipelines.business_sentiment.components import (
-        Pipeline1ResultParser,
-        YelpReviewsFetcher,
-        BatchSentimentAnalyzer,
-        ReviewsAggregatorByBusiness
-    )
 
 
 class PipelineWrapper(BasePipelineWrapper):
