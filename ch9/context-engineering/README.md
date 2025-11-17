@@ -6,14 +6,16 @@ This folder contains two versions of the Yelp Navigator agent demonstrating diff
 
 This project uses serialized Haystack pipelines from the `ch8/yelp-navigator` directory. You'll need to build and run those pipelines first.
 
-### Step 1: Build and Run Haystack Pipelines
+### Step 1: Complete Main Setup
 
-Complete the [setup instructions](../README.md#setup-instructions)
+Complete the [setup instructions](../README.md#setup-instructions) in the main ch9 README, including setting up all API keys in the `ch9/.env` file.
+
+### Step 2: Build and Run Haystack Pipelines
 
 Navigate to the `ch8` directory and build the pipelines:
 
 ```sh
-cd ../ch8/yelp-navigator
+cd ../../ch8/yelp-navigator
 uv run ./build_all_pipelines.sh
 ```
 
@@ -23,26 +25,9 @@ Start the Hayhooks server to serve the pipelines:
 uv run hayhooks run --pipelines-dir pipelines
 ```
 
-**Note** Please ensure you have an active Yelp Business Review API key. For more information about how these endpoints work, please review the [Yelp Navigator Hayhooks Guide](../../ch8/yelp-navigator/yelp-navigator-hayhooks-guide.md).
+**Note**: For more information about how these endpoints work, please review the [Yelp Navigator Hayhooks Guide](../../ch8/yelp-navigator/yelp-navigator-hayhooks-guide.md).
 
 Leave this terminal running.
-
-### Step 2: Set Up API Keys
-
-Create a `.env` file in the `ch9/context-engineering` directory with your API keys (use `.env.example` as a template):
-
-```sh
-OPENAI_API_KEY=your_openai_api_key
-
-# Optional for LangSmith tracing
-LANGSMITH_API_KEY=your_langsmith_api_key
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_PROJECT=context-engineering-LangGraph-Local
-```
-
-To obtain the API keys:
-- OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
-- LangSmith API key: Sign up at [LangSmith](https://smith.langchain.com/) (optional, for tracing and debugging)
 
 ### Step 3: Run LangGraph Studio
 

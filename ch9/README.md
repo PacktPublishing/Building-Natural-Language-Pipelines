@@ -8,36 +8,43 @@ This repository contains advanced exercises exploring Model Context Protocol (MC
 	```sh
 	pip install uv
 	```
-2. **Install dependencies:**
+
+2. **Set up API keys:**
+
+	Create a `.env` file in the `ch9` root directory with all your API keys:
+	```sh
+	# Required
+	OPENAI_API_KEY=your_openai_key_here
+	YELP_API_KEY=your_yelp_key_here
+	
+	# Optional
+	TAVILY_API_KEY=your_tavily_key_here
+	LANGSMITH_API_KEY=your_langsmith_key_here
+	LANGCHAIN_TRACING_V2=true
+	LANGCHAIN_PROJECT=chapter-9-agents
+	```
+	
+	To obtain the API keys:
+	- **OpenAI**: Sign up at [OpenAI's platform](https://platform.openai.com)
+	- **Yelp**: Register at [Yelp Business Review RapidAPI](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
+	- **Tavily** (optional): Register at [Tavily](https://tavily.com)
+	- **LangSmith** (optional, for LangGraph Studio): Sign up at [LangSmith](https://smith.langchain.com/)
+
+3. **Install dependencies:**
 	```sh
 	uv sync
 	```
-3. **Activate the virtual environment:**
+
+4. **Activate the virtual environment:**
 	```sh
 	source .venv/bin/activate
 	```
-4. **(Recommended) Open this `ch9` folder in a new VS Code window.**
-5. **Select the virtual environment as the Jupyter kernel:**
+
+5. **(Recommended) Open this `ch9` folder in a new VS Code window.**
+
+6. **Select the virtual environment as the Jupyter kernel:**
 	- Open any notebook.
 	- Click the kernel picker (top right) and select the `.venv` environment.
-
-6. **Set up API keys:**
-
-Create a `.env` file in the relevant subdirectory with your API keys:
-```sh
-OPENAI_API_KEY=your_openai_key_here
-YELP_API_KEY=your_yelp_key_here
-TAVILY_API_KEY=your_tavily_key_here
-```
-
-To obtain the API keys:
-- OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
-- Register at [Yelp Business Review RapidAPI](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
-- Tavily API key: Register at [Tavily](https://tavily.com)
-
-7. **LangGraph Studio (Optional):**
-
-For visual debugging and testing of LangGraph agents, get a LangSmith API key [LangSmith Observability](https://www.langchain.com/langsmith/observability).
 
 ---
 
