@@ -7,7 +7,7 @@ components:
     type: pipelines.business_sentiment.components.ReviewsAggregatorByBusiness
   reviews_fetcher:
     init_parameters:
-      api_key: 4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707
+      api_key: null
       max_reviews_per_business: 10
     type: pipelines.business_sentiment.components.YelpReviewsFetcher
   sentiment_analyzer:

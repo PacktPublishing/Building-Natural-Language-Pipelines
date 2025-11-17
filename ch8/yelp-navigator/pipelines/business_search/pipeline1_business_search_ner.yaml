@@ -25,7 +25,7 @@ components:
     type: pipelines.business_search.components.QueryToDocument
   yelp_search:
     init_parameters:
-      api_key: 4fb54002a4mshc7a7d2c9c03f45ap15b247jsn289faad3b707
+      api_key: null
     type: pipelines.business_search.components.YelpBusinessSearch
 connection_type_validation: true
 connections:

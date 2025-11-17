@@ -12,6 +12,12 @@ from haystack.utils import Secret
 from typing import List, Dict, Any
 import logging
 from typing import Optional, Dict, Any
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from ch8 root directory
+root_dir = Path(__file__).parent.parent.parent.parent
+load_dotenv(root_dir / ".env")
 
 # Configure logging
 logging.basicConfig(

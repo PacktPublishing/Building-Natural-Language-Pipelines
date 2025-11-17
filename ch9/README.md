@@ -1,6 +1,6 @@
 # Chapter 9: Advanced AI Agent Architectures
 
-This repository contains advanced exercises exploring Model Context Protocol (MCP), Agent-to-Agent (A2A) communication, and context engineering patterns for building efficient AI agents.
+This chapter explores context engineering patterns for building efficient AI agents, demonstrating how strategic state management and architectural decisions impact token usage and cost.
 
 ## Setup Instructions
 
@@ -53,40 +53,36 @@ This repository contains advanced exercises exploring Model Context Protocol (MC
 
 ## Contents
 
-### Context Engineering
+### Context Engineering (`context-engineering/`)
 
-The `context-engineering/` folder contains advanced examples demonstrating token-efficient agent architectures:
+This folder demonstrates context engineering through two implementations of the same Yelp Navigator agent with different architectural approaches:
 
-| Example | Description |
-|---|---|
-| **Yelp Navigator V1** | Monolithic agent-centric design with tightly coupled agents and single state management |
-| **Yelp Navigator V2** | Supervisor pattern with tool separation for improved token efficiency and modularity |
-| **Architecture Comparison** | Detailed analysis of design patterns, token usage, and architectural trade-offs |
-| **Token Measurement** | Tools and reports for measuring and comparing token usage across agent architectures |
+| Architecture | Description | Token Efficiency |
+|---|---|---|
+| **Yelp Navigator V1** | Monolithic design where each agent node handles tool execution, decision-making, and routing. All tool results accumulate in a single `agent_outputs` dictionary that every node receives. | Baseline |
+| **Yelp Navigator V2** | Supervisor pattern that separates concerns: a supervisor node makes routing decisions with minimal context (boolean flags), while dedicated tool nodes execute operations. | 16-50% fewer tokens |
 
-Key files:
-- `ARCHITECTURE_COMPARISON.md` - Comprehensive comparison of V1 vs V2 architectural approaches
-- `TOKEN_MEASUREMENT_README.md` - Guide to measuring and analyzing token consumption
-- `measure_token_usage.py` - Script for automated token usage measurement
-- `token_usage_report.md` - Detailed token usage analysis and recommendations
+**Key Files:**
+- `docs/ARCHITECTURE_COMPARISON.md` - Detailed comparison of design patterns and token usage analysis
+- `measure_token_usage.py` - Automated token measurement script with test scenarios
+- `test_examples.sh` - Run all test cases to compare architectures
+- `shared/` - Common prompts and tools used by both versions
 
-### Model Context Protocol (MCP)
+**What You'll Learn:**
+- How state management design affects token consumption
+- Trade-offs between monolithic and supervisor patterns
+- Measuring and optimizing token usage in production agents
+- Context reduction techniques (boolean flags vs full data)
 
-The `mcp/` folder contains examples of integrating Model Context Protocol for enhanced agent capabilities.
-
-### Agent-to-Agent (A2A)
-
-The `a2a/` folder contains examples of multi-agent systems communicating and collaborating.
+See the [context-engineering README](./context-engineering/README.md) for setup and usage instructions.
 
 ---
 
 ## Chapter Topics Covered
 
-1. Advanced agent architecture patterns
-2. Context engineering for token efficiency
-3. Supervisor pattern vs monolithic agent design
-4. Model Context Protocol (MCP) integration
-5. Agent-to-Agent (A2A) communication
-6. State management strategies
-7. Token usage optimization
-8. Tool separation and modularity
+1. **Context Engineering** - Strategic management of information passed to LLMs
+2. **State Management Patterns** - Monolithic vs dual-context architectures
+3. **Supervisor Pattern** - Separating decision-making from tool execution
+4. **Token Optimization** - Measuring and reducing token consumption
+5. **Architectural Trade-offs** - When to use different patterns
+6. **Production Considerations** - Cost analysis and scaling implications

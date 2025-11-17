@@ -37,16 +37,23 @@ Each project includes detailed notebooks, documentation, and example outputs to 
 
 6. **Set up API keys:**
 
-Create a `.env` file in the root directory with your API keys:
+Copy the `.env.example` file to `.env` and add your API keys:
+```sh
+cp .env.example .env
+```
+
+Then edit the `.env` file with your API keys:
 ```sh
 OPENAI_API_KEY=your_openai_key_here
 RAPID_API_KEY=your_rapid_api_key_here
 SEARCH_API_KEY=your_search_api_key_here
+SERPERDEV_API_KEY=your_serperdev_key_here
 ```
 
-To obtain the API key:
+To obtain the API keys:
 - OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
-- Search API key: Sign ut at [Search API](https://www.searchapi.io/)
+- Search API key: Sign up at [Search API](https://www.searchapi.io/)
+- SerperDev API key: Sign up at [SerperDev](https://serper.dev/)
 - Rapid API key: Sign up at [Rapid API Yelp Business Review API](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
 
 This notebook uses the Yelp Business Reviews API through RapidAPI:
