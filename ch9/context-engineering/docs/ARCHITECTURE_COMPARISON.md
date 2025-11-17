@@ -142,4 +142,3 @@ uv run python measure_token_usage.py \
     --detail-level reviews
 ```
 
-See [TOKEN_MEASUREMENT_README.md](TOKEN_MEASUREMENT_README.md) for details.
