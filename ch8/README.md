@@ -106,7 +106,7 @@ Master advanced techniques by building a complete multi-agent orchestration syst
 
 **Guides:**
 - [Pipeline Setup Guide](./yelp-navigator/docs/yelp-navigator-hayhooks-guide.md) - Build and deploy with Hayhooks
-- [Multi-Agent Guide](./yelp-navigator/LANGGRAPH_GUIDE.md) - Run the LangGraph supervisor system
+- [Multi-Agent Guide](./yelp-navigator/docs/langgraph-yelp-multi-agent.md) - Run the LangGraph supervisor system
 
 **Projects:**
 
