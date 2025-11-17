@@ -181,8 +181,16 @@ def analyze_reviews_sentiment(pipeline1_output: Dict[str, Any], base_url: str = 
         
         if response.status_code == 200:
             data = response.json()
-            documents = data.get('reviews_aggregator', {}).get('documents', [])
             
+            # Changed 'reviews_aggregator' to 'reviews_aggregator_by_business'
+            # to match the component name from the guide.
+            documents = data.get('reviews_aggregator_by_business', {}).get('documents', [])
+
+            # If documents is still empty, add a fallback to log the error
+            if not documents:
+                # This helps debug if the key is *still* wrong
+                print(f"WARNING: 'reviews_aggregator_by_business' key not found or documents empty in API response. Keys found: {data.keys()}")
+
             return {
                 "success": True,
                 "analyzed_count": len(documents),
