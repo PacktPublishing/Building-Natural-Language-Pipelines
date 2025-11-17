@@ -8,7 +8,7 @@ This project uses serialized Haystack pipelines from the `ch8/yelp-navigator` di
 
 ### Step 1: Complete Main Setup
 
-Complete the [setup instructions](../README.md#setup-instructions) in the main ch9 README, including setting up all API keys in the `ch9/.env` file.
+Complete the [setup instructions](../README.md#setup-instructions) in the main ch9 README, including setting up all API keys in the `.env` file.
 
 ### Step 2: Build and Run Haystack Pipelines
 
@@ -16,13 +16,13 @@ Navigate to the `ch8` directory and build the pipelines:
 
 ```sh
 cd ../../ch8/yelp-navigator
-uv run sh build_all_pipelines.sh && sh start_hayhooks.sh
+uv run sh build_all_pipelines.sh 
 ```
 
 Start the Hayhooks server to serve the pipelines:
 
 ```sh
-uv run hayhooks run --pipelines-dir pipelines
+sh start_hayhooks.sh
 ```
 
 **Note**: For more information about how these endpoints work, please review the [Yelp Navigator Hayhooks Guide](../../ch8/yelp-navigator/yelp-navigator-hayhooks-guide.md).

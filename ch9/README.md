@@ -11,14 +11,18 @@ This repository contains advanced exercises exploring Model Context Protocol (MC
 
 2. **Set up API keys:**
 
-	Create a `.env` file in the `ch9` root directory with all your API keys:
+	Copy the example environment file and populate it with your API keys:
+	```sh
+	cp .env.example .env
+	```
+	
+	Then edit `.env` and add your API keys:
 	```sh
 	# Required
 	OPENAI_API_KEY=your_openai_key_here
 	YELP_API_KEY=your_yelp_key_here
 	
-	# Optional
-	TAVILY_API_KEY=your_tavily_key_here
+	# Optional (for LangGraph Studio)
 	LANGSMITH_API_KEY=your_langsmith_key_here
 	LANGCHAIN_TRACING_V2=true
 	LANGCHAIN_PROJECT=chapter-9-agents
@@ -27,8 +31,7 @@ This repository contains advanced exercises exploring Model Context Protocol (MC
 	To obtain the API keys:
 	- **OpenAI**: Sign up at [OpenAI's platform](https://platform.openai.com)
 	- **Yelp**: Register at [Yelp Business Review RapidAPI](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
-	- **Tavily** (optional): Register at [Tavily](https://tavily.com)
-	- **LangSmith** (optional, for LangGraph Studio): Sign up at [LangSmith](https://smith.langchain.com/)
+	- **LangSmith** (optional): Sign up at [LangSmith](https://smith.langchain.com/)
 
 3. **Install dependencies:**
 	```sh

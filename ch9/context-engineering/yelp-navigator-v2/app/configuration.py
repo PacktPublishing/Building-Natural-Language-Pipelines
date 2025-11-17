@@ -2,8 +2,8 @@ import os
 from dataclasses import dataclass,fields
 from typing import Any, Optional
 from langchain_core.runnables import RunnableConfig
-from dotenv import load_dotenv
-load_dotenv(".env")  # Load environment variables from .env file
+from dotenv import find_dotenv, load_dotenv
+load_dotenv(find_dotenv(), override=False)  # Load environment variables from .env file
 
 @dataclass(kw_only=True)
 class Configuration:

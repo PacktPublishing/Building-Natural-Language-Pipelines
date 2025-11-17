@@ -1,9 +1,9 @@
 """Shared configuration and LLM initialization."""
 import os
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
-load_dotenv(".env")
+load_dotenv(find_dotenv(), override=False)
 
 def get_llm(model: str = None, temperature: float = 0) -> ChatOpenAI:
     """Get a configured LLM instance.
