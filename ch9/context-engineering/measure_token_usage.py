@@ -352,7 +352,7 @@ def simulate_v2_workflow(query: str, location: str, detail_level: str = "general
     }
     
     # 1. Clarification with Structured Output
-    clarification_input = clarification_system_prompt + f"\n\nUser: {query} in {location}"
+    clarification_input = clarification_system_prompt() + f"\n\nUser: {query} in {location}"
     clarification_output = json.dumps({
         "need_clarification": False,
         "intent": "business_search",
@@ -363,7 +363,7 @@ def simulate_v2_workflow(query: str, location: str, detail_level: str = "general
     tracer.measure_prompt("clarification", clarification_input, clarification_output)
     
     # 2. Supervisor Decision 1: Decide to search
-    supervisor_context_1 = supervisor_prompt(query, location, detail_level, [])
+    supervisor_context_1 = supervisor_prompt(query, location, detail_level, False, False, False)
     supervisor_output_1 = json.dumps({"next_action": "search", "reasoning": "No results yet"})
     tracer.measure_prompt("supervisor_decision_1", supervisor_context_1, supervisor_output_1)
     
@@ -396,7 +396,7 @@ def simulate_v2_workflow(query: str, location: str, detail_level: str = "general
     }
     
     # 4. Supervisor Decision 2: Decide next action
-    supervisor_context_2 = supervisor_prompt(query, location, detail_level, state["raw_results"])
+    supervisor_context_2 = supervisor_prompt(query, location, detail_level, True, False, False)
     
     if detail_level == "reviews":
         supervisor_output_2 = json.dumps({"next_action": "analyze_sentiment", "reasoning": "Need sentiment analysis"})
@@ -407,7 +407,7 @@ def simulate_v2_workflow(query: str, location: str, detail_level: str = "general
         state["raw_results"].append(sentiment_summary)
         
         # Supervisor Decision 3: Finalize
-        supervisor_context_3 = supervisor_prompt(query, location, detail_level, state["raw_results"])
+        supervisor_context_3 = supervisor_prompt(query, location, detail_level, True, False, True)
         supervisor_output_3 = json.dumps({"next_action": "finalize", "reasoning": "Have all data"})
         tracer.measure_prompt("supervisor_decision_3", supervisor_context_3, supervisor_output_3)
     
@@ -420,7 +420,7 @@ def simulate_v2_workflow(query: str, location: str, detail_level: str = "general
         state["raw_results"].append(details_summary)
         
         # Supervisor Decision 3: Finalize
-        supervisor_context_3 = supervisor_prompt(query, location, detail_level, state["raw_results"])
+        supervisor_context_3 = supervisor_prompt(query, location, detail_level, True, True, False)
         supervisor_output_3 = json.dumps({"next_action": "finalize", "reasoning": "Have all data"})
         tracer.measure_prompt("supervisor_decision_3", supervisor_context_3, supervisor_output_3)
     
