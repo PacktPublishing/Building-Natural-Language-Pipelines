@@ -29,14 +29,12 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     # 2. Create context from history
     messages = state["messages"]
     
-    # --- THIS IS THE FIX ---
     # 2b. Generate the state-aware system prompt
     #     We pass it the *current* query and location from the state.
     system_prompt_content = clarification_system_prompt(
         current_query=state.get('search_query', ''),
         current_location=state.get('search_location', '')
     )
-    # --- END FIX ---
     
     # 3. Invoke model with the NEW dynamic system prompt
     decision: ClarificationDecision = clarifier_model.invoke(
