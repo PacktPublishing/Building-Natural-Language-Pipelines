@@ -1,10 +1,6 @@
-from typing import Annotated, TypedDict, List, Dict, Any
-from langchain_core.messages import BaseMessage
-from operator import add
+from typing import Dict, Any
 
-
-import operator
-from typing import Annotated, List, Optional, Literal
+from typing import Optional, Literal
 from langgraph.graph import MessagesState
 from pydantic import BaseModel, Field
 
@@ -35,13 +31,17 @@ class AgentState(MessagesState):
     search_location: str = ""
     detail_level: str = "general"
     
-    # Search Results Storage (Accumulated)
-    raw_results: Annotated[List[str], operator.add] = [] 
-    
-    # Pipeline Data (Full Output for Downstream Tools)
+    # Pipeline Data (Full Output from 'search' for downstream tools)
     pipeline_data: Dict[str, Any] = {}
     
-    # Agent Outputs (Compatible with v1 format for detailed summaries)
+    # Structured Agent Outputs (v1 compatible)
+    # This is the primary source of truth for the supervisor.
+    # It's a dictionary like:
+    # {
+    #   "search": { "success": True, "result_count": 10, ... },
+    #   "details": { "success": True, "document_count": 5, ... },
+    #   "sentiment": { "success": False, "error": "API timeout" }
+    # }
     agent_outputs: Dict[str, Any] = {}
     
     # Final Output

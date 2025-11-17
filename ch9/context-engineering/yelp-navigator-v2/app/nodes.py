@@ -17,11 +17,9 @@ llm = get_llm()
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat", END]]:
     """
     Analyzes conversation to determine intent. Routes to either:
-    - general_chat: For non-business questions (uses chat completion endpoint)
-    - supervisor: For business searches (uses the 4 Yelp pipelines)
+    - general_chat: For non-business questions
+    - supervisor: For business searches
     - END: If clarification is needed from user
-    
-    This implements the Deep Research Pattern by stopping to ask for missing info.
     """
     conf = Configuration.from_runnable_config(config)
     
@@ -31,12 +29,22 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     # 2. Create context from history
     messages = state["messages"]
     
-    # 3. Invoke model with system prompt from prompts.py
-    decision: ClarificationDecision = clarifier_model.invoke([SystemMessage(content=clarification_system_prompt)] + messages)
+    # --- THIS IS THE FIX ---
+    # 2b. Generate the state-aware system prompt
+    #     We pass it the *current* query and location from the state.
+    system_prompt_content = clarification_system_prompt(
+        current_query=state.get('search_query', ''),
+        current_location=state.get('search_location', '')
+    )
+    # --- END FIX ---
     
-    # 4. Handle Clarification (The "Stop" Mechanism)
+    # 3. Invoke model with the NEW dynamic system prompt
+    decision: ClarificationDecision = clarifier_model.invoke(
+        [SystemMessage(content=system_prompt_content)] + messages
+    )
+    
+    # 4. Handle Clarification (Unchanged)
     if decision.need_clarification and conf.allow_clarification:
-        # This stops the graph and sends the question to the user
         return Command(
             goto=END,
             update={"messages": [AIMessage(content=decision.clarification_question)]}
@@ -44,19 +52,39 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     
     # 5. Route to appropriate workflow
     if decision.intent == "general_chat":
-        # Route to chat completion endpoint for general conversation
         return Command(goto="general_chat")
     else:
-        # Route to supervisor for business search using the 4 pipelines
-        return Command(
-            goto="supervisor",
-            update={
+        # Check if this is a *new* search query
+        is_new_search = (
+            decision.search_query != state.get("search_query") or
+            decision.search_location != state.get("search_location")
+        )
+        
+        # This logic (from our last fix) is now correct.
+        # The problem was that `decision.detail_level` was wrong.
+        # Now, it will be correct (e.g., "reviews").
+        if is_new_search:
+            # This is a brand new search. Reset everything.
+            update_dict = {
                 "search_query": decision.search_query,
                 "search_location": decision.search_location,
                 "detail_level": decision.detail_level,
-                # Optional: Add a confirmation message
-                "messages": [AIMessage(content=f"Understood. Searching for {decision.search_query} in {decision.search_location}...")]
+                "messages": [AIMessage(content=f"Understood. Starting a new search for {decision.search_query} in {decision.search_location}...")],
+                "pipeline_data": {},
+                "agent_outputs": {}
             }
+        else:
+            # This is a follow-up. Just update the detail level.
+            # The clarifier, now state-aware, will correctly set
+            # decision.detail_level to "reviews"
+            update_dict = {
+                "detail_level": decision.detail_level,
+                "messages": [AIMessage(content=f"Understood. I'll get more details for {decision.search_query}...")],
+            }
+
+        return Command(
+            goto="supervisor",
+            update=update_dict
         )
 
 def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "details_tool", "sentiment_tool", "summary"]]:
@@ -67,12 +95,20 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
     
     supervisor_model = llm.with_structured_output(SupervisorDecision)
     
-    # Construct context for supervisor using prompt from prompts.py
+    # Check what data we *actually* have based on the structured state
+    agent_outputs = state.get('agent_outputs', {})
+    has_search_data = agent_outputs.get("search", {}).get("success", False)
+    has_details_data = agent_outputs.get("details", {}).get("success", False)
+    has_sentiment_data = agent_outputs.get("sentiment", {}).get("success", False)
+
+    # Construct context for supervisor using the *new* prompt
     context = supervisor_prompt(
         search_query=state['search_query'],
         search_location=state['search_location'],
         detail_level=state['detail_level'],
-        raw_results=state['raw_results']
+        has_search_data=has_search_data,
+        has_details_data=has_details_data,
+        has_sentiment_data=has_sentiment_data
     )
     
     decision: SupervisorDecision = supervisor_model.invoke([SystemMessage(content=context)])
@@ -137,12 +173,12 @@ def general_chat_node(state: AgentState):
 def summary_node(state: AgentState):
     """Generates the final report using the detailed v1-style prompt."""
     # Use the detailed v1 prompt from shared/prompts.py
-    # agent_outputs is now stored directly in state by the tool nodes
+    # This prompt is excellent as it's already designed to use 'agent_outputs'
     prompt = summary_generation_prompt(
         clarified_query=state['search_query'],
         clarified_location=state['search_location'],
         detail_level=state['detail_level'],
-        agent_outputs=state.get('agent_outputs', {}),
+        agent_outputs=state.get('agent_outputs', {}), # <--- This already works!
         needs_revision=False,
         revision_feedback=""
     )
@@ -153,7 +189,6 @@ def summary_node(state: AgentState):
         update={"messages": [response], "final_summary": response.content}
     )
 
-# --- Wrapper Nodes for Tools (Adapters) ---
 
 def search_tool_node(state: AgentState):
     query = f"{state['search_query']} in {state['search_location']}"
@@ -165,14 +200,9 @@ def search_tool_node(state: AgentState):
     existing_outputs = state.get('agent_outputs', {})
     existing_outputs['search'] = result
     
-    # Also store a human-readable summary in raw_results for supervisor
-    raw_results = state.get('raw_results', [])
-    raw_results.append(f"Search Results: {str(result)}")
-    
     return Command(
         goto="supervisor", # Return to supervisor to decide next step
         update={
-            "raw_results": raw_results,
             "pipeline_data": full_output,
             "agent_outputs": existing_outputs
         }
@@ -187,13 +217,10 @@ def details_tool_node(state: AgentState):
     existing_outputs = state.get('agent_outputs', {})
     existing_outputs['details'] = result
     
-    raw_results = state.get('raw_results', [])
-    raw_results.append(f"Details: {str(result)}")
     
     return Command(
         goto="supervisor",
         update={
-            "raw_results": raw_results,
             "agent_outputs": existing_outputs
         }
     )
@@ -207,13 +234,11 @@ def sentiment_tool_node(state: AgentState):
     existing_outputs = state.get('agent_outputs', {})
     existing_outputs['sentiment'] = result
     
-    raw_results = state.get('raw_results', [])
-    raw_results.append(f"Sentiment: {str(result)}")
     
     return Command(
         goto="supervisor",
         update={
-            "raw_results": raw_results,
+            # "raw_results": raw_results, # <--- REMOVED
             "agent_outputs": existing_outputs
         }
     )
