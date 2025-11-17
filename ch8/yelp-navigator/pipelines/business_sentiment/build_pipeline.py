@@ -84,6 +84,9 @@ if __name__ == "__main__":
     # Build the pipeline
     pipeline = build_pipeline()
     
+    # draw pipeline
+    pipeline.draw(path = f"pipeline3_reviews_sentiment.png")
+    
     # Serialize the pipeline to YAML
     output_path = "pipeline3_reviews_sentiment.yaml"
     with open(output_path, "w") as file:

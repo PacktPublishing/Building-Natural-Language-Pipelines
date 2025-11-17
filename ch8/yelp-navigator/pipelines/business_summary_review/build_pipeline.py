@@ -67,6 +67,9 @@ if __name__ == "__main__":
     # Build the pipeline
     pipeline = build_pipeline()
     
+    # draw pipeline
+    pipeline.draw(path = f"pipeline4_summary_recommendations.png")
+    
     # Serialize the pipeline to YAML
     output_path = "pipeline4_summary_recommendations.yaml"
     with open(output_path, "w") as file:
