@@ -83,9 +83,9 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
     
     context = f"""Create a comprehensive, human-readable summary based on the following information:
 
-User was looking for: {clarified_query} in {clarified_location}
-Detail level requested: {detail_level}
-"""
+            User was looking for: {clarified_query} in {clarified_location}
+            Detail level requested: {detail_level}
+            """
     
     # Add revision feedback if this is a revision
     if needs_revision and revision_feedback:
@@ -102,7 +102,8 @@ Detail level requested: {detail_level}
             context += f"   Rating: {biz['rating']} stars ({biz['review_count']} reviews)\n"
             context += f"   Price: {biz.get('price_range', 'N/A')}\n"
             context += f"   Categories: {', '.join(biz.get('categories', []))}\n"
-            context += f"   Phone: {biz.get('phone', 'N/A')}\n\n"
+            context += f"   Phone: {biz.get('phone', 'N/A')}\n"
+            context += f"   Website: {biz.get('website', 'N/A')}\n\n"
     
     # Add details if available
     if "details" in agent_outputs and agent_outputs["details"].get("success"):
@@ -120,14 +121,18 @@ Detail level requested: {detail_level}
         sentiment = agent_outputs["sentiment"]
         context += "\n\nREVIEW SENTIMENT ANALYSIS:\n"
         for i, biz in enumerate(sentiment.get("sentiment_summaries", [])[:3], 1):
-            context += f"{i}. {biz['name']}\n"
+            context += f"{i}. Business ID: {biz.get('business_id', 'N/A')}\n"
+            context += f"   Overall Sentiment: {biz.get('overall_sentiment', 'unknown')}\n"
             context += f"   Positive: {biz['positive_count']}, Neutral: {biz['neutral_count']}, Negative: {biz['negative_count']}\n"
+            context += f"   Total Reviews Analyzed: {biz.get('total_reviews', 0)}\n"
             
             # Add sample reviews
-            if biz.get('top_positive_reviews'):
-                context += f"   Sample positive: {biz['top_positive_reviews'][0][:100]}...\n"
-            if biz.get('bottom_negative_reviews'):
-                context += f"   Sample negative: {biz['bottom_negative_reviews'][0][:100]}...\n"
+            if biz.get('highest_rated_reviews'):
+                top_review = biz['highest_rated_reviews'][0]
+                context += f"   Sample positive review: {top_review.get('text', '')}...\n"
+            if biz.get('lowest_rated_reviews'):
+                low_review = biz['lowest_rated_reviews'][0]
+                context += f"   Sample negative review: {low_review.get('text', '')}...\n"
     
     context += f"""\n\nIMPORTANT INSTRUCTIONS:
             You MUST create a summary about the business search results provided above.
@@ -138,8 +143,9 @@ Detail level requested: {detail_level}
             1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
             2. Highlights the top 3-5 business recommendations from the search results
             3. Includes relevant details based on what was requested (ratings, prices, sentiment)
-            4. Is easy to read and conversational
-            5. Ends with a helpful closing statement
+            4. {'ALWAYS include phone numbers and website URLs for each business' if detail_level in ['detailed', 'reviews'] else 'Include basic contact information'}
+            5. Is easy to read and conversational
+            6. Ends with a helpful closing statement
 
             Do NOT include any information that is not in the data above.
             """

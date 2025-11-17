@@ -335,19 +335,22 @@ class ReviewsAggregatorByBusiness:
             negative_reviews = [r for r in reviews if r.meta.get("sentiment") == "negative"]
             neutral_reviews = [r for r in reviews if r.meta.get("sentiment") == "neutral"]
             
-            # Find highest-rated reviews (high rating + positive sentiment)
+            
+            
+            # Find highest-rated reviews (sort ALL positive reviews by rating)
             highest_rated = sorted(
-                [r for r in positive_reviews if r.meta.get("rating", 0) >= 4],
-                key=lambda x: x.meta.get("rating", 0),
-                reverse=True
-            )[:3]
+                positive_reviews,  # Use the full list of positive reviews
+                key=lambda x: x.meta.get("rating", 0), # Sort them by rating
+                reverse=True # Highest rating (e.g., 5) comes first
+            )[:3] # Take the top 3
             
-            # Find lowest-rated reviews (low rating + negative sentiment)
+            # Find lowest-rated reviews (sort ALL negative reviews by rating)
             lowest_rated = sorted(
-                [r for r in negative_reviews if r.meta.get("rating", 0) <= 3],
-                key=lambda x: x.meta.get("rating", 0)
-            )[:3]
-            
+                negative_reviews, # Use the full list of negative reviews
+                key=lambda x: x.meta.get("rating", 0) # Sort them by rating
+            )[:3] # Lowest rating (e.g., 1) comes first
+
+
             # Create summary content
             summary_content = f"Business Review Summary (ID: {biz_id}):\n"
             summary_content += f"Total Reviews: {len(reviews)}\n"

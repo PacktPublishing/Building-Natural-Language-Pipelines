@@ -46,7 +46,7 @@ Complete the [setup instructions](../README.md#setup-instructions)
 ### Quick Start
 
 **Option 1: Pipeline Chaining (Intermediate)**
-1. Deploy pipelines: `uv run sh build_all_pipelines.sh && uv run hayhooks run --pipelines-dir pipelines`
+1. Deploy pipelines: `uv run sh build_all_pipelines.sh && sh start_hayhooks.sh`
 2. Open: [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb)
 3. Learn to chain Haystack pipeline API calls
 
@@ -101,10 +101,10 @@ Search Agent (Pipeline 1) - always runs
 
 | Resource | Description |
 |---|---|
-| [**Pipeline Setup Guide**](./yelp-navigator-hayhooks-guide.md) | Complete setup for building and deploying Haystack pipelines with Hayhooks |
-| [**LangGraph Multi-Agent Guide**](./langgraph-yelp-multi-agent.md) | Step-by-step guide for running the multi-agent supervisor system |
-| [**API Documentation**](./Hayhooks%20-%20Swagger%20UI.pdf) | Swagger UI docs for deployed Haystack pipeline endpoints |
-| [**Troubleshooting**](./TROUBLESHOOTING.md) | Common issues and solutions for API keys and connectivity |
+| [**Pipeline Setup Guide**](./docs/yelp-navigator-hayhooks-guide.md) | Complete setup for building and deploying Haystack pipelines with Hayhooks |
+| [**LangGraph Multi-Agent Guide**](./docs/langgraph-yelp-multi-agent.md) | Step-by-step guide for running the multi-agent supervisor system |
+| [**API Documentation**](./docs/Hayhooks%20-%20Swagger%20UI.pdf) | Swagger UI docs for deployed Haystack pipeline endpoints |
+| [**Troubleshooting**](./docs/TROUBLESHOOTING.md) | Common issues and solutions for API keys and connectivity |
 
 ### 📓 Notebooks
 
@@ -138,6 +138,6 @@ Search Agent (Pipeline 1) - always runs
 ## Support
 
 For issues or questions:
-- Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for common problems
+- Check [TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) for common problems
 - Review component implementations in `pipelines/*/components.py` files
 - Verify pipeline connections in `pipelines/*/build_pipeline.py` files

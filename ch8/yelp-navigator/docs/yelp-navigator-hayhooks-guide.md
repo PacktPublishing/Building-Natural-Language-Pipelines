@@ -59,8 +59,12 @@ Once you've built and serialized the pipelines, you can deploy them with Hayhook
 ### Start Hayhooks Server
 
 ```bash
-# From the yelp-navigator directory
-uv run hayhooks run --pipelines-dir pipelines
+### Start Hayhooks Server
+
+From the `yelp-navigator` directory:
+
+```bash
+sh start_hayhooks.sh
 ```
 
 This will:
