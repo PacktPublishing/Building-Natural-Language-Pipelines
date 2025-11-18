@@ -18,7 +18,7 @@ Author: Laura Funderburk
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
-  - [Chapter 9: Advanced AI Agent Architectures](#chapter-9-advanced-ai-agent-architectures)
+  - [Chapter 9: Future trends and beyond](#chapter-9-advanced-ai-agent-architectures)
 
 
 ## What You'll Learn to Build
@@ -142,7 +142,7 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
 - **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
 
-### **[Chapter 9: Advanced AI Agent Architectures](./ch9/)**
+### **[Chapter 9: Future trends and beyond](./ch9/)**
 **Context Engineering & Token Optimization**
 
 #### **[Context Engineering](./ch9/context-engineering/)**
