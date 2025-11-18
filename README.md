@@ -18,6 +18,7 @@ Author: Laura Funderburk
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
+  - [Chapter 9: Advanced AI Agent Architectures](#chapter-9-advanced-ai-agent-architectures)
 
 
 ## What You'll Learn to Build
@@ -140,4 +141,13 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Modular Pipeline Architecture**: Creating 4 specialized pipelines (business search, details, sentiment, reporting)
 - **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
 - **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
+
+### **[Chapter 9: Advanced AI Agent Architectures](./ch9/)**
+**Context Engineering & Token Optimization**
+
+#### **[Context Engineering](./ch9/context-engineering/)**
+- **State Management Patterns**: Understanding how architectural decisions impact token usage and cost
+- **Monolithic vs Supervisor Architectures**: Comparing design patterns through two implementations of the same Yelp Navigator agent
+- **Context Reduction Techniques**: Using boolean flags and minimal state instead of full data accumulation
+- **Token Usage Measurement**: Automated analysis showing 16-50% token reduction with optimized architectures
 
