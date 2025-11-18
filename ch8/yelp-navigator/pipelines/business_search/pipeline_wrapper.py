@@ -87,16 +87,30 @@ class PipelineWrapper(BasePipelineWrapper):
             # Get extracted entities from keyword extractor
             keyword_extraction = result.get("keyword_extractor", {})
             
+            # Handle both list and single value formats for backward compatibility
+            locations = keyword_extraction.get("locations", [])
+            keywords = keyword_extraction.get("keywords", [])
+            original_queries = keyword_extraction.get("original_queries", [])
+            
+            # For backward compatibility, provide single values if only one query
+            extracted_location = locations[0] if len(locations) == 1 else locations
+            extracted_keywords = keywords[0] if len(keywords) == 1 else keywords
+            
             # Format the response
             businesses = search_results.get("results", [])
             result_count = search_results.get("resultCount", 0)
             
             response = {
                 "query": query,
-                "extracted_location": keyword_extraction.get("location", ""),
-                "extracted_keywords": keyword_extraction.get("keywords", []),
+                "extracted_location": extracted_location,
+                "extracted_keywords": extracted_keywords,
+                "extracted_locations": locations,  # Include full list for multi-query
+                "extracted_keywords_list": keywords,  # Include full list for multi-query
+                "original_queries": original_queries,
                 "search_params": search_params,
                 "result_count": result_count,
+                "is_multi_query": search_results.get("aggregated", False),
+                "total_searches": search_results.get("total_searches", 1),
                 "businesses": [
                     {
                         "business_id": biz.get("bizId"),
