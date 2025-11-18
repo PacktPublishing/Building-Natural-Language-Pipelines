@@ -88,7 +88,7 @@ def search_businesses(query: str) -> Dict[str, Any]:
                     "review_count": b.get('review_count'), "categories": b.get('categories', []),
                     "price_range": b.get('price_range', 'N/A'), "phone": b.get('phone', 'N/A'),
                     "location": b.get('location', {}), "website": b.get('website', 'N/A')
-                } for b in businesses[:10]],
+                } for b in businesses],
                 "full_output": data
             }
         return {"success": False, "error": f"API returned status {response.status_code}"}
@@ -113,7 +113,7 @@ def get_business_details(pipeline1_output: Dict[str, Any]) -> Dict[str, Any]:
                     "rating": doc.get('meta', {}).get('rating'),
                     "website_content_length": len(doc.get('content', '')),
                     "has_website_info": len(doc.get('content', '')) > 0
-                } for doc in documents[:10]],
+                } for doc in documents],
                 "full_output": data
             }
         return {"success": False, "error": f"API returned status {response.status_code}"}
@@ -152,7 +152,7 @@ def analyze_reviews_sentiment(pipeline1_output: Dict[str, Any]) -> Dict[str, Any
                         "rating": review.get('rating'), "sentiment": review.get('sentiment'),
                         "text": review.get('text', '')[:200], "user": review.get('user')
                     } for review in biz.get('lowest_rated_reviews', [])[:2]]
-                } for biz in businesses[:10]],
+                } for biz in businesses],
                 "full_output": data
             }
         return {"success": False, "error": f"API returned status {response.status_code}"}
