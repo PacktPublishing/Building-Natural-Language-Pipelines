@@ -2,7 +2,7 @@
 
 <a href="https://www.packtpub.com/en-us/product/building-natural-language-pipelines-9781835467008"><img src="https://content.packt.com/_/image/xxlarge/B21806/cover_image_large.jpg" alt="<Book Name>" height="256px" align="right"></a>
 
-This is the code repository for [Building Natural Language Pipeline](https://www.packtpub.com/en-us/product/building-natural-language-pipelines-9781835467008), published by Packt.
+This is the code repository for [Building Natural Language Pipelines](https://www.packtpub.com/en-us/product/building-natural-language-pipelines-9781835467008), published by Packt.
 
 
 Author: Laura Funderburk
