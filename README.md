@@ -4,7 +4,6 @@
 
 This is the code repository for [Building Natural Language Pipelines](https://www.packtpub.com/en-us/product/building-natural-language-pipelines-9781835467008), published by Packt.
 
-
 Author: Laura Funderburk
 
 ## Table of Contents
