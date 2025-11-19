@@ -59,7 +59,7 @@ ollama pull nomic-embed-text
 | Notebook | Link | Description |
 |---|---|---|
 | **01** Interactive Prompting with Ollama | [01_prompt-ollama-model.ipynb](./jupyter-notebooks/01_prompt-ollama-model.ipynb) | 🔌 Prompt Mistral-Nemo locally with Ollama |
-| **02** Your First Agent | [02_create-simple-agent.ipynb](./jupyter-notebooks/02_create-simple-agent.ipynb) | 🎯 Build your first AI agent with tools and memory |
+| **02** Your First Agent | [02_create-simple-agent.ipynb](./jupyter-notebooks/02_create-simple-agent.ipynb) | 🎯 Build your first AI agent with tools |
 | **03** Document Q&A with LangChain | [03_document-qa-langchain.ipynb](./jupyter-notebooks/03_document-qa-langchain.ipynb) | 📚 Build a retrieval-augmented Document Q&A pipeline |
 
 ### Advanced: LangChain & LangGraph
