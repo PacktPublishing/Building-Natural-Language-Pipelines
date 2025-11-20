@@ -1,4 +1,3 @@
-# v2.zip/prompts.py
 """Re-export shared prompts for backwards compatibility."""
 from shared.prompts import (
     supervisor_approval_prompt,
