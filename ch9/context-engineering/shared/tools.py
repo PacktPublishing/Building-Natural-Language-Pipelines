@@ -158,3 +158,66 @@ def analyze_reviews_sentiment(pipeline1_output: Dict[str, Any]) -> Dict[str, Any
         return {"success": False, "error": f"API returned status {response.status_code}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+@tool
+def generate_business_summary_report(
+    pipeline1_output: Dict[str, Any] = None,
+    pipeline2_output: Dict[str, Any] = None, 
+    pipeline3_output: Dict[str, Any] = None
+) -> Dict[str, Any]:
+    """
+    Generate comprehensive business reports using the business_summary_review pipeline.
+    
+    This tool consolidates outputs from search, details, and sentiment pipelines
+    to create professional business reports with appropriate depth levels:
+    - Level 1: Basic business info (pipeline1 only)
+    - Level 2: With website details (pipeline1 + pipeline2)
+    - Level 3: Complete with reviews (all pipelines)
+    
+    Args:
+        pipeline1_output: Optional output from business search
+        pipeline2_output: Optional output from business details
+        pipeline3_output: Optional output from review sentiment analysis
+        
+    Returns:
+        Dictionary with success status and business reports
+    """
+    try:
+        response = requests.post(
+            f"{BASE_URL}/business_summary_review/run",
+            json={
+                "pipeline1_output": pipeline1_output,
+                "pipeline2_output": pipeline2_output,
+                "pipeline3_output": pipeline3_output
+            },
+            timeout=180  # Longer timeout for report generation
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            documents = data.get('report_generator', {}).get('documents', [])
+            
+            return {
+                "success": True,
+                "report_count": len(documents),
+                "depth_level": data.get('input_parser', {}).get('depth_level', 1),
+                "business_reports": [{
+                    "business_id": doc.get('meta', {}).get('business_id'),
+                    "business_name": doc.get('meta', {}).get('business_name'),
+                    "report": doc.get('content', ''),
+                    "rating": doc.get('meta', {}).get('rating'),
+                    "price_range": doc.get('meta', {}).get('price_range'),
+                    "has_website_summary": doc.get('meta', {}).get('has_website_summary', False),
+                    "has_review_analysis": doc.get('meta', {}).get('has_review_analysis', False)
+                } for doc in documents],
+                "full_output": data
+            }
+        
+        return {"success": False, "error": f"API returned status {response.status_code}"}
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timed out after 180 seconds"}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "error": f"Could not connect to {BASE_URL}. Is the server running?"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}

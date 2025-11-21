@@ -41,7 +41,10 @@ class QueryToDocument:
     def run(self, query: str) -> Dict[str, List[Document]]:
         """
         Convert query string to Document object(s).
-        Detects compound queries (connected by 'and') and splits them into separate documents.
+        Detects compound queries using multiple strategies:
+        1. ' and ' separator (e.g., "coffee in Vancouver and pizza in LA")
+        2. Comma-separated items before location (e.g., "coffee, cheese in Vancouver")
+        3. Multiple locations in a single query (handled downstream)
         
         Args:
             query: User's natural language query
@@ -51,7 +54,7 @@ class QueryToDocument:
         """
         self.logger.info(f"Converting query to document(s): '{query}'")
         
-        # Split on " and " to detect multiple queries
+        # Strategy 1: Split on " and " to detect multiple queries
         # Match patterns like "X in Y and Z in W"
         sub_queries = [q.strip() for q in query.split(' and ') if q.strip()]
         
@@ -66,14 +69,32 @@ class QueryToDocument:
             ]
             
             if len(valid_sub_queries) > 1:
-                self.logger.info(f"Detected {len(valid_sub_queries)} sub-queries")
+                self.logger.info(f"Detected {len(valid_sub_queries)} sub-queries via ' and ' separator")
                 documents = [Document(content=sq) for sq in valid_sub_queries]
                 for i, doc in enumerate(documents):
                     self.logger.debug(f"Created document {i+1} with ID: {doc.id} - Content: '{doc.content}'")
                 return {"documents": documents}
         
+        # Strategy 2: Check for comma-separated items before location
+        # Pattern: "item1, item2 in location1, location2"
+        # This will be handled as a single document, but EntityKeywordExtractor will split by locations
+        import re
+        location_pattern = r'\b(?:in|near|at|for)\b'
+        match = re.search(location_pattern, query.lower())
+        
+        if match:
+            # Split at location indicator
+            location_word_start = match.start()
+            items_part = query[:location_word_start].strip()
+            location_part = query[location_word_start:].strip()
+            
+            # Check if items part has commas (multiple items)
+            if ',' in items_part:
+                self.logger.info(f"Detected comma-separated items: '{items_part}' with locations: '{location_part}'")
+                # Return as single document - EntityKeywordExtractor will handle multiple locations
+        
         # Single query - treat as one document
-        self.logger.info("Processing as single query")
+        self.logger.info("Processing as single query (may contain multiple locations)")
         doc = Document(content=query)
         self.logger.debug(f"Created document with ID: {doc.id}")
         return {"documents": [doc]}
@@ -174,23 +195,46 @@ class EntityKeywordExtractor:
                         keywords.append(entity_text)
                         self.logger.info(f"Extracted keyword: '{entity_text}' ({entity_label})")
             
-            # Use first location found, or default to empty
-            location = locations[0] if locations else ""
-            if not location:
-                self.logger.warning(f"No location extracted from document {doc_idx + 1}")
-            
-            # Combine keywords with query terms (remove common stop words)
-            stop_words = ["the", "in", "for", "a", "an", "best", "good", "great", "town"]
-            query_words = [word for word in original_query.split() 
-                          if word.lower() not in stop_words]
-            
-            # Merge and deduplicate keywords
-            doc_keywords = list(set(keywords + query_words))
-            
-            self.logger.info(f"Document {doc_idx + 1} extraction - Location: '{location}', Keywords: {doc_keywords}")
-            
-            all_locations.append(location)
-            all_keywords.append(doc_keywords)
+            # Handle multiple locations
+            if len(locations) > 1:
+                # Multiple locations detected - create separate searches for each
+                self.logger.info(f"Multiple locations detected in document {doc_idx + 1}: {locations}")
+                
+                # Combine keywords with query terms (remove common stop words)
+                stop_words = ["the", "in", "for", "a", "an", "best", "good", "great", "town", "and", "or"]
+                query_words = [word for word in original_query.split() 
+                              if word.lower() not in stop_words and word not in locations]
+                
+                # Merge and deduplicate keywords
+                doc_keywords = list(set(keywords + query_words))
+                
+                # Create one search per location with the same keywords
+                for loc in locations:
+                    self.logger.info(f"Creating search - Location: '{loc}', Keywords: {doc_keywords}")
+                    all_locations.append(loc)
+                    all_keywords.append(doc_keywords)
+                    all_original_queries.append(f"{', '.join(doc_keywords)} in {loc}")
+                
+                # Skip adding the original query since we've split it
+                all_original_queries.pop()  # Remove the one added at the start of the loop
+            else:
+                # Single location or no location
+                location = locations[0] if locations else ""
+                if not location:
+                    self.logger.warning(f"No location extracted from document {doc_idx + 1}")
+                
+                # Combine keywords with query terms (remove common stop words)
+                stop_words = ["the", "in", "for", "a", "an", "best", "good", "great", "town"]
+                query_words = [word for word in original_query.split() 
+                              if word.lower() not in stop_words]
+                
+                # Merge and deduplicate keywords
+                doc_keywords = list(set(keywords + query_words))
+                
+                self.logger.info(f"Document {doc_idx + 1} extraction - Location: '{location}', Keywords: {doc_keywords}")
+                
+                all_locations.append(location)
+                all_keywords.append(doc_keywords)
         
         self.logger.info(f"Completed extraction for {len(documents)} document(s)")
         

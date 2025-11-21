@@ -97,7 +97,7 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
     if "search" in agent_outputs and agent_outputs["search"].get("success"):
         search = agent_outputs["search"]
         context += f"\n\nSEARCH RESULTS ({search['result_count']} total found):\n"
-        for i, biz in enumerate(search.get("businesses", [])[:5], 1):
+        for i, biz in enumerate(search.get("businesses", []), 1):
             context += f"{i}. {biz['name']}\n"
             context += f"   Rating: {biz['rating']} stars ({biz['review_count']} reviews)\n"
             context += f"   Price: {biz.get('price_range', 'N/A')}\n"
@@ -109,7 +109,7 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
     if "details" in agent_outputs and agent_outputs["details"].get("success"):
         details = agent_outputs["details"]
         context += "\n\nDETAILED INFORMATION:\n"
-        for i, biz in enumerate(details.get("businesses_with_details", [])[:3], 1):
+        for i, biz in enumerate(details.get("businesses_with_details", []), 1):
             context += f"{i}. {biz['name']}\n"
             if biz['has_website_info']:
                 context += f"   Website content available ({biz['website_content_length']} characters)\n"
@@ -120,7 +120,7 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
     if "sentiment" in agent_outputs and agent_outputs["sentiment"].get("success"):
         sentiment = agent_outputs["sentiment"]
         context += "\n\nREVIEW SENTIMENT ANALYSIS:\n"
-        for i, biz in enumerate(sentiment.get("sentiment_summaries", [])[:3], 1):
+        for i, biz in enumerate(sentiment.get("sentiment_summaries", []), 1):
             context += f"{i}. Business ID: {biz.get('business_id', 'N/A')}\n"
             context += f"   Overall Sentiment: {biz.get('overall_sentiment', 'unknown')}\n"
             context += f"   Positive: {biz['positive_count']}, Neutral: {biz['neutral_count']}, Negative: {biz['negative_count']}\n"

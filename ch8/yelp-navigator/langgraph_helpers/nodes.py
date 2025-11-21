@@ -3,7 +3,7 @@
 from typing import Dict, Any
 from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
-
+from langchain_core.messages import SystemMessage
 
 def search_agent_node(state: Dict[str, Any], search_businesses: tool) -> Dict[str, Any]:
     """Search agent that finds businesses."""
@@ -79,7 +79,6 @@ def sentiment_agent_node(state: Dict[str, Any], analyze_reviews_sentiment: tool)
 
 def summary_agent_node(state: Dict[str, Any], llm) -> Dict[str, Any]:
     """Summary agent that creates the final human-readable response."""
-    from langchain_core.messages import SystemMessage
     
     agent_outputs = state.get("agent_outputs", {})
     
@@ -92,13 +91,13 @@ def summary_agent_node(state: Dict[str, Any], llm) -> Dict[str, Any]:
     if "search" in agent_outputs and agent_outputs["search"].get("success"):
         search = agent_outputs["search"]
         context += f"\n\nFOUND {search['result_count']} BUSINESSES:\n"
-        for i, biz in enumerate(search.get("businesses", [])[:5], 1):
+        for i, biz in enumerate(search.get("businesses", []), 1):
             context += f"{i}. {biz['name']} - {biz['rating']} stars ({biz['review_count']} reviews) - {biz.get('price_range', 'N/A')}\n"
     
     # Add details if available
     if "details" in agent_outputs and agent_outputs["details"].get("success"):
         context += "\n\nWEBSITE INFO:\n"
-        for i, biz in enumerate(agent_outputs["details"].get("businesses_with_details", [])[:3], 1):
+        for i, biz in enumerate(agent_outputs["details"].get("businesses_with_details", []), 1):
             status = "Has website" if biz['has_website_info'] else "No website"
             context += f"{i}. {biz['name']} - {status}\n"
     
@@ -107,7 +106,7 @@ def summary_agent_node(state: Dict[str, Any], llm) -> Dict[str, Any]:
         search = agent_outputs.get("search", {})
         id_to_name = {b.get('id'): b.get('name', 'Unknown') for b in search.get("businesses", [])}
         context += "\n\nREVIEW SENTIMENT:\n"
-        for i, biz in enumerate(agent_outputs["sentiment"].get("sentiment_summaries", [])[:3], 1):
+        for i, biz in enumerate(agent_outputs["sentiment"].get("sentiment_summaries", []), 1):
             name = id_to_name.get(biz.get('business_id'), f"Business {biz.get('business_id')}")
             context += f"{i}. {name} - +{biz['positive_count']} ={biz['neutral_count']} -{biz['negative_count']}\n"
             if biz.get('highest_rated_reviews'):
