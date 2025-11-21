@@ -27,6 +27,7 @@ dependencies = [
   "langchain-openai>=1.0.2",
   "langgraph>=1.0.2",
   "langgraph-cli[inmem]>=0.3.6",
+  "mcp>=1.22.0",
   "nbformat>=5.10.4",
   "nltk>=3.9.1",
   "openpyxl>=3.1.5",
