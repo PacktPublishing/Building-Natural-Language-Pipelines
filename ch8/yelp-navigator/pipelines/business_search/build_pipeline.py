@@ -68,9 +68,9 @@ def build_pipeline():
     # Connect components
     pipeline.connect("query_converter.documents", "ner_extractor.documents")
     pipeline.connect("ner_extractor.documents", "keyword_extractor.documents")
-    pipeline.connect("keyword_extractor.location", "yelp_search.location")
+    pipeline.connect("keyword_extractor.locations", "yelp_search.locations")
     pipeline.connect("keyword_extractor.keywords", "yelp_search.keywords")
-    pipeline.connect("keyword_extractor.original_query", "yelp_search.original_query")
+    pipeline.connect("keyword_extractor.original_queries", "yelp_search.original_queries")
     
     print("✓ Pipeline built successfully")
     print("\nPipeline structure:")

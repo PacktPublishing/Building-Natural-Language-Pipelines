@@ -176,7 +176,7 @@ def summary_node(state: AgentState):
         clarified_query=state['search_query'],
         clarified_location=state['search_location'],
         detail_level=state['detail_level'],
-        agent_outputs=state.get('agent_outputs', {}), # <--- This already works!
+        agent_outputs=state.get('agent_outputs', {}), 
         needs_revision=False,
         revision_feedback=""
     )

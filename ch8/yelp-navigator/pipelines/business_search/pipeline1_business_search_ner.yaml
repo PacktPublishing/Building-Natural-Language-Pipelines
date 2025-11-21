@@ -33,11 +33,11 @@ connections:
   sender: query_converter.documents
 - receiver: keyword_extractor.documents
   sender: ner_extractor.documents
-- receiver: yelp_search.location
-  sender: keyword_extractor.location
+- receiver: yelp_search.locations
+  sender: keyword_extractor.locations
 - receiver: yelp_search.keywords
   sender: keyword_extractor.keywords
-- receiver: yelp_search.original_query
-  sender: keyword_extractor.original_query
+- receiver: yelp_search.original_queries
+  sender: keyword_extractor.original_queries
 max_runs_per_component: 100
 metadata: {}
