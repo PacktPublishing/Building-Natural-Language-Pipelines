@@ -50,7 +50,16 @@ OPENAI_API_KEY=your_openai_key_here
 WANDB_API_KEY=your_wandb_key_here
 ```
 
-**Given these exercises will measure token and cost usage, OpenAI keys are required to complete the exercises.**
+> **⚠️ OpenAI API Key Required**
+> 
+> This chapter focuses on **cost analysis and production RAG evaluation**, which requires OpenAI API keys to:
+> - Measure and compare actual token consumption across different embedding models (`text-embedding-3-small` vs `text-embedding-3-large`)
+> - Track real-world costs for LLM generation (`gpt-4o-mini`) in production scenarios
+> - Use RAGAS evaluation framework, which relies on LLM-as-judge for quality assessment
+> 
+> **Cost Considerations**: The exercises are designed to be cost-effective, typically using less than $0.50-$1.00 for complete chapter completion. Consider starting with `text-embedding-3-small` and `gpt-4o-mini` (the cheapest options) for initial exploration.
+> 
+> **Alternative Approach**: While the SuperComponents in this chapter are configured for OpenAI, the architecture is extensible. Advanced users can modify components to use Ollama or other local models, though this will bypass the cost tracking and comparative analysis features central to this chapter's learning objectives.
 
 To obtain the API keys:
 - **OpenAI API key**: Sign up at [OpenAI's platform](https://platform.openai.com)
