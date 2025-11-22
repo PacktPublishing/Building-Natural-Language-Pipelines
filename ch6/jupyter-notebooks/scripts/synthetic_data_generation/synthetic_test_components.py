@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 from haystack import component, logging
-from haystack.dataclasses import Document as HaystackDocument
 from langchain_core.documents import Document as LangChainDocument
 
 from ragas.testset.graph import KnowledgeGraph
@@ -411,27 +410,3 @@ class TestDatasetSaver:
                 "row_count": 0
             }
 
-
-"""
-Sample usage:
-
-if __name__ == "__main__":
-    from haystack import Pipeline
-    from scripts.synthetic_test_components import SyntheticTestGenerator, TestDatasetSaver
-    from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
-    from haystack.components.converters import PyPDFToDocument
-    from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
-    from scripts.knowledge_graph_component import KnowledgeGraphGenerator
-    from scripts.synthetic_test_components import DocumentToLangChainConverter
-    from pathlib import Path
-    import os
-    from dotenv import load_dotenv
-    load_dotenv()
-    # Load documents from PDF files
-    pdf_files = [Path("./data_for_indexing/howpeopleuseai.pdf")]
-    loader = DirectoryLoader("./data_for_indexing", glob="*.pdf", loader_cls=PyMuPDFLoader)
-    docs = loader.load()
-    # Create pipeline components
-    pdf_converter = PyPDFToDocument()
-    doc_cleaner = DocumentCleaner(remove_empty_lines=True, remove_extra_whitespaces=True)
-"""

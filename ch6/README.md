@@ -50,6 +50,8 @@ OPENAI_API_KEY=your_openai_key_here
 WANDB_API_KEY=your_wandb_key_here
 ```
 
+**Given these exercises will measure token and cost usage, OpenAI keys are required to complete the exercises.**
+
 To obtain the API keys:
 - **OpenAI API key**: Sign up at [OpenAI's platform](https://platform.openai.com)
   - Navigate to [API Keys](https://platform.openai.com/api-keys)

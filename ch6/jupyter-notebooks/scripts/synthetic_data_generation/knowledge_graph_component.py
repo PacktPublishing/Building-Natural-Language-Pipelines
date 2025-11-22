@@ -6,23 +6,16 @@ This component takes a list of LangChain Document objects and creates a Ragas kn
 with applied transforms for synthetic test generation and evaluation.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Any
 import os
 from haystack import component, logging
 from langchain_core.documents import Document as LangChainDocument
 
 from ragas.llms import HaystackLLMWrapper
-from haystack.components.generators import OpenAIGenerator
 from ragas.embeddings import HaystackEmbeddingsWrapper
-from haystack.components.embedders.openai_text_embedder import (
-            OpenAITextEmbedder,
-        )
-from haystack.utils import Secret
 
 from ragas.testset.graph import Node, NodeType, KnowledgeGraph
 from ragas.testset.transforms import default_transforms, apply_transforms
-
-from haystack.dataclasses import Document as HaystackDocument
 
 logger = logging.getLogger(__name__)
 

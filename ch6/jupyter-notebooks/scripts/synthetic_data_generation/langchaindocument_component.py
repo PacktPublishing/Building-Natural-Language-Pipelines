@@ -1,11 +1,14 @@
+#!/usr/bin/env python3
+"""
+Haystack 2.0 custom component to transform Haystack Documents to LangChain Documents.
+
+This component serves as a bridge between Haystack document processing pipelines
+and Ragas components that require LangChain document format.
 """
 
-"""
-
-from typing import List, Optional
 from haystack import component, logging
 from langchain_core.documents import Document as LangChainDocument
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 
 from haystack import component, logging
 from haystack.dataclasses import Document as HaystackDocument
