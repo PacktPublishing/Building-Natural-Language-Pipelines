@@ -31,49 +31,71 @@ from synthetic_test_components import (
 class TestSyntheticTestGenerator:
     """Test cases for the SyntheticTestGenerator component."""
 
-    def test_component_initialization(self):
+    @patch('synthetic_test_components.HaystackLLMWrapper')
+    @patch('synthetic_test_components.HaystackEmbeddingsWrapper')
+    def test_component_initialization(self, mock_emb_wrapper, mock_llm_wrapper):
         """Test 1: Component initializes correctly with default and custom parameters."""
+        # Setup mocks
+        mock_generator = Mock()
+        mock_embedder = Mock()
+        mock_llm_wrapper.return_value = Mock()
+        mock_emb_wrapper.return_value = Mock()
+        
         # Test default initialization
-        generator = SyntheticTestGenerator()
-        assert generator.testset_size == 10
-        assert generator.llm_model == "gpt-4o-mini"
+        generator = SyntheticTestGenerator(
+            generator=mock_generator,
+            embedder=mock_embedder
+        )
+        assert generator.test_size == 10
         assert len(generator.query_distribution) == 3
+        assert generator.llm is not None
+        assert generator.embeddings is not None
         
         # Test custom initialization
         custom_distribution = [("single_hop", 1.0)]
         generator_custom = SyntheticTestGenerator(
-            testset_size=20,
-            llm_model="gpt-3.5-turbo",
+            generator=mock_generator,
+            embedder=mock_embedder,
+            test_size=20,
             query_distribution=custom_distribution
         )
-        assert generator_custom.testset_size == 20
-        assert generator_custom.llm_model == "gpt-3.5-turbo"
+        assert generator_custom.test_size == 20
         assert generator_custom.query_distribution == custom_distribution
 
-    @patch('synthetic_test_components.TestsetGenerator')
-    @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
-    def test_fallback_generation_on_empty_documents(self, mock_testset_generator):
+    @patch('synthetic_test_components.HaystackLLMWrapper')
+    @patch('synthetic_test_components.HaystackEmbeddingsWrapper')
+    def test_fallback_generation_on_empty_documents(self, mock_emb_wrapper, mock_llm_wrapper):
         """Test 2: Component handles empty document lists gracefully."""
-        generator = SyntheticTestGenerator(testset_size=5)
+        # Setup mocks
+        mock_generator = Mock()
+        mock_embedder = Mock()
+        mock_llm_wrapper.return_value = Mock()
+        mock_emb_wrapper.return_value = Mock()
+        
+        generator = SyntheticTestGenerator(
+            generator=mock_generator,
+            embedder=mock_embedder,
+            test_size=5
+        )
         
         # Test with empty documents list
         result = generator.run(documents=[])
         
-        assert result['success'] is False
         assert result['testset_size'] == 0
         assert result['generation_method'] == "none"
         assert isinstance(result['testset'], pd.DataFrame)
         assert len(result['testset']) == 0
 
     @patch('synthetic_test_components.TestsetGenerator')
-    @patch('synthetic_test_components.llm_factory')
-    @patch('synthetic_test_components.embedding_factory')
-    @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
-    def test_successful_generation_with_mock_data(self, mock_embedding, mock_llm, mock_testset_generator):
+    @patch('synthetic_test_components.HaystackLLMWrapper')
+    @patch('synthetic_test_components.HaystackEmbeddingsWrapper')
+    def test_successful_generation_with_mock_data(self, mock_emb_wrapper, mock_llm_wrapper, mock_testset_generator):
         """Test 3: Component generates test data successfully with valid inputs."""
         # Setup mocks
-        mock_llm.return_value = Mock()
-        mock_embedding.return_value = Mock()
+        mock_generator = Mock()
+        mock_embedder = Mock()
+        mock_llm_wrapper.return_value = Mock()
+        mock_emb_wrapper.return_value = Mock()
         
         # Create mock testset
         mock_testset = Mock()
@@ -91,14 +113,17 @@ class TestSyntheticTestGenerator:
         
         # Create test documents
         test_docs = [
-            LangChainDocument(page_content="AI is artificial intelligence", metadata={}),
-            LangChainDocument(page_content="ML is machine learning", metadata={})
+            LangChainDocument(page_content="AI is artificial intelligence" * 100, metadata={}),
+            LangChainDocument(page_content="ML is machine learning" * 100, metadata={})
         ]
         
-        generator = SyntheticTestGenerator(testset_size=2)
+        generator = SyntheticTestGenerator(
+            generator=mock_generator,
+            embedder=mock_embedder,
+            test_size=2
+        )
         result = generator.run(documents=test_docs)
         
-        assert result['success'] is True
         assert result['testset_size'] == 2
         assert result['generation_method'] == "documents"
         assert isinstance(result['testset'], pd.DataFrame)
@@ -184,12 +209,10 @@ if __name__ == "__main__":
         print("Running basic test verification...")
         
         # Run basic tests without pytest
-        generator_test = TestSyntheticTestGenerator()
-        generator_test.test_component_initialization()
-        
         saver_test = TestTestDatasetSaver()
         saver_test.test_component_initialization()
         saver_test.test_successful_csv_save()
         saver_test.test_json_format_support()
         
         print("Basic tests completed successfully!")
+        print("Note: Full test suite requires pytest with mocking support")

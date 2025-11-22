@@ -53,53 +53,47 @@ class KnowledgeGraphGenerator:
     
     def __init__(
         self, 
-        llm_model: str = "gpt-4o-mini",
-        embedder_model: str = "text-embedding-3-small",
-        apply_transforms: bool = True,
-        openai_api_key: Optional[str] = None
+        generator: Any,
+        embedder: Any,
+        apply_transforms: bool = True
     ):
         """
         Initialize the KnowledgeGraphGenerator component.
         
         Args:
-            llm_model (str): OpenAI model name for LLM operations. Defaults to "gpt-4o-mini".
-            embedder_model (str): OpenAI embedding model name. Defaults to "text-embedding-3-small".
+            generator: LLM generator instance (e.g., OpenAIGenerator or OllamaGenerator).
+            embedder: Text embedder instance (e.g., OpenAITextEmbedder or OllamaTextEmbedder).
             apply_transforms (bool): Whether to apply default transforms to enhance the knowledge graph.
-            openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
+        
+        Example:
+            ```python
+            from haystack.components.generators import OpenAIGenerator
+            from haystack.components.embedders.openai_text_embedder import OpenAITextEmbedder
+            from haystack.utils import Secret
+            
+            generator = OpenAIGenerator(
+                model="gpt-4o-mini",
+                api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+            )
+            embedder = OpenAITextEmbedder(
+                model="text-embedding-3-small",
+                api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+            )
+            
+            kg_generator = KnowledgeGraphGenerator(
+                generator=generator,
+                embedder=embedder,
+                apply_transforms=True
+            )
+            ```
         """
-        self.llm_model = llm_model
-        self.embedder_model = embedder_model
         self.apply_transforms = apply_transforms
-        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
         
-        if not self.openai_api_key:
-            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
+        # Wrap generators for Ragas compatibility
+        self.generator_llm = HaystackLLMWrapper(generator)
+        self.generator_embeddings = HaystackEmbeddingsWrapper(embedder=embedder)
         
-        # Initialize LLM and embeddings
-        self._initialize_models()
-    
-    def _initialize_models(self):
-        """Initialize the LLM and embedding models."""
-        try:
-            self.generator_llm = HaystackLLMWrapper(
-                OpenAIGenerator(
-                    model=self.llm_model,
-                    api_key=Secret.from_token(self.openai_api_key)
-                )
-            )
-                
-            self.generator_embeddings = HaystackEmbeddingsWrapper(
-                embedder=OpenAITextEmbedder(
-                    model=self.embedder_model,
-                    api_key=Secret.from_token(self.openai_api_key)
-                )
-            )
-            
-            logger.info(f"Initialized KnowledgeGraphGenerator with LLM: {self.llm_model}, Embedder: {self.embedder_model}")
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize models: {e}")
-            raise
+        logger.info(f"Initialized KnowledgeGraphGenerator with provided generator and embedder")
     
     @component.output_types(knowledge_graph=KnowledgeGraph, node_count=int, transform_applied=bool)
     def run(self, documents: List[LangChainDocument]) -> dict:

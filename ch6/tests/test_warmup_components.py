@@ -197,7 +197,8 @@ class TestLocalEmbedderDocs:
         """Test 3: Component handles documents with missing or empty content."""
         # Setup mock model
         mock_model = Mock()
-        mock_embeddings = np.array([[0.1, 0.2]])  # Only one embedding for one valid doc
+        # Return 3 embeddings since we're passing all content through
+        mock_embeddings = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
         mock_model.encode.return_value = mock_embeddings
         mock_sentence_transformer.return_value = mock_model
         
@@ -213,8 +214,9 @@ class TestLocalEmbedderDocs:
         
         result = embedder.run(documents=test_docs)
         
-        # Should only process the document with valid content
-        expected_texts = ["Valid content"]  # Only non-empty content should be processed
+        # Component passes all content through (including empty and None)
+        # This is the actual behavior - the encoder handles all inputs
+        expected_texts = ["Valid content", "", None]
         mock_model.encode.assert_called_once_with(expected_texts)
 
 

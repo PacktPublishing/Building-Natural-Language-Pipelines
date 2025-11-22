@@ -64,31 +64,50 @@ class SyntheticTestGenerator:
     
     def __init__(
         self,
+        generator: Any,
+        embedder: Any,
         test_size: int = 10,
-        llm_model: str = "gpt-4o-mini",
-        embedder_model: str = "text-embedding-3-small",
-        query_distribution: Optional[List[Tuple[str, float]]] = None,
-        openai_api_key: Optional[str] = None
+        query_distribution: Optional[List[Tuple[str, float]]] = None
     ):
         """
         Initialize the SyntheticTestGenerator component.
         
         Args:
+            generator: LLM generator instance (e.g., OpenAIGenerator or OllamaGenerator).
+            embedder: Text embedder instance (e.g., OpenAITextEmbedder or OllamaTextEmbedder).
             test_size (int): Number of synthetic test cases to generate. Defaults to 10.
-            llm_model (str): OpenAI model name for test generation. Defaults to "gpt-4o-mini".
-            embedder_model (str): OpenAI embedding model name. Defaults to "text-embedding-3-small".
             query_distribution (Optional[List[Tuple[str, float]]]): Distribution of query types and their weights.
                 Format: [("single_hop", 0.5), ("multi_hop_abstract", 0.25), ("multi_hop_specific", 0.25)]
                 If None, uses default balanced distribution.
-            openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
+        
+        Example:
+            ```python
+            from haystack.components.generators import OpenAIGenerator
+            from haystack.components.embedders.openai_text_embedder import OpenAITextEmbedder
+            from haystack.utils import Secret
+            
+            generator = OpenAIGenerator(
+                model="gpt-4o-mini",
+                api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+            )
+            embedder = OpenAITextEmbedder(
+                model="text-embedding-3-small",
+                api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+            )
+            
+            test_generator = SyntheticTestGenerator(
+                generator=generator,
+                embedder=embedder,
+                test_size=10,
+                query_distribution=[
+                    ("single_hop", 0.3),
+                    ("multi_hop_specific", 0.3),
+                    ("multi_hop_abstract", 0.4)
+                ]
+            )
+            ```
         """
         self.test_size = test_size
-        self.llm_model = llm_model
-        self.embedder_model = embedder_model
-        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
-        
-        if not self.openai_api_key:
-            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
         
         # Set default query distribution if none provided
         self.query_distribution = query_distribution or [
@@ -97,61 +116,11 @@ class SyntheticTestGenerator:
             ("multi_hop_specific", 0.25)
         ]
         
-        self._initialize_models()
-        """
-        Initialize the SyntheticTestGenerator component.
+        # Wrap generators for Ragas compatibility
+        self.llm = HaystackLLMWrapper(haystack_generator=generator)
+        self.embeddings = HaystackEmbeddingsWrapper(embedder=embedder)
         
-        Args:
-            testset_size (int): Number of synthetic test cases to generate.
-            llm_model (str): OpenAI model for test generation.
-            query_distribution (Optional[List[Tuple[str, float]]]): Distribution of query types.
-                Format: [("single_hop", 0.5), ("multi_hop_abstract", 0.25), ("multi_hop_specific", 0.25)]
-            openai_api_key (Optional[str]): OpenAI API key override.
-        """
-        self.testset_size = test_size
-        self.llm_model = llm_model
-        self.openai_api_key = openai_api_key
-        
-        # Set default query distribution if not provided
-        self.query_distribution = query_distribution or [
-            ("single_hop", 0.5),
-            ("multi_hop_abstract", 0.25),
-            ("multi_hop_specific", 0.25)
-        ]
-        
-        self._initialize_models()
-    
-    def _validate_environment(self):
-        """Validate that the environment is properly set up for test generation."""
-        # Check API key
-        api_key = self.openai_api_key or os.getenv('OPENAI_API_KEY')
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY not found in environment variables or parameters.")
-        
-        logger.info("Environment validation successful")
-    
-    def _initialize_models(self):
-        """Initialize LLM and embedding models."""
-        try:
-            # Initialize using HaystackLLMWrapper for compatibility
-            self.llm = HaystackLLMWrapper(
-                OpenAIGenerator(
-                    model=self.llm_model,
-                    api_key=Secret.from_token(self.openai_api_key)
-                )
-            )
-            
-            self.embeddings = HaystackEmbeddingsWrapper(
-                embedder=OpenAITextEmbedder(
-                    model=self.embedder_model,
-                    api_key=Secret.from_token(self.openai_api_key)
-                )
-            )
-            logger.info(f"Initialized SyntheticTestGenerator with LLM: {self.llm_model}, Embedder: {self.embedder_model}")
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize models: {e}")
-            raise
+        logger.info(f"Initialized SyntheticTestGenerator with provided generator and embedder")
     
     def _create_query_synthesizers(self) -> List[Tuple[Any, float]]:
         """Create query synthesizers based on the configured distribution."""
@@ -204,21 +173,10 @@ class SyntheticTestGenerator:
                 "generation_method": "none",
             }
         
-        # Validate environment before proceeding
-        try:
-            self._validate_environment()
-        except (ValueError, ConnectionError) as e:
-            logger.error(f"Environment validation failed: {e}")
-            return {
-                "testset": pd.DataFrame(),
-                "testset_size": 0,
-                "generation_method": "env_validation_failed",
-            }
-        
         try:
             # Prefer knowledge graph method if available
             if knowledge_graph is not None:
-                logger.info(f"Generating {self.testset_size} test cases using knowledge graph")
+                logger.info(f"Generating {self.test_size} test cases using knowledge graph")
                 try:
                     testset = self._generate_from_knowledge_graph(knowledge_graph)
                     method = "knowledge_graph"
@@ -227,7 +185,7 @@ class SyntheticTestGenerator:
                     testset = self._generate_from_documents(documents)
                     method = "documents_fallback"
             else:
-                logger.info(f"Generating {self.testset_size} test cases using documents directly")
+                logger.info(f"Generating {self.test_size} test cases using documents directly")
                 testset = self._generate_from_documents(documents)
                 method = "documents"
             
@@ -276,10 +234,10 @@ class SyntheticTestGenerator:
             raise Exception(f"Query distribution failes: {e}")
         
         try:
-            logger.info(f"Attempting to generate {self.testset_size} test cases from knowledge graph")
+            logger.info(f"Attempting to generate {self.test_size} test cases from knowledge graph")
             
             result = generator.generate(
-                testset_size=self.testset_size,
+                testset_size=self.test_size,
                 query_distribution=query_distribution
             )
             return result
@@ -319,7 +277,7 @@ class SyntheticTestGenerator:
 
             return generator.generate_with_langchain_docs(
                 documents=filtered_docs,
-                testset_size=self.testset_size,
+                testset_size=self.test_size,
                 query_distribution=query_dist,
                 raise_exceptions=True,
                 with_debugging_logs=True
@@ -350,10 +308,10 @@ class SyntheticTestGenerator:
         
         # Create basic test cases from document content
         test_data = []
-        num_tests_to_create = min(self.testset_size, len(documents))
+        num_tests_to_create = min(self.test_size, len(documents))
         
         # If we have fewer documents than requested tests, cycle through documents
-        for i in range(self.testset_size):
+        for i in range(self.test_size):
             doc_index = i % len(documents)
             doc = documents[doc_index]
             content = doc.page_content[:200] + "..." if len(doc.page_content) > 200 else doc.page_content

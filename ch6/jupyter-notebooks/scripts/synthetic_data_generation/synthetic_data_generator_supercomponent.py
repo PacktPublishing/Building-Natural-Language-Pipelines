@@ -16,19 +16,50 @@ from knowledge_graph_component import KnowledgeGraphGenerator
 from langchaindocument_component import DocumentToLangChainConverter
 from synthetic_test_components import SyntheticTestGenerator,\
                                                 TestDatasetSaver
+from haystack.components.embedders import OpenAITextEmbedder
+from haystack.components.generators import OpenAIGenerator
+from haystack.utils import Secret
+
                                         
                             
 
 # Load environment variables
 load_dotenv(".env")
 
+# Helper function to create fresh generator and embedder instances
+def create_llm_components():
+    """Create fresh instances of generator and embedder."""
+    # You can use OpenAI models:
+    generator = OpenAIGenerator(
+        model="gpt-4o-mini",
+        api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+    )
+    embedder = OpenAITextEmbedder(
+        model="text-embedding-3-small",
+        api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+    )
+    
+    # Or use Ollama models (uncomment to use):
+    # from haystack_integrations.components.generators.ollama import OllamaGenerator
+    # from haystack_integrations.components.embedders.ollama import OllamaTextEmbedder
+    # 
+    # generator = OllamaGenerator(
+    #     model="mistral-nemo:12b",
+    #     generation_kwargs={
+    #         "num_predict": 100,
+    #         "temperature": 0.9,
+    #     }
+    # )
+    # embedder = OllamaTextEmbedder(model="nomic-embed-text")
+    
+    return generator, embedder
+
+
 @super_component
 class SDGGenerator:
     def __init__(self, 
                  provided_query_distribution, 
                  provided_test_size, 
-                 provided_llm_model, 
-                 provided_embedder_model,
                  sd_file_name,
                  openai_api_key=None):
         """
@@ -37,15 +68,11 @@ class SDGGenerator:
         Args:
             provided_query_distribution: Distribution of query types for synthetic test generation
             provided_test_size: Number of synthetic tests to generate
-            provided_llm_model (str): LLM model name for generation tasks
-            provided_embedder_model (str): Embedding model name for vector operations
             sd_file_name (str): Output file name for synthetic dataset
             openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
         """
         self.query_distribution = provided_query_distribution
         self.test_size = provided_test_size
-        self.llm_model = provided_llm_model
-        self.embedder_model = provided_embedder_model
         self.sd_file_name = sd_file_name
         self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
         
@@ -82,23 +109,22 @@ class SDGGenerator:
         
         # --- 2. Initialize Knowledge Graph and Test Generation Components ---
         
-        # Knowledge Graph Generator with explicit model parameters
+        kg_gen, kg_embed = create_llm_components()
         kg_generator = KnowledgeGraphGenerator(
-            llm_model=self.llm_model,
-            embedder_model=self.embedder_model,
-            apply_transforms=True,
-            openai_api_key=self.openai_api_key
+            generator=kg_gen,
+            embedder=kg_embed,
+            apply_transforms=True
         )
-        
-        # Synthetic Test Generator with explicit model parameters
+
+        # Create test generator component with its own generator and embedder instances
+        test_gen, test_embed = create_llm_components()
         test_generator = SyntheticTestGenerator(
+            generator=test_gen,
+            embedder=test_embed,
             test_size=self.test_size,
-            llm_model=self.llm_model,
-            embedder_model=self.embedder_model,
             query_distribution=self.query_distribution,
-            openai_api_key=self.openai_api_key
         )
-        
+                
         # Test Dataset Saver
         test_saver = TestDatasetSaver(default_output_path=self.sd_file_name)
         
@@ -166,16 +192,12 @@ if __name__ == "__main__":
                     ("multi_hop_specific", 0.3), 
                     ("multi_hop_abstract", 0.4)
                 ]
-    llm_model = "gpt-4o-mini"
-    embedder_model = "text-embedding-3-small"
     file_name ="data_for_eval/synthetic_tests_advanced_branching_10.csv"
     
-    # Create SDGGenerator with explicit model parameters
+    # Create SDGGenerator
     sdg_generator = SDGGenerator(
         provided_query_distribution=query_dist,
         provided_test_size=10,
-        provided_llm_model=llm_model,
-        provided_embedder_model=embedder_model,
         sd_file_name=file_name,
         openai_api_key=os.getenv('OPENAI_API_KEY')
     )

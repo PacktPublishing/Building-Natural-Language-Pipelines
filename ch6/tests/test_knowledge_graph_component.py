@@ -13,23 +13,21 @@ from typing import List
 from pathlib import Path
 
 # Add the scripts directory to the Python path for imports
-current_dir = Path(__file__).parent  # ch6/tests/
-project_root = current_dir.parent    # ch6/
+current_dir = Path(__file__).parent  # ch5/tests/
+project_root = current_dir.parent    # ch5/
 scripts_dir = project_root / "jupyter-notebooks" / "scripts"
-synthetic_data_dir = scripts_dir / "synthetic_data_generation"
 sys.path.insert(0, str(scripts_dir))
-sys.path.insert(0, str(synthetic_data_dir))
 
 from haystack.dataclasses import Document as HaystackDocument
 from langchain_core.documents import Document as LangChainDocument
 from ragas.testset.graph import KnowledgeGraph, Node, NodeType
 
-from knowledge_graph_component import (
+from synthetic_data_generation.knowledge_graph_component import (
     KnowledgeGraphGenerator, 
     KnowledgeGraphSaver
 )
 
-from langchaindocument_component import DocumentToLangChainConverter
+from synthetic_data_generation.langchaindocument_component import DocumentToLangChainConverter
 
 
 class TestKnowledgeGraphGenerator:
@@ -37,45 +35,46 @@ class TestKnowledgeGraphGenerator:
 
     @patch('knowledge_graph_component.HaystackLLMWrapper')
     @patch('knowledge_graph_component.HaystackEmbeddingsWrapper')
-    @patch('knowledge_graph_component.OpenAIGenerator')
-    @patch('knowledge_graph_component.OpenAITextEmbedder')
-    def test_component_initialization(self, mock_embeddings, mock_generator, mock_llm_wrapper, mock_emb_wrapper):
+    def test_component_initialization(self, mock_emb_wrapper, mock_llm_wrapper):
         """Test 1: Component initializes correctly with default and custom parameters."""
         # Setup mocks
-        mock_generator.return_value = Mock()
-        mock_embeddings.return_value = Mock()
+        mock_generator = Mock()
+        mock_embedder = Mock()
         mock_llm_wrapper.return_value = Mock()
         mock_emb_wrapper.return_value = Mock()
         
         # Test default initialization
-        generator = KnowledgeGraphGenerator(openai_api_key="test-key")
-        assert generator.llm_model == "gpt-4o-mini"
+        generator = KnowledgeGraphGenerator(
+            generator=mock_generator,
+            embedder=mock_embedder
+        )
         assert generator.apply_transforms is True
-        assert generator.openai_api_key == "test-key"
+        assert generator.generator_llm is not None
+        assert generator.generator_embeddings is not None
         
         # Test custom initialization
         generator_custom = KnowledgeGraphGenerator(
-            llm_model="gpt-3.5-turbo",
-            apply_transforms=False,
-            openai_api_key="test-key"
+            generator=mock_generator,
+            embedder=mock_embedder,
+            apply_transforms=False
         )
-        assert generator_custom.llm_model == "gpt-3.5-turbo"
         assert generator_custom.apply_transforms is False
-        assert generator_custom.openai_api_key == "test-key"
 
     @patch('knowledge_graph_component.HaystackLLMWrapper')
     @patch('knowledge_graph_component.HaystackEmbeddingsWrapper')
-    @patch('knowledge_graph_component.OpenAIGenerator')
-    @patch('knowledge_graph_component.OpenAITextEmbedder')
-    def test_empty_document_handling(self, mock_embeddings, mock_generator, mock_llm_wrapper, mock_emb_wrapper):
+    def test_empty_document_handling(self, mock_emb_wrapper, mock_llm_wrapper):
         """Test 2: Component handles empty document lists gracefully."""
         # Setup mocks
-        mock_generator.return_value = Mock()
-        mock_embeddings.return_value = Mock()
+        mock_generator = Mock()
+        mock_embedder = Mock()
         mock_llm_wrapper.return_value = Mock()
         mock_emb_wrapper.return_value = Mock()
         
-        generator = KnowledgeGraphGenerator(apply_transforms=False, openai_api_key="test-key")
+        generator = KnowledgeGraphGenerator(
+            generator=mock_generator,
+            embedder=mock_embedder,
+            apply_transforms=False
+        )
         
         # Test with empty documents list
         result = generator.run(documents=[])
@@ -89,15 +88,12 @@ class TestKnowledgeGraphGenerator:
     @patch('knowledge_graph_component.apply_transforms')
     @patch('knowledge_graph_component.HaystackLLMWrapper')
     @patch('knowledge_graph_component.HaystackEmbeddingsWrapper')
-    @patch('knowledge_graph_component.OpenAIGenerator')
-    @patch('knowledge_graph_component.OpenAITextEmbedder')
-    def test_successful_graph_creation_with_documents(self, mock_embeddings, mock_generator, 
-                                                    mock_llm_wrapper, mock_emb_wrapper,
+    def test_successful_graph_creation_with_documents(self, mock_emb_wrapper, mock_llm_wrapper,
                                                     mock_apply_transforms, mock_default_transforms):
         """Test 3: Component creates knowledge graph successfully with valid documents."""
         # Setup mocks
-        mock_generator.return_value = Mock()
-        mock_embeddings.return_value = Mock()
+        mock_generator = Mock()
+        mock_embedder = Mock()
         mock_llm_wrapper.return_value = Mock()
         mock_emb_wrapper.return_value = Mock()
         mock_default_transforms.return_value = []
@@ -115,7 +111,11 @@ class TestKnowledgeGraphGenerator:
             )
         ]
         
-        generator = KnowledgeGraphGenerator(apply_transforms=True, openai_api_key="test-key")
+        generator = KnowledgeGraphGenerator(
+            generator=mock_generator,
+            embedder=mock_embedder,
+            apply_transforms=True
+        )
         result = generator.run(documents=test_docs)
         
         # Verify results
@@ -212,17 +212,14 @@ class TestKnowledgeGraphIntegration:
     @patch('knowledge_graph_component.apply_transforms')
     @patch('knowledge_graph_component.HaystackLLMWrapper')
     @patch('knowledge_graph_component.HaystackEmbeddingsWrapper')
-    @patch('knowledge_graph_component.OpenAIGenerator')
-    @patch('knowledge_graph_component.OpenAITextEmbedder')
-    def test_generator_to_saver_pipeline(self, mock_embeddings, mock_generator, 
-                                       mock_llm_wrapper, mock_emb_wrapper,
+    def test_generator_to_saver_pipeline(self, mock_emb_wrapper, mock_llm_wrapper,
                                        mock_apply_transforms, mock_default_transforms):
         """Integration test: Generate knowledge graph and save it."""
         import tempfile
         
         # Setup mocks
-        mock_generator.return_value = Mock()
-        mock_embeddings.return_value = Mock()
+        mock_generator = Mock()
+        mock_embedder = Mock()
         mock_llm_wrapper.return_value = Mock()
         mock_emb_wrapper.return_value = Mock()
         mock_default_transforms.return_value = []
@@ -236,7 +233,11 @@ class TestKnowledgeGraphIntegration:
         
         with tempfile.TemporaryDirectory() as temp_dir:
             # Step 1: Generate knowledge graph
-            generator = KnowledgeGraphGenerator(apply_transforms=False, openai_api_key="test-key")
+            generator = KnowledgeGraphGenerator(
+                generator=mock_generator,
+                embedder=mock_embedder,
+                apply_transforms=False
+            )
             gen_result = generator.run(documents=[test_doc])
             
             # Step 2: Save knowledge graph
