@@ -49,16 +49,33 @@ class SyntheticTestGenerator:
     
     Usage:
         ```python
-        generator = SyntheticTestGenerator(
-            testset_size=20,
-            llm_model="gpt-4o-mini"
+        from haystack.components.generators import OpenAIGenerator
+        from haystack.components.embedders.openai_text_embedder import OpenAITextEmbedder
+        from haystack.utils import Secret
+        import os
+        
+        # Initialize generator and embedder
+        generator = OpenAIGenerator(
+            model="gpt-4o-mini",
+            api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+        )
+        embedder = OpenAITextEmbedder(
+            model="text-embedding-3-small",
+            api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+        )
+        
+        # Initialize test generator
+        test_generator = SyntheticTestGenerator(
+            generator=generator,
+            embedder=embedder,
+            test_size=20
         )
         
         # Use with knowledge graph (preferred)
-        result = generator.run(knowledge_graph=kg, documents=docs)
+        result = test_generator.run(knowledge_graph=kg, documents=docs)
         
         # Or use with documents only
-        result = generator.run(documents=docs)
+        result = test_generator.run(documents=docs)
         ```
     """
     

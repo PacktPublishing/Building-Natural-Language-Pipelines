@@ -38,10 +38,25 @@ class KnowledgeGraphGenerator:
     Usage:
         ```python
         from knowledge_graph_component import KnowledgeGraphGenerator
+        from haystack.components.generators import OpenAIGenerator
+        from haystack.components.embedders.openai_text_embedder import OpenAITextEmbedder
+        from haystack.utils import Secret
+        import os
+        
+        # Initialize generator and embedder
+        generator = OpenAIGenerator(
+            model="gpt-4o-mini",
+            api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+        )
+        embedder = OpenAITextEmbedder(
+            model="text-embedding-3-small",
+            api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+        )
         
         # Initialize the component
         kg_generator = KnowledgeGraphGenerator(
-            llm_model="gpt-4o-mini",
+            generator=generator,
+            embedder=embedder,
             apply_transforms=True
         )
         
