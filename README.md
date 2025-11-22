@@ -146,8 +146,9 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 **Context Engineering & Token Optimization**
 
 #### **[Context Engineering](./ch9/context-engineering/)**
-- **State Management Patterns**: Understanding how architectural decisions impact token usage and cost
-- **Monolithic vs Supervisor Architectures**: Comparing design patterns through two implementations of the same Yelp Navigator agent
-- **Context Reduction Techniques**: Using boolean flags and minimal state instead of full data accumulation
-- **Token Usage Measurement**: Automated analysis showing 16-50% token reduction with optimized architectures
+- **Three Agent Architectures**: Progressive implementations from learning (V1 monolithic) to production-ready (V3 with checkpointing)
+- **State Management Patterns**: Understanding how architectural decisions impact token usage and cost (16-50% reduction)
+- **Monolithic vs Supervisor Patterns**: Comparing design approaches with automated token measurement tools
+- **Production Features**: Error handling with retry policies, conversation persistence with checkpointing, and graceful degradation
+- **Checkpointing Systems**: Thread-based session management with both in-memory (development) and SQLite (production) persistence options
 
