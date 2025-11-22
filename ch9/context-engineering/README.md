@@ -105,7 +105,7 @@ User: "Which one has the best reviews?"
 Agent: [Remembers "coffee shops" and "Seattle", analyzes reviews]
 ```
 
-See [`yelp-navigator-v3/persistence.md`](./yelp-navigator-v3/docs/persistence.md) for detailed guide on:
+See [`./docs/persistence.md`](./docs/persistence.md) for detailed guide on:
 - Thread-based session management
 - In-memory vs SQLite checkpointing
 - Production considerations
