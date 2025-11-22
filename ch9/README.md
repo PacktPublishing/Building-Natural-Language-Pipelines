@@ -55,22 +55,25 @@ This chapter explores context engineering patterns for building efficient AI age
 
 ### Context Engineering (`context-engineering/`)
 
-This folder demonstrates context engineering through two implementations of the same Yelp Navigator agent with different architectural approaches:
+This folder demonstrates context engineering through three implementations of the same Yelp Navigator agent, showing how architectural decisions impact token efficiency and production readiness:
 
-| Architecture | Description | Token Efficiency |
-|---|---|---|
-| **Yelp Navigator V1** | Monolithic design where each agent node handles tool execution, decision-making, and routing. All tool results accumulate in a single `agent_outputs` dictionary that every node receives. | Baseline |
-| **Yelp Navigator V2** | Supervisor pattern that separates concerns: a supervisor node makes routing decisions with minimal context (boolean flags), while dedicated tool nodes execute operations. | 16-50% fewer tokens |
+| Architecture | Description | Token Efficiency | Production Features |
+|---|---|---|---|
+| **Yelp Navigator V1** | Monolithic design where each agent node handles tool execution, decision-making, and routing. All tool results accumulate in a single `agent_outputs` dictionary that every node receives. | Baseline | None |
+| **Yelp Navigator V2** | Supervisor pattern that separates concerns: a supervisor node makes routing decisions with minimal context (boolean flags), while dedicated tool nodes execute operations. | 16-50% fewer tokens | None |
+| **Yelp Navigator V3** | Production-ready version using V2's supervisor pattern plus retry policies for transient failures and checkpointing for conversation persistence. | Same as V2 | ✅ Retry policies, checkpointing, error tracking |
 
 **Key Files:**
-- `docs/ARCHITECTURE_COMPARISON.md` - Detailed comparison of design patterns and token usage analysis
+- `docs/ARCHITECTURE_COMPARISON.md` - Detailed comparison of all three architectures
 - `measure_token_usage.py` - Automated token measurement script with test scenarios
 - `test_examples.sh` - Run all test cases to compare architectures
-- `shared/` - Common prompts and tools used by both versions
+- `shared/` - Common prompts and tools used by all versions
 
 **What You'll Learn:**
 - How state management design affects token consumption
 - Trade-offs between monolithic and supervisor patterns
+- Production-ready error handling with retry policies
+- Conversation persistence with checkpointing
 - Measuring and optimizing token usage in production agents
 - Context reduction techniques (boolean flags vs full data)
 
@@ -85,4 +88,5 @@ See the [context-engineering README](./context-engineering/README.md) for setup 
 3. **Supervisor Pattern** - Separating decision-making from tool execution
 4. **Token Optimization** - Measuring and reducing token consumption
 5. **Architectural Trade-offs** - When to use different patterns
-6. **Production Considerations** - Cost analysis and scaling implications
+6. **Production Features** - Retry policies, checkpointing, and error handling
+7. **Cost Analysis** - Token measurement and scaling implications

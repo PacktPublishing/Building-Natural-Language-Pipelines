@@ -24,9 +24,9 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 ## What's Inside
 
-- **`yelp-navigator-v1/`** - Monolithic state (all data in `agent_outputs`)
+- **`yelp-navigator-v1/`** - Monolithic architecture (baseline for comparison)
 - **`yelp-navigator-v2/`** - Supervisor pattern with efficient token usage
-- **`yelp-navigator-v3/`** - **Production-ready** with retry policies + checkpointing
+- **`yelp-navigator-v3/`** - Production-ready with retry policies + checkpointing
 - **`shared/`** - Common tools, prompts, and configuration
 - **`docs/`** - Architecture comparison and measurement guides
 
@@ -34,18 +34,19 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 | Feature | V1 | V2 | V3 |
 |---------|----|----|-----|
-| Token Efficiency | Baseline | 16-50% better | Same as V2 |
+| Token Efficiency | Baseline | 16-50% better | 16-50% better |
 | Architecture | Monolithic agents | Supervisor pattern | Supervisor pattern |
-| Error Handling | Basic | Basic | **Retry policies** |
-| Persistence | None | None | **Checkpointing** |
-| Production Ready | ❌ | ⚠️ Prototype | ✅ **Yes** |
+| Error Handling | Basic | Basic | Retry policies + graceful degradation |
+| Persistence | None | None | Checkpointing (thread-based) |
+| Error Tracking | None | None | Execution metadata + retry counts |
+| Production Ready | ❌ Learning | ⚠️ Prototype | ✅ Production |
 
 ![](./docs/v1-v2-v3.png)
 
 **Choose:**
-- **V1** for learning and prototyping
-- **V2** for cost-efficient production prototypes
-- **V3** for production deployments requiring reliability
+- **V1** for learning monolithic agent patterns
+- **V2** for understanding supervisor patterns and token optimization
+- **V3** for production deployments requiring reliability and persistence
 
 ---
 
@@ -58,10 +59,10 @@ uv run python measure_token_usage.py
 
 **Test complexity scaling:**
 ```sh
-# Simple: ~16% savings
+# Simple: ~16% savings (V2/V3 vs V1)
 uv run python measure_token_usage.py --test-query "Italian restaurants" --test-location "Boston, MA" --detail-level general
 
-# Complex: ~50% savings (estimated)
+# Complex: ~50% savings (V2/V3 vs V1, estimated)
 uv run python measure_token_usage.py --test-query "sushi restaurants" --test-location "New York, NY" --detail-level reviews
 ```
 
@@ -70,4 +71,6 @@ uv run python measure_token_usage.py --test-query "sushi restaurants" --test-loc
 ./test_examples.sh
 ```
 
-See [`docs/ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) for details on why V2 is more efficient.
+**Note:** V2 and V3 have identical token efficiency since V3 uses the same supervisor pattern. V3 adds production features (retry policies, checkpointing) without impacting token usage.
+
+See [`docs/ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) for detailed architecture analysis.
