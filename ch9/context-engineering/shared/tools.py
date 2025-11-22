@@ -2,19 +2,21 @@
 import requests
 from typing import Dict, Any, List
 from langchain_core.tools import tool
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from .config import get_llm
 
 BASE_URL = "http://localhost:1416"
 
-# Hayhooks Chat Completion Tool
+# OpenAI Chat Completion Tool
 @tool
 def chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4o-mini", stream: bool = False, base_url: str = BASE_URL) -> Dict[str, Any]:
-    """Send a general chat completion request to the Hayhooks OpenAI-compatible endpoint.
+    """Send a general chat completion request using OpenAI's chat completion API.
     
     Args:
         messages: List of message dicts, e.g. [{"role": "user", "content": "Hello!"}]
         model: Model name to use (default: gpt-4o-mini)
         stream: Whether to stream the response (default: False)
-        base_url: Base URL for the API endpoint
+        base_url: Base URL for the API endpoint (deprecated, kept for compatibility)
         
     Returns:
         Dictionary containing the chat completion response in OpenAI format:
@@ -40,34 +42,56 @@ def chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4o-mini", 
         }
     """
     try:
-        response = requests.post(
-            f"{base_url}/v1/chat/completions",
-            json={
-                "model": model,
-                "messages": messages,
-                "stream": stream
-            },
-            timeout=30
-        )
+        # Get the LLM instance
+        llm = get_llm(model=model)
         
-        if response.status_code == 200:
-            data = response.json()
-            return {"success": True, "response": data}
-        else:
-            error_msg = f"API returned status {response.status_code}"
-            try:
-                error_detail = response.json()
-                error_msg += f": {error_detail}"
-            except:
-                error_msg += f": {response.text}"
-            return {"success": False, "error": error_msg}
+        # Add system instruction to always end with a summary
+        system_instruction = SystemMessage(content=(
+            "You are a helpful assistant for a Yelp business search and analysis system. "
+            "After answering the user's question, ALWAYS end your response with a brief summary that includes:\n"
+            "1. What this agentic system does (searches for businesses, analyzes reviews, and provides recommendations)\n"
+            "2. What information it needs from users (location, business type/category, and specific preferences or requirements)"
+        ))
+        
+        # Convert message dicts to LangChain message objects
+        langchain_messages = [system_instruction]
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
             
-    except requests.exceptions.Timeout:
-        return {"success": False, "error": "Request timed out after 30 seconds"}
-    except requests.exceptions.ConnectionError:
-        return {"success": False, "error": f"Could not connect to {base_url}. Is the server running?"}
+            if role == "system":
+                langchain_messages.append(SystemMessage(content=content))
+            elif role == "assistant":
+                langchain_messages.append(AIMessage(content=content))
+            else:  # user or any other role
+                langchain_messages.append(HumanMessage(content=content))
+        
+        # Invoke the LLM
+        response = llm.invoke(langchain_messages)
+        
+        # Format response in OpenAI-compatible format
+        return {
+            "success": True,
+            "response": {
+                "id": getattr(response, "id", "chatcmpl-" + str(hash(response.content))),
+                "object": "chat.completion",
+                "created": int(getattr(response, "response_metadata", {}).get("created", 0)),
+                "model": model,
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": response.content
+                        },
+                        "finish_reason": "stop"
+                    }
+                ]
+            }
+        }
+            
     except Exception as e:
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
+        return {"success": False, "error": f"Error in chat completion: {str(e)}"}
 
 @tool
 def search_businesses(query: str) -> Dict[str, Any]:
