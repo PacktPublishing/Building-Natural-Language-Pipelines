@@ -19,10 +19,4 @@ python build_pipeline.py
 cd ../..
 
 echo ""
-echo "Building Pipeline 4: Business Summary with Recommendations..."
-cd pipelines/business_summary_review
-python build_pipeline.py
-cd ../..
-
-echo ""
 echo "✓ All pipelines built successfully!"

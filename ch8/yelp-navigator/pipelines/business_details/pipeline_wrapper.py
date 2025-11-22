@@ -63,44 +63,21 @@ class PipelineWrapper(BasePipelineWrapper):
             )
             
             # Extract results
-            parser_output = result.get("parser", {})
-            url_extractor_output = result.get("url_extractor", {})
             enricher_output = result.get("metadata_enricher", {})
             
             documents = enricher_output.get("documents", [])
-            business_results = parser_output.get("business_results", [])
+
             
             # Format the response
             response = {
                 "document_count": len(documents),
-                "business_count": len(business_results),
-                "urls_fetched": url_extractor_output.get("urls", []),
                 "documents": [
                     {
-                        "content_length": len(doc.content),
-                        "content_preview": doc.content[:500] if doc.content else "",
-                        "metadata": {
-                            "business_id": doc.meta.get("business_id"),
-                            "business_name": doc.meta.get("business_name"),
-                            "business_alias": doc.meta.get("business_alias"),
-                            "rating": doc.meta.get("rating"),
-                            "review_count": doc.meta.get("review_count"),
-                            "price_range": doc.meta.get("price_range"),
-                            "categories": doc.meta.get("categories", []),
-                            "phone": doc.meta.get("phone"),
-                            "website": doc.meta.get("website"),
-                            "location": {
-                                "lat": doc.meta.get("latitude"),
-                                "lon": doc.meta.get("longitude")
-                            },
-                            "services": doc.meta.get("services", []),
-                            "business_highlights": doc.meta.get("business_highlights", []),
-                            "images": doc.meta.get("images", [])
-                        }
+                        "content": doc.content,
+                        "metadata": doc.meta
                     }
                     for doc in documents
-                ],
-                "raw_documents": documents  # Include full Document objects for downstream use
+                ]
             }
             
             log.info(f"Pipeline 2 processed successfully - {len(documents)} documents created")

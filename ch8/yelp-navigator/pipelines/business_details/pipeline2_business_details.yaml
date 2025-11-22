@@ -12,6 +12,9 @@ components:
       user_agents:
       - haystack/LinkContentFetcher/2.19.0
     type: haystack.components.fetchers.link_content.LinkContentFetcher
+  content_filter:
+    init_parameters: {}
+    type: pipelines.business_details.components.DocumentContentFilter
   document_cleaner:
     init_parameters:
       ascii_only: false
@@ -51,8 +54,10 @@ connections:
   sender: url_extractor.business_metadata
 - receiver: html_converter.sources
   sender: content_fetcher.streams
-- receiver: document_cleaner.documents
+- receiver: content_filter.documents
   sender: html_converter.documents
+- receiver: document_cleaner.documents
+  sender: content_filter.documents
 - receiver: metadata_enricher.documents
   sender: document_cleaner.documents
 max_runs_per_component: 100

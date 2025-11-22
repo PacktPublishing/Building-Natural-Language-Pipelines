@@ -156,18 +156,78 @@ class WebsiteURLExtractor:
 
 
 @component
+class DocumentContentFilter:
+    """
+    Filters out documents with None or empty content.
+    
+    This component:
+    1. Receives documents from HTMLToDocument converter
+    2. Filters out documents where content is None or empty
+    3. Returns only valid documents with actual content
+    
+    This prevents downstream components (like DocumentCleaner) from 
+    receiving documents they cannot process.
+    
+    Input:
+        - documents (List[Document]): Documents from HTMLToDocument
+    
+    Output:
+        - documents (List[Document]): Filtered documents with valid content
+    """
+    
+    def __init__(self):
+        """Initialize the component with a logger."""
+        self.logger = logging.getLogger(__name__ + ".DocumentContentFilter")
+    
+    @component.output_types(documents=List[Document])
+    def run(self, documents: List[Document]) -> Dict[str, List[Document]]:
+        """
+        Filter documents to only include those with valid content.
+        
+        Args:
+            documents: Documents to filter
+            
+        Returns:
+            Dictionary with filtered documents
+        """
+        if documents is None:
+            self.logger.warning("Received None for documents, returning empty list")
+            return {"documents": []}
+        
+        initial_count = len(documents)
+        
+        # Filter out documents with None or empty content
+        valid_documents = [
+            doc for doc in documents 
+            if doc.content is not None and doc.content.strip()
+        ]
+        
+        filtered_count = initial_count - len(valid_documents)
+        
+        if filtered_count > 0:
+            self.logger.warning(
+                f"Filtered out {filtered_count} document(s) with None or empty content "
+                f"(keeping {len(valid_documents)} valid documents)"
+            )
+        else:
+            self.logger.info(f"All {len(valid_documents)} documents have valid content")
+        
+        return {"documents": valid_documents}
+
+
+@component
 class DocumentMetadataEnricher:
     """
     Enriches documents with business metadata.
     
     This component:
-    1. Receives documents from HTMLToDocument converter
+    1. Receives documents from DocumentContentFilter
     2. Matches documents with corresponding business metadata
     3. Enriches document metadata with business information
     4. Returns fully enriched Haystack Documents
     
     Input:
-        - documents (List[Document]): Documents from HTMLToDocument
+        - documents (List[Document]): Filtered documents with valid content
         - business_metadata (List[Dict]): Business metadata from extractor
     
     Output:

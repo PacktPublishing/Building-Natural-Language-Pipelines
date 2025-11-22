@@ -200,23 +200,28 @@ class EntityKeywordExtractor:
                 # Multiple locations detected - create separate searches for each
                 self.logger.info(f"Multiple locations detected in document {doc_idx + 1}: {locations}")
                 
-                # Combine keywords with query terms (remove common stop words)
+                # Combine keywords with query terms (remove common stop words and location names)
                 stop_words = ["the", "in", "for", "a", "an", "best", "good", "great", "town", "and", "or"]
+                # Flatten locations list for removal (in case there are multi-word locations)
+                location_words = set()
+                for loc in locations:
+                    location_words.update(loc.split())
+                
                 query_words = [word for word in original_query.split() 
-                              if word.lower() not in stop_words and word not in locations]
+                              if word.lower() not in stop_words and word not in location_words]
                 
                 # Merge and deduplicate keywords
                 doc_keywords = list(set(keywords + query_words))
+                
+                # Remove the original query that was added at the start (before splitting by location)
+                all_original_queries.pop()
                 
                 # Create one search per location with the same keywords
                 for loc in locations:
                     self.logger.info(f"Creating search - Location: '{loc}', Keywords: {doc_keywords}")
                     all_locations.append(loc)
-                    all_keywords.append(doc_keywords)
+                    all_keywords.append(doc_keywords.copy())  # Use copy to avoid reference issues
                     all_original_queries.append(f"{', '.join(doc_keywords)} in {loc}")
-                
-                # Skip adding the original query since we've split it
-                all_original_queries.pop()  # Remove the one added at the start of the loop
             else:
                 # Single location or no location
                 location = locations[0] if locations else ""

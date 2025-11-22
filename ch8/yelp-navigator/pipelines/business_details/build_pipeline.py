@@ -29,6 +29,7 @@ try:
     from .components import (
         Pipeline1ResultParser,
         WebsiteURLExtractor,
+        DocumentContentFilter,
         DocumentMetadataEnricher
     )
 except ImportError:
@@ -36,6 +37,7 @@ except ImportError:
     from pipelines.business_details.components import (
         Pipeline1ResultParser,
         WebsiteURLExtractor,
+        DocumentContentFilter,
         DocumentMetadataEnricher
     )
 
@@ -57,6 +59,7 @@ def build_pipeline():
         raise_on_failure=False  # Don't fail pipeline if some websites timeout
     )
     html_converter = HTMLToDocument()
+    content_filter = DocumentContentFilter()
     document_cleaner = DocumentCleaner(
         remove_empty_lines=True,
         remove_extra_whitespaces=True,
@@ -69,6 +72,7 @@ def build_pipeline():
     pipeline.add_component("url_extractor", url_extractor)
     pipeline.add_component("content_fetcher", content_fetcher)
     pipeline.add_component("html_converter", html_converter)
+    pipeline.add_component("content_filter", content_filter)
     pipeline.add_component("document_cleaner", document_cleaner)
     pipeline.add_component("metadata_enricher", metadata_enricher)
     
@@ -76,13 +80,14 @@ def build_pipeline():
     pipeline.connect("parser.business_results", "url_extractor.business_results")
     pipeline.connect("url_extractor.urls", "content_fetcher.urls")
     pipeline.connect("content_fetcher.streams", "html_converter.sources")
-    pipeline.connect("html_converter.documents", "document_cleaner.documents")
+    pipeline.connect("html_converter.documents", "content_filter.documents")
+    pipeline.connect("content_filter.documents", "document_cleaner.documents")
     pipeline.connect("document_cleaner.documents", "metadata_enricher.documents")
     pipeline.connect("url_extractor.business_metadata", "metadata_enricher.business_metadata")
     
     print("✓ Pipeline built successfully")
     print("\nPipeline structure:")
-    print("Pipeline 1 Full Output → Parser → URLExtractor → ContentFetcher → HTMLConverter → DocumentCleaner → MetadataEnricher → Enriched Documents")
+    print("Pipeline 1 Full Output → Parser → URLExtractor → ContentFetcher → HTMLConverter → ContentFilter → DocumentCleaner → MetadataEnricher → Enriched Documents")
     
     return pipeline
 

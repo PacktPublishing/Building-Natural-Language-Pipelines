@@ -6,11 +6,13 @@ Makes custom components available for import.
 from .components import (
     Pipeline1ResultParser,
     WebsiteURLExtractor,
+    DocumentContentFilter,
     DocumentMetadataEnricher
 )
 
 __all__ = [
     'Pipeline1ResultParser',
     'WebsiteURLExtractor',
+    'DocumentContentFilter',
     'DocumentMetadataEnricher'
 ]
