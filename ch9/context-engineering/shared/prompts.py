@@ -119,9 +119,20 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
     # Add sentiment if available
     if "sentiment" in agent_outputs and agent_outputs["sentiment"].get("success"):
         sentiment = agent_outputs["sentiment"]
+        search = agent_outputs.get("search", {})
+        
+        # Create a mapping from business_id to business name from search results
+        business_name_map = {}
+        if search.get("success"):
+            for business in search.get("businesses", []):
+                business_name_map[business.get("id")] = business.get("name", "Unknown Business")
+        
         context += "\n\nREVIEW SENTIMENT ANALYSIS:\n"
         for i, biz in enumerate(sentiment.get("sentiment_summaries", []), 1):
-            context += f"{i}. Business ID: {biz.get('business_id', 'N/A')}\n"
+            business_id = biz.get('business_id', 'N/A')
+            business_name = business_name_map.get(business_id, f"Business ID: {business_id}")
+            
+            context += f"{i}. {business_name}\n"
             context += f"   Overall Sentiment: {biz.get('overall_sentiment', 'unknown')}\n"
             context += f"   Positive: {biz['positive_count']}, Neutral: {biz['neutral_count']}, Negative: {biz['negative_count']}\n"
             context += f"   Total Reviews Analyzed: {biz.get('total_reviews', 0)}\n"
