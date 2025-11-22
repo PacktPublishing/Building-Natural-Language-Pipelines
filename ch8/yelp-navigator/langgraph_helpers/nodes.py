@@ -17,7 +17,7 @@ def search_agent_node(state: Dict[str, Any], search_businesses: tool) -> Dict[st
         businesses = result.get("businesses", [])
         summary = f"Found {result.get('result_count', 0)} businesses:\n"
         summary += "\n".join(f"{i}. {b['name']} - {b['rating']} stars ({b['review_count']} reviews)" 
-                             for i, b in enumerate(businesses[:5], 1))
+                             for i, b in enumerate(businesses, 1))
     else:
         summary = f"Search failed: {result.get('error', 'Unknown error')}"
     
@@ -42,7 +42,7 @@ def details_agent_node(state: Dict[str, Any], get_business_details: tool) -> Dic
         details = result.get("businesses_with_details", [])
         summary = f"Retrieved details for {result.get('document_count', 0)} businesses:\n"
         summary += "\n".join(f"{i}. {b['name']} - {'Has website' if b['has_website_info'] else 'No website'}" 
-                             for i, b in enumerate(details[:3], 1))
+                             for i, b in enumerate(details, 1))
     else:
         summary = f"Details failed: {result.get('error', 'Unknown error')}"
     
@@ -66,7 +66,7 @@ def sentiment_agent_node(state: Dict[str, Any], analyze_reviews_sentiment: tool)
         id_to_name = {b.get('id'): b.get('name', 'Unknown') for b in search_output.get("businesses", [])}
         
         summary = f"Analyzed {result.get('business_count', 0)} businesses:\n"
-        for i, biz in enumerate(sentiments[:3], 1):
+        for i, biz in enumerate(sentiments, 1):
             name = id_to_name.get(biz.get('business_id'), f"Business {biz.get('business_id')}")
             total = biz['positive_count'] + biz['neutral_count'] + biz['negative_count']
             pos_pct = (biz['positive_count'] / total * 100) if total > 0 else 0

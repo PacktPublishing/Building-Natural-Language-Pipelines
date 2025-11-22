@@ -46,7 +46,6 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 - `business_search/` - Business search with NER entity extraction
 - `business_details/` - Website content fetching and processing
 - `business_sentiment/` - Review fetching and sentiment analysis
-- `business_summary_review/` - Comprehensive business report generation
 
 ---
 

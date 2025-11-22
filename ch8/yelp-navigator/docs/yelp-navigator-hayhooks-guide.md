@@ -22,11 +22,6 @@ yelp-navigator/
 │   │   ├── components.py
 │   │   ├── build_pipeline.py
 │   │   └── pipeline_wrapper.py
-│   └── business_summary_review/ # Pipeline 4: Business Report Summarizer
-│       ├── __init__.py
-│       ├── components.py
-│       ├── build_pipeline.py
-│       └── pipeline_wrapper.py
 ├── .env                        # Environment variables (API keys)
 └── README.md                   # This file
 ```
@@ -88,14 +83,6 @@ This will:
 - Endpoint: `http://localhost:1416/business_sentiment`
 - Method: POST
 - Body: `{"pipeline1_output": {...}}`
-
-**Pipeline 4 - Business Report Summarizer**:
-- Endpoint: `http://localhost:1416/business_summary_review`
-- Method: POST
-- Body: Flexible - accepts any combination of pipeline outputs:
-  - Basic: `{"pipeline1_output": {...}}`
-  - With website: `{"pipeline1_output": {...}, "pipeline2_output": {...}}`
-  - Complete: `{"pipeline1_output": {...}, "pipeline2_output": {...}, "pipeline3_output": {...}}`
 
 ---
 
@@ -231,14 +218,8 @@ If YAML serialization fails:
 └──────────────────┬──────────────────┘  │ - Identifies top/worst  │
                    │                      └───────────┬─────────────┘
                    │                                  │
-                   └──────────────┬───────────────────┘
-                                  ▼
-                   ┌──────────────────────────────────┐
-                   │ Pipeline 4: Report Generator     │
-                   │ - Consolidates all information   │
-                   │ - Generates comprehensive reports│
-                   │ - Flexible depth based on inputs │
-                   └──────────────────────────────────┘
+                   │                                  │ 
+                   ▼                                  ▼
 ```
 
 ### Pipeline 4 Report Levels
@@ -261,45 +242,26 @@ curl -X POST http://localhost:1416/business_search/run \
   -H "Content-Type: application/json" \
   -d '{"query": "Italian restaurants in San Francisco"}' \
   > pipeline1_output.json
-
-# Step 2: Generate basic report from search results
-curl -X POST http://localhost:1416/business_summary_review/run \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --slurpfile p1 pipeline1_output.json '{pipeline1_output: $p1[0]}')"
 ```
 
 ### Enhanced Workflow (With Website Content)
 
 ```bash
-# Steps 1-2: Get business details
+# Step 2: Get business details
 curl -X POST http://localhost:1416/business_details/run \
   -H "Content-Type: application/json" \
   -d "$(jq -n --slurpfile p1 pipeline1_output.json '{pipeline1_output: $p1[0]}')" \
   > pipeline2_output.json
-
-# Step 3: Generate enhanced report
-curl -X POST http://localhost:1416/business_summary_review/run \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --slurpfile p1 pipeline1_output.json --slurpfile p2 pipeline2_output.json \
-    '{pipeline1_output: $p1[0], pipeline2_output: $p2[0]}')"
 ```
 
 ### Complete Workflow (With Reviews & Sentiment)
 
 ```bash
-# Steps 1-3: Get review analysis
+# Step 3: Get review analysis
 curl -X POST http://localhost:1416/business_sentiment/run \
   -H "Content-Type: application/json" \
   -d "$(jq -n --slurpfile p1 pipeline1_output.json '{pipeline1_output: $p1[0]}')" \
   > pipeline3_output.json
-
-# Step 4: Generate comprehensive report
-curl -X POST http://localhost:1416/business_summary_review/run \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --slurpfile p1 pipeline1_output.json \
-            --slurpfile p2 pipeline2_output.json \
-            --slurpfile p3 pipeline3_output.json \
-    '{pipeline1_output: $p1[0], pipeline2_output: $p2[0], pipeline3_output: $p3[0]}')"
 ```
 
 ---
@@ -309,9 +271,8 @@ curl -X POST http://localhost:1416/business_summary_review/run \
 After building and deploying the pipelines:
 
 1. **Test the API endpoints** using curl or the provided Jupyter notebook (`pipeline_chaining_guide.ipynb`)
-2. **Experiment with Pipeline 4** at different report levels (basic, enhanced, complete)
-3. **Integrate with LangGraph** for multi-agent orchestration
-4. **Customize report templates** in `pipelines/business_summary_review/components.py`
+2. **Integrate with LangGraph** for multi-agent orchestration
+3. **Customize components** in the respective `pipelines/*/components.py` files
 
 ---
 

@@ -97,7 +97,7 @@ def search_node(state: AgentState) -> AgentState:
                     Found {result.get('result_count', 0)} businesses total
                     Top {len(businesses)} results retrieved:
                     """
-        for i, biz in enumerate(businesses[:5], 1):
+        for i, biz in enumerate(businesses, 1):
             summary += f"\n{i}. {biz['name']} - Rating: {biz['rating']}/5 ({biz['review_count']} reviews) - {biz.get('price_range', 'N/A')}"
     else:
         summary = f"ERROR: Search failed: {result.get('error', 'Unknown error')}"
@@ -146,7 +146,7 @@ def details_node(state: AgentState) -> AgentState:
                     Retrieved detailed information for \
                         {result.get('document_count', 0)} businesses:"""
         
-        for i, biz in enumerate(details[:3], 1):
+        for i, biz in enumerate(details, 1):
             website_status = "[Website content available]" if biz['has_website_info'] else "[No website info]"
             summary += f"\n{i}. {biz['name']} - {website_status}"
     else:
@@ -194,7 +194,7 @@ def sentiment_node(state: AgentState) -> AgentState:
         summary = f"""Sentiment Agent Results:
                     Analyzed reviews for {result.get('analyzed_count', 0)} businesses:
                     """
-        for i, biz in enumerate(sentiments[:3], 1):
+        for i, biz in enumerate(sentiments, 1):
             total = biz['positive_count'] + biz['neutral_count'] + biz['negative_count']
             if total > 0:
                 positive_pct = (biz['positive_count'] / total) * 100

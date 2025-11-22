@@ -141,7 +141,7 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
 
             Write a comprehensive, friendly summary that:
             1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
-            2. Highlights the top 3-5 business recommendations from the search results
+            2. Highlights the top 5-10 business recommendations from the search results
             3. Includes relevant details based on what was requested (ratings, prices, sentiment)
             4. {'ALWAYS include phone numbers and website URLs for each business' if detail_level in ['detailed', 'reviews'] else 'Include basic contact information'}
             5. Is easy to read and conversational
