@@ -5,13 +5,14 @@ Tests for RAGAS evaluation components (ragasevalsupercomponent.py)
 These tests validate the functionality of custom Haystack components for RAG evaluation using RAGAS.
 """
 
-import pytest
-import pandas as pd
 import os
 import sys
 import tempfile
-from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
+from unittest.mock import Mock, patch, MagicMock
+
+import pandas as pd
+import pytest
 
 # Add the scripts directory to the Python path for imports
 current_dir = Path(__file__).parent  # ch6/tests/
@@ -20,8 +21,19 @@ scripts_dir = project_root / "jupyter-notebooks" / "scripts"
 sys.path.insert(0, str(scripts_dir))
 sys.path.insert(0, str(scripts_dir / "ragas_evaluation"))
 
-from haystack.dataclasses import Document as HaystackDocument
 from haystack import Pipeline, SuperComponent
+from haystack.components.generators import OpenAIGenerator
+from haystack.dataclasses import Document as HaystackDocument
+from haystack.utils import Secret
+from ragas.metrics import Faithfulness
+
+from ragasevalsupercomponent import (
+    CSVReaderComponent,
+    RAGDataAugmenterComponent,
+    RagasEvaluationComponent,
+    RAGEvaluationSuperComponent,
+    create_comparison_report,
+)
 
 
 class TestCSVReaderComponent:
@@ -29,8 +41,6 @@ class TestCSVReaderComponent:
     
     def test_csv_reading_success(self):
         """Test 1: Component successfully reads a well-formatted CSV file."""
-        from ragasevalsupercomponent import CSVReaderComponent
-        
         # Create a temporary CSV file
         test_data = pd.DataFrame({
             'question': ['What is AI?', 'How does ML work?'],
@@ -57,8 +67,6 @@ class TestCSVReaderComponent:
     
     def test_csv_reading_file_not_found(self):
         """Test 2: Component handles non-existent file gracefully."""
-        from ragasevalsupercomponent import CSVReaderComponent
-        
         reader = CSVReaderComponent()
         
         with pytest.raises(Exception):  # Should raise an appropriate exception
@@ -66,8 +74,6 @@ class TestCSVReaderComponent:
     
     def test_csv_reading_empty_file(self):
         """Test 3: Component handles empty CSV file."""
-        from ragasevalsupercomponent import CSVReaderComponent
-        
         # Create an empty CSV file
         with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
             f.write("question,ground_truth,contexts\n")  # Headers only
@@ -89,8 +95,6 @@ class TestRAGDataAugmenterComponent:
     
     def test_component_initialization(self):
         """Test 1: Component initializes correctly with a RAG SuperComponent."""
-        from ragasevalsupercomponent import RAGDataAugmenterComponent
-        
         # Create mock RAG SuperComponent
         mock_rag_sc = Mock(spec=SuperComponent)
         
@@ -101,8 +105,6 @@ class TestRAGDataAugmenterComponent:
     
     def test_data_augmentation_success(self):
         """Test 2: Component successfully augments evaluation data."""
-        from ragasevalsupercomponent import RAGDataAugmenterComponent
-        
         # Create mock RAG SuperComponent with predictable responses
         mock_rag_sc = Mock(spec=SuperComponent)
         mock_rag_sc.run.side_effect = [
@@ -140,8 +142,6 @@ class TestRAGDataAugmenterComponent:
     
     def test_empty_dataframe_handling(self):
         """Test 3: Component handles empty input DataFrame."""
-        from ragasevalsupercomponent import RAGDataAugmenterComponent
-        
         mock_rag_sc = Mock(spec=SuperComponent)
         
         empty_data = pd.DataFrame(columns=['question', 'ground_truth'])
@@ -162,10 +162,6 @@ class TestRagasEvaluationComponent:
     @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
     def test_component_initialization(self):
         """Test 1: Component initializes correctly with default and custom parameters."""
-        from ragasevalsupercomponent import RagasEvaluationComponent
-        from haystack.components.generators import OpenAIGenerator
-        from haystack.utils import Secret
-        
         # Create mock generator
         mock_generator = Mock(spec=OpenAIGenerator)
         
@@ -175,7 +171,6 @@ class TestRagasEvaluationComponent:
         assert len(evaluator.metrics) == 4  # Default metrics count
         
         # Test custom initialization with custom metrics
-        from ragas.metrics import Faithfulness
         evaluator_custom = RagasEvaluationComponent(
             generator=mock_generator,
             metrics=[Faithfulness()]
@@ -184,8 +179,6 @@ class TestRagasEvaluationComponent:
     
     def test_missing_generator_raises_error(self):
         """Test 2: Component requires a generator parameter."""
-        from ragasevalsupercomponent import RagasEvaluationComponent
-        
         with pytest.raises(TypeError):
             RagasEvaluationComponent()  # Should fail without generator
     
@@ -195,9 +188,6 @@ class TestRagasEvaluationComponent:
     @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
     def test_evaluation_success(self, mock_llm_wrapper, mock_eval_dataset, mock_evaluate):
         """Test 3: Component successfully evaluates augmented data."""
-        from ragasevalsupercomponent import RagasEvaluationComponent
-        from haystack.components.generators import OpenAIGenerator
-        
         # Create mock generator
         mock_generator = Mock(spec=OpenAIGenerator)
         
@@ -233,9 +223,6 @@ class TestRAGEvaluationSuperComponent:
     @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
     def test_component_initialization(self):
         """Test 1: Component initializes correctly with a RAG SuperComponent."""
-        from ragasevalsupercomponent import RAGEvaluationSuperComponent
-        from haystack.components.generators import OpenAIGenerator
-        
         # Create mock RAG SuperComponent and generator
         mock_rag_sc = Mock(spec=SuperComponent)
         mock_generator = Mock(spec=OpenAIGenerator)
@@ -256,9 +243,6 @@ class TestRAGEvaluationSuperComponent:
     @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
     def test_pipeline_components_added(self):
         """Test 2: Pipeline contains all expected components."""
-        from ragasevalsupercomponent import RAGEvaluationSuperComponent
-        from haystack.components.generators import OpenAIGenerator
-        
         mock_rag_sc = Mock(spec=SuperComponent)
         mock_generator = Mock(spec=OpenAIGenerator)
         
@@ -277,9 +261,6 @@ class TestRAGEvaluationSuperComponent:
     @patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'})
     def test_input_output_mappings(self):
         """Test 3: Input and output mappings are correctly configured."""
-        from ragasevalsupercomponent import RAGEvaluationSuperComponent
-        from haystack.components.generators import OpenAIGenerator
-        
         mock_rag_sc = Mock(spec=SuperComponent)
         mock_generator = Mock(spec=OpenAIGenerator)
         
@@ -303,8 +284,6 @@ class TestComparisonUtilities:
     
     def test_create_comparison_report(self):
         """Test 1: Comparison report creation with mock results."""
-        from ragasevalsupercomponent import create_comparison_report
-        
         # Create mock evaluation results
         naive_results = {
             'metrics': Mock(scores={
