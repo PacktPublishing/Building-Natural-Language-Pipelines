@@ -74,3 +74,39 @@ uv run python measure_token_usage.py --test-query "sushi restaurants" --test-loc
 **Note:** V2 and V3 have identical token efficiency since V3 uses the same supervisor pattern. V3 adds production features (retry policies, checkpointing) without impacting token usage.
 
 See [`docs/ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) for detailed architecture analysis.
+
+---
+
+## Test V3 Persistence (Checkpointing)
+
+V3 supports conversation persistence using checkpointing, allowing the agent to remember context across multiple interactions.
+
+**Run persistence examples:**
+```sh
+cd yelp-navigator-v3/
+
+# In-memory persistence (temporary, for development)
+uv run python inmemory_persistence.py
+
+# SQLite persistence (durable, for production)
+uv run python sqlite_persistence.py
+```
+
+**What to expect:**
+- First interaction: Agent searches for businesses based on your query
+- Second interaction: Agent remembers the previous context and can answer follow-up questions without re-stating location or business type
+
+**Example:**
+```
+User: "Find coffee shops in Seattle"
+Agent: [Returns search results]
+
+User: "Which one has the best reviews?"
+Agent: [Remembers "coffee shops" and "Seattle", analyzes reviews]
+```
+
+See [`yelp-navigator-v3/persistence.md`](./yelp-navigator-v3/persistence.md) for detailed guide on:
+- Thread-based session management
+- In-memory vs SQLite checkpointing
+- Production considerations
+- Troubleshooting tips
