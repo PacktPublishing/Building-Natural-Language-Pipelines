@@ -26,11 +26,6 @@ from ragas.testset.synthesizers import (
 
 from ragas.llms import HaystackLLMWrapper
 from ragas.embeddings import HaystackEmbeddingsWrapper
-from haystack.components.generators import OpenAIGenerator
-from haystack.components.embedders.openai_text_embedder import (
-    OpenAITextEmbedder,
-)
-from haystack.utils import Secret
   
 
 

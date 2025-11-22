@@ -162,22 +162,20 @@ class RagasEvaluationComponent:
     
     Technical Features:
     - Focused Metrics: Core metrics for reliable comparison
-    - LLM Integration: Uses OpenAI GPT models for evaluation judgments
+    - LLM Integration: Uses provided generator for evaluation judgments
     - Data Format Handling: Automatically formats data for RAGAS requirements
     - Comprehensive Output: Returns both aggregated metrics and detailed per-query results
     """
     
     def __init__(self, 
-                 metrics: Optional[List[Any]] = None,
-                 llm_model: str = "gpt-4o-mini",
-                 openai_api_key: Optional[str] = None):
+                 generator: Any,
+                 metrics: Optional[List[Any]] = None):
         """
         Initialize the RAGAS Evaluation Component.
         
         Args:
+            generator: LLM generator instance (e.g., OpenAIGenerator or OllamaGenerator).
             metrics: List of RAGAS metrics to evaluate (defaults to core metrics)
-            llm_model (str): OpenAI model for evaluation. Defaults to "gpt-4o-mini".
-            openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
         """
         
         # Default to core metrics for systematic comparison
@@ -190,20 +188,9 @@ class RagasEvaluationComponent:
             ]
         else:
             self.metrics = metrics
-            
-        self.llm_model = llm_model
-        self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
-        
-        if not self.openai_api_key:
-            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
         
         # Configure RAGAS LLM for evaluation
-        self.ragas_llm = HaystackLLMWrapper(
-            OpenAIGenerator(
-                model=self.llm_model,
-                api_key=Secret.from_token(self.openai_api_key)
-            )
-        )
+        self.ragas_llm = HaystackLLMWrapper(generator)
 
     @component.output_types(metrics=Dict[str, float], evaluation_df=pd.DataFrame)
     def run(self, augmented_data_frame: pd.DataFrame):
@@ -268,7 +255,7 @@ class RAGEvaluationSuperComponent:
     def __init__(self, 
                  rag_supercomponent, 
                  system_name: str,
-                 llm_model: str = "gpt-4o-mini",
+                 generator: Any,
                  openai_api_key: Optional[str] = None):
         """
         Initialize the RAG Evaluation SuperComponent.
@@ -276,12 +263,12 @@ class RAGEvaluationSuperComponent:
         Args:
             rag_supercomponent: The RAG system to evaluate
             system_name (str): Name for logging and identification
-            llm_model (str): OpenAI model for evaluation. Defaults to "gpt-4o-mini".
+            generator: LLM generator instance (e.g., OpenAIGenerator or OllamaGenerator).
             openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
         """
         self.rag_supercomponent = rag_supercomponent
         self.system_name = system_name
-        self.llm_model = llm_model
+        self.generator = generator
         self.openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
         
         if not self.openai_api_key:
@@ -305,8 +292,7 @@ class RAGEvaluationSuperComponent:
         
         # RAGAS Evaluator: Computes evaluation metrics
         evaluator = RagasEvaluationComponent(
-            llm_model=self.llm_model,
-            openai_api_key=self.openai_api_key
+            generator=self.generator
         )
         
         # --- 2. Build the Evaluation Pipeline ---

@@ -163,27 +163,31 @@ class TestRagasEvaluationComponent:
     def test_component_initialization(self):
         """Test 1: Component initializes correctly with default and custom parameters."""
         from ragasevalsupercomponent import RagasEvaluationComponent
+        from haystack.components.generators import OpenAIGenerator
+        from haystack.utils import Secret
+        
+        # Create mock generator
+        mock_generator = Mock(spec=OpenAIGenerator)
         
         # Test default initialization
-        evaluator = RagasEvaluationComponent()
-        assert evaluator.llm_model == "gpt-4o-mini"
-        assert evaluator.openai_api_key == "test-key"
+        evaluator = RagasEvaluationComponent(generator=mock_generator)
+        assert hasattr(evaluator, 'ragas_llm')
+        assert len(evaluator.metrics) == 4  # Default metrics count
         
-        # Test custom initialization
+        # Test custom initialization with custom metrics
+        from ragas.metrics import Faithfulness
         evaluator_custom = RagasEvaluationComponent(
-            llm_model="gpt-4",
-            openai_api_key="custom-key"
+            generator=mock_generator,
+            metrics=[Faithfulness()]
         )
-        assert evaluator_custom.llm_model == "gpt-4"
-        assert evaluator_custom.openai_api_key == "custom-key"
+        assert len(evaluator_custom.metrics) == 1
     
-    def test_missing_api_key_raises_error(self):
-        """Test 2: Component raises error when OpenAI API key is missing."""
+    def test_missing_generator_raises_error(self):
+        """Test 2: Component requires a generator parameter."""
         from ragasevalsupercomponent import RagasEvaluationComponent
         
-        with patch.dict(os.environ, {}, clear=True):
-            with pytest.raises(ValueError, match="OpenAI API key not found"):
-                RagasEvaluationComponent()
+        with pytest.raises(TypeError):
+            RagasEvaluationComponent()  # Should fail without generator
     
     @patch('ragasevalsupercomponent.evaluate')
     @patch('ragasevalsupercomponent.EvaluationDataset.from_pandas')
@@ -192,6 +196,10 @@ class TestRagasEvaluationComponent:
     def test_evaluation_success(self, mock_llm_wrapper, mock_eval_dataset, mock_evaluate):
         """Test 3: Component successfully evaluates augmented data."""
         from ragasevalsupercomponent import RagasEvaluationComponent
+        from haystack.components.generators import OpenAIGenerator
+        
+        # Create mock generator
+        mock_generator = Mock(spec=OpenAIGenerator)
         
         # Setup mocks
         mock_eval_dataset.return_value = Mock()
@@ -210,7 +218,7 @@ class TestRagasEvaluationComponent:
             'ground_truth': ['AI is artificial intelligence']
         })
         
-        evaluator = RagasEvaluationComponent()
+        evaluator = RagasEvaluationComponent(generator=mock_generator)
         result = evaluator.run(augmented_data_frame=augmented_data)
         
         # Verify evaluation was performed
@@ -226,18 +234,21 @@ class TestRAGEvaluationSuperComponent:
     def test_component_initialization(self):
         """Test 1: Component initializes correctly with a RAG SuperComponent."""
         from ragasevalsupercomponent import RAGEvaluationSuperComponent
+        from haystack.components.generators import OpenAIGenerator
         
-        # Create mock RAG SuperComponent
+        # Create mock RAG SuperComponent and generator
         mock_rag_sc = Mock(spec=SuperComponent)
+        mock_generator = Mock(spec=OpenAIGenerator)
         
         eval_sc = RAGEvaluationSuperComponent(
             rag_supercomponent=mock_rag_sc,
-            system_name="Test_System"
+            system_name="Test_System",
+            generator=mock_generator
         )
         
         assert eval_sc.rag_supercomponent == mock_rag_sc
         assert eval_sc.system_name == "Test_System"
-        assert eval_sc.llm_model == "gpt-4o-mini"
+        assert eval_sc.generator == mock_generator
         assert eval_sc.openai_api_key == "test-key"
         assert hasattr(eval_sc, 'pipeline')
         assert isinstance(eval_sc.pipeline, Pipeline)
@@ -246,12 +257,15 @@ class TestRAGEvaluationSuperComponent:
     def test_pipeline_components_added(self):
         """Test 2: Pipeline contains all expected components."""
         from ragasevalsupercomponent import RAGEvaluationSuperComponent
+        from haystack.components.generators import OpenAIGenerator
         
         mock_rag_sc = Mock(spec=SuperComponent)
+        mock_generator = Mock(spec=OpenAIGenerator)
         
         eval_sc = RAGEvaluationSuperComponent(
             rag_supercomponent=mock_rag_sc,
-            system_name="Test_System"
+            system_name="Test_System",
+            generator=mock_generator
         )
         
         # Check that all expected components are in the pipeline
@@ -264,12 +278,15 @@ class TestRAGEvaluationSuperComponent:
     def test_input_output_mappings(self):
         """Test 3: Input and output mappings are correctly configured."""
         from ragasevalsupercomponent import RAGEvaluationSuperComponent
+        from haystack.components.generators import OpenAIGenerator
         
         mock_rag_sc = Mock(spec=SuperComponent)
+        mock_generator = Mock(spec=OpenAIGenerator)
         
         eval_sc = RAGEvaluationSuperComponent(
             rag_supercomponent=mock_rag_sc,
-            system_name="Test_System"
+            system_name="Test_System",
+            generator=mock_generator
         )
         
         # Check input mappings
