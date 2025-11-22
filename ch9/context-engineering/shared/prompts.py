@@ -33,23 +33,34 @@ You have already searched for:
 - QUERY: "{current_query}"
 - LOCATION: "{current_location}"
 
+Search results with ratings are already cached and available.
+
 --- INSTRUCTIONS ---
 Analyze the *latest user message* in the context of this CURRENT SEARCH.
 
-1.  **If the user is asking for *more information* about the *same query*:**
-    - Keep the QUERY and LOCATION the same (e.g., "{current_query}").
-    - Update the DETAIL_LEVEL based on their request.
-    - Example: If they ask "what do people say?" or "show me reviews", set DETAIL_LEVEL to "reviews".
-    - Example: If they ask "does it have a website?", set DETAIL_LEVEL to "detailed".
+**CRITICAL: Distinguish between questions that need NEW data vs questions answerable from CACHED data:**
 
-2.  **If the user is asking for a *completely new search*:**
+1.  **Questions answerable from CACHED DATA (use 'general' detail level):**
+    - "Which one has the best reviews/ratings?" → Already have ratings, just need to compare
+    - "Which is highest rated?" → Already have ratings
+    - "What's the top one?" → Already have ratings
+    - "Tell me about the best one" → Already have basic info
+    - For these: Keep QUERY="{current_query}", LOCATION="{current_location}", DETAIL_LEVEL="general"
+
+2.  **Questions needing NEW DATA (update detail level):**
+    - "What do customers say in their reviews?" → Need full review text: DETAIL_LEVEL="reviews"
+    - "Show me detailed reviews" → Need sentiment analysis: DETAIL_LEVEL="reviews"
+    - "Do they have websites?" → Need website info: DETAIL_LEVEL="detailed"
+    - For these: Keep QUERY="{current_query}", LOCATION="{current_location}", update DETAIL_LEVEL
+
+3.  **Completely NEW search:**
     - Extract the new QUERY and LOCATION.
     - Set DETAIL_LEVEL based on their new query (default to "general").
     
-3.  **If the user is just chatting:**
+4.  **General chat:**
     - Respond as a general chat. (The decision model will handle this).
     
-Remember to use the user's *latest* message to make your decision.
+Remember: If the user is asking for a comparison or ranking ("best", "top", "highest"), they want analysis of EXISTING data, not new data fetching.
 """
 
 # Base supervisor instructions (core logic shared by V2 and V3)
@@ -60,6 +71,7 @@ Based on the Target Detail Level and the Current Data We Have, decide the single
 1.  If 'Basic Search Results' is False, you MUST call 'search'. This is the first step.
 2.  If 'Basic Search Results' is True, check the detail level:
     a.  If Detail Level is 'general': We have enough data. Call 'finalize'.
+        - The summary node will handle comparative questions ("which is best?") using cached ratings.
     b.  If Detail Level is 'detailed':
         - If 'Website/Details Data' is False, call 'get_details'.
         - If 'Website/Details Data' is True, we have enough data. Call 'finalize'.
@@ -67,7 +79,10 @@ Based on the Target Detail Level and the Current Data We Have, decide the single
         - If 'Review/Sentiment Data' is False, call 'analyze_sentiment'.
         - If 'Review/Sentiment Data' is True, we have enough data. Call 'finalize'.
         
-IMPORTANT: Only call one action. Do not call 'get_details' or 'analyze_sentiment' if 'search' has not been run successfully.
+IMPORTANT: 
+- Only call one action at a time.
+- Do not call 'get_details' or 'analyze_sentiment' if 'search' has not been run successfully.
+- If the user asks comparative questions ("which is best?", "highest rated?"), the existing search data is sufficient - call 'finalize'.
 """
 
 # ============================================================================
@@ -152,13 +167,28 @@ def supervisor_approval_prompt(clarified_query: str, clarified_location: str, de
 # System prompt for summary generation
 def summary_generation_prompt(clarified_query: str, clarified_location: str, detail_level: str,
                                agent_outputs: dict, needs_revision: bool = False, 
-                               revision_feedback: str = "") -> str:
-    """Generate the summary generation prompt with all context."""
+                               revision_feedback: str = "", user_question: str = "") -> str:
+    """Generate the summary generation prompt with all context.
+    
+    Args:
+        user_question: The actual user question to answer (e.g., "Which one has the best reviews?")
+    """
     
     context = f"""Create a comprehensive, human-readable summary based on the following information:
 
             User was looking for: {clarified_query} in {clarified_location}
             Detail level requested: {detail_level}
+            """
+    
+    # Add specific user question context if provided
+    if user_question:
+        context += f"""
+            Specific user question: {user_question}
+            
+            IMPORTANT: Answer their SPECIFIC QUESTION directly. 
+            - If they ask "which is best?" or "highest rated?", compare the ratings and highlight the top one.
+            - If they ask "tell me about X", focus on that specific business.
+            - Don't just list all results - answer what they asked.
             """
     
     # Add revision feedback if this is a revision
@@ -219,19 +249,72 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
                 low_review = biz['lowest_rated_reviews'][0]
                 context += f"   Sample negative review: {low_review.get('text', '')}...\n"
     
+    # Analyze the user question to determine response style
+    response_style = "list"  # default
+    if user_question:
+        user_q_lower = user_question.lower()
+        # Comparative/superlative questions - return focused answer
+        if any(word in user_q_lower for word in ["best", "top", "highest", "which one", "what's the", "tell me about the"]):
+            response_style = "focused"
+        # Specific business questions
+        elif any(word in user_q_lower for word in ["tell me more about", "what about", "how about"]):
+            response_style = "focused"
+    
     context += f"""\n\nIMPORTANT INSTRUCTIONS:
             You MUST create a summary about the business search results provided above.
             DO NOT write about unrelated topics like programming, variables, or JavaScript.
             ONLY use the business information provided in the SEARCH RESULTS, DETAILED INFORMATION, and REVIEW SENTIMENT ANALYSIS sections above.
-
+            
+            ALWAYS include brief context about what makes each business unique or special based on their categories, 
+            reviews, or other distinguishing features.
+            """
+    
+    if response_style == "focused":
+        context += f"""
+            RESPONSE STYLE: FOCUSED ANSWER
+            The user asked: "{user_question}"
+            
+            This is a specific question about ONE or a FEW businesses. DO NOT list all results.
+            
+            Instructions for selecting the "best" business:
+            1. Consider BOTH rating AND review count - a business with many reviews is more reliable
+            2. Use this logic for "best" or "highest rated":
+               - Prioritize businesses with 4.5+ stars AND substantial review counts (100+ reviews)
+               - A 4.5-star business with 2000 reviews is better than a 4.8-star with 10 reviews
+               - Balance quality (rating) with validation (review volume)
+               - If ratings are close (within 0.2 stars), choose the one with more reviews
+            3. Provide a concise answer focused ONLY on that specific business(es)
+            4. Include: name, rating, review count, price, phone, website (if available)
+            5. Explain WHY it's the answer - mention BOTH rating AND review count
+            6. Add 1-2 sentences about what makes this business special (atmosphere, specialties, etc.)
+            7. Keep it conversational but brief - 3-5 sentences total
+            
+            Example for "Which has the best reviews?":
+            "Based on both ratings and review volume, **Storyville Coffee Company** stands out with 4.5 stars backed by 2,531 reviews, 
+            making it the most consistently well-reviewed option. You can reach them at (206) 641-9818 or visit storyville.com. 
+            This popular spot is known for its rich coffee selection and inviting atmosphere, making it a favorite among both locals and visitors."
+            
+            DO NOT list all 8-10 businesses. Answer their SPECIFIC question only.
+            """
+    else:
+        context += f"""
+            RESPONSE STYLE: COMPREHENSIVE LIST
+            
             Write a comprehensive, friendly summary that:
             1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
             2. Highlights the top 5-10 business recommendations from the search results
-            3. Includes relevant details based on what was requested (ratings, prices, sentiment)
+            3. For EACH business, include:
+               - Name, rating, and review count
+               - Price range and contact info
+               - 1-2 sentences describing what makes it unique/special (atmosphere, specialties, customer favorites)
             4. {'ALWAYS include phone numbers and website URLs for each business' if detail_level in ['detailed', 'reviews'] else 'Include basic contact information'}
-            5. Is easy to read and conversational
-            6. Ends with a helpful closing statement
-
+            5. Order businesses by a balance of rating and review count (high ratings with substantial reviews first)
+            6. Is easy to read and conversational
+            7. Ends with a helpful closing statement
+            """
+    
+    context += """
+            
             Do NOT include any information that is not in the data above.
             """
     

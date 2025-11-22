@@ -73,10 +73,21 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
                     "retry_counts": {}
                 }
             else:
-                # Follow-up query - just update detail level
+                # Follow-up query - determine if we need new data or can use cached data
+                existing_detail = state.get("detail_level", "general")
+                has_search_data = state.get('agent_outputs', {}).get("search", {}).get("success", False)
+                
+                # If staying at "general" detail level and we already have search data, we're just analyzing
+                if decision.detail_level == "general" and existing_detail == "general" and has_search_data:
+                    response_msg = "Let me analyze the results for you..."
+                elif decision.detail_level != existing_detail:
+                    response_msg = f"Understood. I'll get more details for {decision.search_query}..."
+                else:
+                    response_msg = "Let me check that for you..."
+                
                 update_dict = {
                     "detail_level": decision.detail_level,
-                    "messages": [AIMessage(content=f"Understood. I'll get more details for {decision.search_query}...")],
+                    "messages": [AIMessage(content=response_msg)],
                 }
 
             return Command(goto="supervisor", update=update_dict)
@@ -236,6 +247,14 @@ def general_chat_node(state: AgentState):
 def summary_node(state: AgentState):
     """Generates the final report using the detailed v1-style prompt."""
     try:
+        # Extract the latest user question for context-aware summarization
+        user_question = ""
+        messages = state.get("messages", [])
+        for msg in reversed(messages):
+            if hasattr(msg, 'type') and msg.type == "human":
+                user_question = msg.content
+                break
+        
         # Use the detailed prompt from shared/prompts.py
         prompt = summary_generation_prompt(
             clarified_query=state['search_query'],
@@ -243,7 +262,8 @@ def summary_node(state: AgentState):
             detail_level=state['detail_level'],
             agent_outputs=state.get('agent_outputs', {}),
             needs_revision=False,
-            revision_feedback=""
+            revision_feedback="",
+            user_question=user_question
         )
         
         response = llm.invoke([SystemMessage(content=prompt)])
