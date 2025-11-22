@@ -31,6 +31,25 @@ OPENAI_API_KEY=your_openai_key_here
 To obtain the API key:
 - OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
 
+7. **If you do not want to use OpenAI: Install Ollama for local LLM inference:**
+
+```sh
+# macOS/Linux
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Or download from: https://ollama.com
+```
+
+Pull the Mistral-Nemo model:
+```sh
+ollama pull mistral-nemo:12b
+```
+
+Pull Nomic embedding model:
+```sh
+ollama pull nomic-embed-text
+```
+
 ---
 
 ## Contents
