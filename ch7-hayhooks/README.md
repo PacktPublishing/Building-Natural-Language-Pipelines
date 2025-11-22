@@ -141,42 +141,6 @@ This project consists of two main pipelines:
 
 Both pipelines are exposed through Hayhooks as REST API endpoints, making them easy to integrate into web applications or other systems.
 
-## Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
-│   Web Files     │    │  Indexing        │    │   Elasticsearch     │
-│   PDF Files     ├───►│  Pipeline        ├───►│   Document Store    │
-│   URLs          │    │  (Hayhooks)      │    │                     │
-└─────────────────┘    └──────────────────┘    └─────────────────────┘
-                                                          │
-┌─────────────────┐    ┌──────────────────┐              │
-│   Questions     │    │  Retrieval       │◄─────────────┘
-│   Queries       ├───►│  Pipeline        │
-│                 │    │  (Hayhooks)      │
-└─────────────────┘    └──────────────────┘
-```
-
-### Pipeline Components
-
-#### Indexing Pipeline
-- **LinkContentFetcher**: Fetches content from URLs
-- **FileTypeRouter**: Routes files based on MIME type (PDF, HTML, text)
-- **Document Converters**: Convert PDFs and HTML to text
-- **DocumentCleaner**: Removes extra whitespace and empty lines
-- **DocumentSplitter**: Splits documents into chunks
-- **OpenAIDocumentEmbedder**: Creates embeddings using OpenAI
-- **DocumentWriter**: Stores documents in Elasticsearch
-
-#### Retrieval Pipeline
-- **OpenAITextEmbedder**: Embeds user queries
-- **ElasticsearchEmbeddingRetriever**: Dense retrieval using embeddings
-- **ElasticsearchBM25Retriever**: Sparse retrieval using BM25
-- **DocumentJoiner**: Combines results from both retrievers
-- **SentenceTransformersSimilarityRanker**: Re-ranks documents for relevance
-- **PromptBuilder**: Creates prompts with retrieved context
-- **OpenAIGenerator**: Generates answers using GPT
-
 ## Prerequisites
 
 - Python 3.11+

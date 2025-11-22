@@ -423,14 +423,3 @@ def health_check(self):
 ```
 
 
-## Additional Resources
-
-- [Hayhooks Documentation](https://docs.haystack.deepset.ai/docs/hayhooks)
-- [Haystack Pipeline Serialization](https://docs.haystack.deepset.ai/docs/serialization)
-- [Elasticsearch Haystack Integration](https://docs.haystack.deepset.ai/docs/elasticsearch-document-store)
-- [OpenAI Components](https://docs.haystack.deepset.ai/docs/embedders)
-
-
-## License
-
-This project is part of the "Building Natural Language Pipelines" book by Packt Publishing.
