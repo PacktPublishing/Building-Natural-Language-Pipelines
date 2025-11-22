@@ -40,6 +40,8 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 | Persistence | None | None | **Checkpointing** |
 | Production Ready | ❌ | ⚠️ Prototype | ✅ **Yes** |
 
+![](./docs/v1-v2-v3.png)
+
 **Choose:**
 - **V1** for learning and prototyping
 - **V2** for cost-efficient production prototypes
