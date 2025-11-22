@@ -26,6 +26,7 @@ dependencies = [
   "langchain-ollama>=1.0.0",
   "langchain-openai>=1.0.2",
   "langgraph>=1.0.2",
+  "langgraph-checkpoint-sqlite>=3.0.0",
   "langgraph-cli[inmem]>=0.3.6",
   "mcp>=1.22.0",
   "nbformat>=5.10.4",

@@ -115,9 +115,20 @@ def search_businesses(query: str) -> Dict[str, Any]:
                 } for b in businesses],
                 "full_output": data
             }
+        # Check for rate limiting
+        if response.status_code == 429:
+            return {"success": False, "error": "Rate limit exceeded", "rate_limited": True}
         return {"success": False, "error": f"API returned status {response.status_code}"}
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timeout - service may be unavailable"}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "error": "Connection error - service unavailable"}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        error_msg = str(e)
+        # Check if error message contains rate limit indicators
+        if "429" in error_msg or "rate limit" in error_msg.lower() or "too many requests" in error_msg.lower():
+            return {"success": False, "error": "Rate limit exceeded", "rate_limited": True}
+        return {"success": False, "error": error_msg}
 
 
 @tool
@@ -140,9 +151,18 @@ def get_business_details(pipeline1_output: Dict[str, Any]) -> Dict[str, Any]:
                 } for doc in documents],
                 "full_output": data
             }
+        if response.status_code == 429:
+            return {"success": False, "error": "Rate limit exceeded", "rate_limited": True}
         return {"success": False, "error": f"API returned status {response.status_code}"}
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timeout - service may be unavailable"}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "error": "Connection error - service unavailable"}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        error_msg = str(e)
+        if "429" in error_msg or "rate limit" in error_msg.lower() or "too many requests" in error_msg.lower():
+            return {"success": False, "error": "Rate limit exceeded", "rate_limited": True}
+        return {"success": False, "error": error_msg}
 
 
 @tool
@@ -179,7 +199,16 @@ def analyze_reviews_sentiment(pipeline1_output: Dict[str, Any]) -> Dict[str, Any
                 } for biz in businesses],
                 "full_output": data
             }
+        if response.status_code == 429:
+            return {"success": False, "error": "Rate limit exceeded", "rate_limited": True}
         return {"success": False, "error": f"API returned status {response.status_code}"}
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timeout - service may be unavailable"}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "error": "Connection error - service unavailable"}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        error_msg = str(e)
+        if "429" in error_msg or "rate limit" in error_msg.lower() or "too many requests" in error_msg.lower():
+            return {"success": False, "error": "Rate limit exceeded", "rate_limited": True}
+        return {"success": False, "error": error_msg}
 

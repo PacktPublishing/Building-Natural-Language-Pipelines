@@ -68,6 +68,7 @@ This folder demonstrates context engineering through three implementations of th
 - `measure_token_usage.py` - Automated token measurement script with test scenarios
 - `test_examples.sh` - Run all test cases to compare architectures
 - `shared/` - Common prompts and tools used by all versions
+- `yelp-navigator-v3/persistence.md` - Guide to using checkpointing with in-memory and SQLite persistence
 
 **What You'll Learn:**
 - How state management design affects token consumption

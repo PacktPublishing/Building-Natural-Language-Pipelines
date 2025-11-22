@@ -106,6 +106,33 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
     has_details_data = agent_outputs.get("details", {}).get("success", False)
     has_sentiment_data = agent_outputs.get("sentiment", {}).get("success", False)
     
+    # Check for rate limiting or service unavailability
+    rate_limited = False
+    service_unavailable = False
+    for tool_name, output in agent_outputs.items():
+        if not output.get("success", True):
+            if output.get("rate_limited", False):
+                rate_limited = True
+            error_msg = output.get("error", "").lower()
+            if "unavailable" in error_msg or "connection" in error_msg or "timeout" in error_msg:
+                service_unavailable = True
+    
+    # If rate limited or service unavailable, exit immediately
+    if rate_limited or service_unavailable:
+        error_type = "rate limit" if rate_limited else "service unavailability"
+        error_message = (
+            f"I apologize, but I'm unable to complete your request due to {error_type}. "
+            f"The Yelp API service is currently unavailable or has rate limits in effect. "
+            f"Please try again later."
+        )
+        return Command(
+            goto=END,
+            update={
+                "messages": [AIMessage(content=error_message)],
+                "final_summary": error_message
+            }
+        )
+    
     # Build error context for supervisor awareness
     error_context = ""
     error_count = state.get("total_error_count", 0)
