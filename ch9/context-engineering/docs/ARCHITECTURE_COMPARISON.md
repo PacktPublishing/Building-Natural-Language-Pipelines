@@ -114,13 +114,40 @@ Clarification (310) → Supervisor (311) → Search → Supervisor (311) → Sum
 ```
 Supervisor makes multiple routing decisions with boolean flags only (300 tokens each).
 
+## V3: Production-Ready Enhancement
+
+### V3 = V2 Architecture + Production Features
+
+**Added Features (High Priority):**
+1. **Retry Policies**: Automatic retries for transient failures (network, timeouts, rate limits)
+2. **Checkpointing**: Conversation persistence via thread-based sessions
+3. **Error Tracking**: State tracks errors, retry counts, execution metadata
+4. **Graceful Degradation**: Supervisor can finalize with partial data on repeated failures
+
+**Architecture:**
+- Same supervisor + tool node separation as V2 (maintains token efficiency)
+- Retry policies configured at graph compilation level
+- Enhanced state schema with error tracking fields
+- Error-aware supervisor prompts for intelligent recovery
+
+**When to Use:**
+- **V1**: Learning, prototyping, very low volumes
+- **V2**: Production prototypes, cost-sensitive deployments
+- **V3**: Production deployments requiring reliability and persistence
+
 ## Key Takeaways
 
+✅ **V3 advantages:**
+- All V2 token savings (16-50%)
+- Production-ready error handling
+- Conversation persistence
+- Better observability and debugging
+- Graceful degradation on failures
+
 ✅ **V2 advantages:**
-- 16-50% token savings (scales with query complexity)
+- 16-50% token savings over V1
 - Cleaner separation of concerns
-- Easier to debug and test
-- Better for production workloads
+- Good for production prototypes
 
 ⚠️ **V1 is simpler for:**
 - Learning/prototyping

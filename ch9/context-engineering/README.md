@@ -1,6 +1,6 @@
 # Context Engineering - Yelp Navigator
 
-Two versions of the Yelp Navigator agent demonstrating how state management affects token efficiency.
+Three versions of the Yelp Navigator agent demonstrating how state management affects token efficiency and production readiness.
 
 ## Setup
 
@@ -25,9 +25,25 @@ Two versions of the Yelp Navigator agent demonstrating how state management affe
 ## What's Inside
 
 - **`yelp-navigator-v1/`** - Monolithic state (all data in `agent_outputs`)
-- **`yelp-navigator-v2/`** - Dual context streams (`raw_results` + `pipeline_data`)
-- **`shared/`** - Common tools and prompts
+- **`yelp-navigator-v2/`** - Supervisor pattern with efficient token usage
+- **`yelp-navigator-v3/`** - **Production-ready** with retry policies + checkpointing
+- **`shared/`** - Common tools, prompts, and configuration
 - **`docs/`** - Architecture comparison and measurement guides
+
+### Version Comparison
+
+| Feature | V1 | V2 | V3 |
+|---------|----|----|-----|
+| Token Efficiency | Baseline | 16-50% better | Same as V2 |
+| Architecture | Monolithic agents | Supervisor pattern | Supervisor pattern |
+| Error Handling | Basic | Basic | **Retry policies** |
+| Persistence | None | None | **Checkpointing** |
+| Production Ready | ❌ | ⚠️ Prototype | ✅ **Yes** |
+
+**Choose:**
+- **V1** for learning and prototyping
+- **V2** for cost-efficient production prototypes
+- **V3** for production deployments requiring reliability
 
 ---
 
