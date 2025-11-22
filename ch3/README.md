@@ -22,6 +22,34 @@ This repository contains exercises and interactive notebooks for Chapter 3, intr
 	- Open any notebook.
 	- Click the kernel picker (top right) and select the `.venv` environment.
 
+6. **Create an .env file with your openai key**
+
+Create a `.env` file in the root directory with your API keys:
+```sh
+OPENAI_API_KEY=your_openai_key_here
+```
+
+To obtain the API keys:
+- OpenAI API key: Sign up at [OpenAI's platform](https://platform.openai.com)
+
+7. **If you do not want to use OpenAI: Install Ollama for local LLM inference:**
+
+```sh
+# macOS/Linux
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Or download from: https://ollama.com
+```
+
+Pull the Mistral-Nemo model:
+```sh
+ollama pull mistral-nemo:12b
+```
+
+Pull Nomic embedding model:
+```sh
+ollama pull nomic-embed-text
+```
 ---
 
 ## Contents

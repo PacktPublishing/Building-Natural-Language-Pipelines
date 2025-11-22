@@ -20,6 +20,7 @@ dependencies = [
   "haystack-ai>=2.19.0",
   "ipykernel>=7.0.1",
   "langchain-community>=0.4",
+  "ollama-haystack>=5.3.0",
   "pandas>=2.3.3",
   "pymupdf>=1.26.5",
   "pypdf>=6.1.3",
