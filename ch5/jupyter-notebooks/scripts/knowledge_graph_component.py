@@ -228,16 +228,29 @@ class KnowledgeGraphSaver:
             return {"saved_path": save_path, "success": False}
 
 
-"""# Example usage and pipeline creation
+"""
+# Example usage and pipeline creation
 if __name__ == "__main__":
-
     import os
     from dotenv import load_dotenv
     from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
     from haystack import Pipeline
+    from haystack.components.generators import OpenAIGenerator
+    from haystack.components.embedders.openai_text_embedder import OpenAITextEmbedder
+    from haystack.utils import Secret
     
     # Load environment variables
     load_dotenv("./.env")
+    
+    # Initialize generator and embedder
+    generator = OpenAIGenerator(
+        model="gpt-4o-mini",
+        api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+    )
+    embedder = OpenAITextEmbedder(
+        model="text-embedding-3-small",
+        api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+    )
     
     # Example: Load documents (this would typically be done by other components in a real pipeline)
     data_path = "jupyter-notebooks/data_for_indexing"
@@ -246,7 +259,11 @@ if __name__ == "__main__":
         docs = loader.load()
         
         # Create and run the component
-        kg_generator = KnowledgeGraphGenerator(apply_transforms=True)
+        kg_generator = KnowledgeGraphGenerator(
+            generator=generator,
+            embedder=embedder,
+            apply_transforms=True
+        )
         kg_saver = KnowledgeGraphSaver("example_knowledge_graph.json")
         
         # Create a simple pipeline

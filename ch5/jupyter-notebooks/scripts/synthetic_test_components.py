@@ -434,21 +434,46 @@ Sample usage:
 
 if __name__ == "__main__":
     from haystack import Pipeline
+    from haystack.components.generators import OpenAIGenerator
+    from haystack.components.embedders.openai_text_embedder import OpenAITextEmbedder
+    from haystack.utils import Secret
     from scripts.synthetic_test_components import SyntheticTestGenerator, TestDatasetSaver
-    from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
-    from haystack.components.converters import PyPDFToDocument
-    from haystack.components.preprocessors import DocumentCleaner, DocumentSplitter
     from scripts.knowledge_graph_component import KnowledgeGraphGenerator
-    from scripts.synthetic_test_components import DocumentToLangChainConverter
+    from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
     from pathlib import Path
     import os
     from dotenv import load_dotenv
+    
     load_dotenv()
+    
+    # Initialize generator and embedder
+    generator = OpenAIGenerator(
+        model="gpt-4o-mini",
+        api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+    )
+    embedder = OpenAITextEmbedder(
+        model="text-embedding-3-small",
+        api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
+    )
+    
     # Load documents from PDF files
-    pdf_files = [Path("./data_for_indexing/howpeopleuseai.pdf")]
     loader = DirectoryLoader("./data_for_indexing", glob="*.pdf", loader_cls=PyMuPDFLoader)
     docs = loader.load()
-    # Create pipeline components
-    pdf_converter = PyPDFToDocument()
-    doc_cleaner = DocumentCleaner(remove_empty_lines=True, remove_extra_whitespaces=True)
+    
+    # Create knowledge graph generator
+    kg_generator = KnowledgeGraphGenerator(
+        generator=generator,
+        embedder=embedder,
+        apply_transforms=True
+    )
+    
+    # Create synthetic test generator
+    test_generator = SyntheticTestGenerator(
+        generator=generator,
+        embedder=embedder,
+        test_size=10
+    )
+    
+    # Create test dataset saver
+    saver = TestDatasetSaver(default_output_path="./synthetic_tests.csv")
 """
