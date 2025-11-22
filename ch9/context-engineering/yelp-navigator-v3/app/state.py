@@ -1,13 +1,15 @@
 """V3 State definitions with enhanced error tracking and metadata."""
 from typing import Dict, Any, Optional, Literal
-from datetime import datetime
 from langgraph.graph import MessagesState
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from shared.state import BaseClarificationDecision, BaseSupervisorDecision
 
 # --- Enhanced Structured Outputs (Decision Models) ---
 
-class ClarificationDecision(BaseModel):
-    """Enhanced clarification decision with better validation."""
+class ClarificationDecision(BaseClarificationDecision):
+    """V3 enhanced clarification decision with better validation."""
+    
+    # Override fields with enhanced descriptions for V3 - must include type annotations
     need_clarification: bool = Field(
         description="True ONLY if absolutely critical info is missing (no business type or location hint)"
     )
@@ -38,10 +40,13 @@ class ClarificationDecision(BaseModel):
             raise ValueError("clarification_question required when need_clarification=True")
         return v
 
-class SupervisorDecision(BaseModel):
-    """Enhanced supervisor decision with reasoning and confidence."""
-    next_action: Literal["search", "get_details", "analyze_sentiment", "finalize"]
+class SupervisorDecision(BaseSupervisorDecision):
+    """V3 enhanced supervisor decision with reasoning and confidence."""
+    
+    # Override reasoning with enhanced description - must include type annotation
     reasoning: str = Field(description="Clear explanation of why this action was chosen")
+    
+    # V3-specific fields
     confidence: float = Field(
         ge=0.0, 
         le=1.0, 

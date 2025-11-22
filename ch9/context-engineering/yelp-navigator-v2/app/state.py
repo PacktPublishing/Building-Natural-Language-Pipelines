@@ -1,24 +1,17 @@
 from typing import Dict, Any
-
-from typing import Optional, Literal
 from langgraph.graph import MessagesState
-from pydantic import BaseModel, Field
+from shared.state import BaseClarificationDecision, BaseSupervisorDecision
 
 # --- Structured Outputs (Decision Models) ---
+# V2 uses the base models directly from shared
 
-class ClarificationDecision(BaseModel):
-    """Decides if we need to ask the user for more info or if we can proceed."""
-    need_clarification: bool = Field(description="True if critical info (location, business type) is missing.")
-    clarification_question: Optional[str] = Field(description="The question to ask the user if clarification is needed.")
-    intent: Literal["general_chat", "business_search"] = Field(description="The user's goal.")
-    search_query: Optional[str] = Field(description="Refined search query (e.g., 'Italian food').")
-    search_location: Optional[str] = Field(description="Target location (e.g., 'Boston, MA').")
-    detail_level: Literal["general", "detailed", "reviews"] = Field(default="general")
+class ClarificationDecision(BaseClarificationDecision):
+    """V2 clarification decision - extends base model."""
+    pass
 
-class SupervisorDecision(BaseModel):
-    """Supervisor decides which tool to run next or if it's time to summarize."""
-    next_action: Literal["search", "get_details", "analyze_sentiment", "finalize"]
-    reasoning: str = Field(description="Why this action was chosen.")
+class SupervisorDecision(BaseSupervisorDecision):
+    """V2 supervisor decision - extends base model."""
+    pass
 
 # --- Graph State ---
 

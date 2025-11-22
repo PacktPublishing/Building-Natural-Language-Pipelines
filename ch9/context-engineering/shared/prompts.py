@@ -1,4 +1,78 @@
-"""Shared prompt templates for Yelp Navigator V1 and V2."""
+"""Shared prompt templates for Yelp Navigator V1, V2, and V3."""
+
+# ============================================================================
+# BASE PROMPT COMPONENTS (for reuse across versions)
+# ============================================================================
+
+# Base clarification prompt (used by V2 and V3)
+base_clarification_prompt = """You are a helpful assistant that clarifies user requests for business searches.
+
+Your goal is to extract three pieces of information:
+1. QUERY: What type of business/food/service are they looking for?
+2. LOCATION: Where are they searching?
+3. DETAIL_LEVEL: What information do they need?
+   - "general": Just basic business info (name, rating, location)
+   - "detailed": Include website information and additional details
+   - "reviews": Include customer reviews and sentiment analysis
+
+Analyze the user's query and extract this information. If the query is too vague and missing critical information,
+you should make reasonable assumptions and proceed rather than asking for clarification.
+
+For example:
+- If they say "restaurants" without a location, use "United States" as default
+- If they don't specify detail level, use "general"
+- If they mention wanting "reviews" or "what people say", use "reviews" detail level
+"""
+
+# State-aware context template (for follow-up queries in V2 and V3)
+def state_aware_context_template(current_query: str, current_location: str) -> str:
+    """Generate state-aware context for handling follow-up queries."""
+    return f"""
+--- CURRENT SEARCH CONTEXT ---
+You have already searched for:
+- QUERY: "{current_query}"
+- LOCATION: "{current_location}"
+
+--- INSTRUCTIONS ---
+Analyze the *latest user message* in the context of this CURRENT SEARCH.
+
+1.  **If the user is asking for *more information* about the *same query*:**
+    - Keep the QUERY and LOCATION the same (e.g., "{current_query}").
+    - Update the DETAIL_LEVEL based on their request.
+    - Example: If they ask "what do people say?" or "show me reviews", set DETAIL_LEVEL to "reviews".
+    - Example: If they ask "does it have a website?", set DETAIL_LEVEL to "detailed".
+
+2.  **If the user is asking for a *completely new search*:**
+    - Extract the new QUERY and LOCATION.
+    - Set DETAIL_LEVEL based on their new query (default to "general").
+    
+3.  **If the user is just chatting:**
+    - Respond as a general chat. (The decision model will handle this).
+    
+Remember to use the user's *latest* message to make your decision.
+"""
+
+# Base supervisor instructions (core logic shared by V2 and V3)
+base_supervisor_instructions = """
+Instructions:
+Based on the Target Detail Level and the Current Data We Have, decide the single next action.
+
+1.  If 'Basic Search Results' is False, you MUST call 'search'. This is the first step.
+2.  If 'Basic Search Results' is True, check the detail level:
+    a.  If Detail Level is 'general': We have enough data. Call 'finalize'.
+    b.  If Detail Level is 'detailed':
+        - If 'Website/Details Data' is False, call 'get_details'.
+        - If 'Website/Details Data' is True, we have enough data. Call 'finalize'.
+    c.  If Detail Level is 'reviews':
+        - If 'Review/Sentiment Data' is False, call 'analyze_sentiment'.
+        - If 'Review/Sentiment Data' is True, we have enough data. Call 'finalize'.
+        
+IMPORTANT: Only call one action. Do not call 'get_details' or 'analyze_sentiment' if 'search' has not been run successfully.
+"""
+
+# ============================================================================
+# V1 PROMPTS (legacy)
+# ============================================================================
 
 # System prompt for clarification
 clarification_prompt = """You are a helpful assistant that clarifies user requests for business searches.
