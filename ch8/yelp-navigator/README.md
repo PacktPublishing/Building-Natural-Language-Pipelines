@@ -47,6 +47,36 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 - `business_details/` - Website content fetching and processing
 - `business_sentiment/` - Review fetching and sentiment analysis
 
+### 🤖 LangGraph Helpers (`langgraph_helpers/`)
+
+Modular components for building the multi-agent system:
+
+**`agents.py`** - Core agent implementations
+- `clarification_agent()` - Extracts query, location, and detail level from user input
+  - Auto-defaults after 2 attempts to prevent infinite loops
+  - Supports three detail levels: `general`, `detailed`, `reviews`
+- `supervisor_approval_agent()` - Reviews summary quality and requests revisions
+  - Max 2 approval attempts to prevent infinite revision loops
+  - Can request re-running specific agents (search, details, sentiment, summary)
+
+**`nodes.py`** - Agent node wrappers for LangGraph integration
+- `search_agent_node()` - Wraps the search tool, routes to details or summary based on detail level
+- `details_agent_node()` - Fetches website content, conditionally routes to sentiment
+- `sentiment_agent_node()` - Analyzes reviews, always routes to summary
+- `summary_agent_node()` - Synthesizes all agent outputs into user-friendly response
+
+**`tools.py`** - LangChain tool wrappers for Hayhooks pipelines
+- `search_businesses()` - POST to `/business_search/run` endpoint
+- `get_business_details()` - POST to `/business_details/run` endpoint
+- `analyze_reviews_sentiment()` - POST to `/business_sentiment/run` endpoint
+- `set_base_url()` - Configure Hayhooks server URL
+
+**Key Design Patterns:**
+- **Conditional Routing**: Agents set `next_agent` in state to control workflow
+- **Shared State**: `AgentState` TypedDict maintains conversation and results
+- **Tool Integration**: Each agent wraps external tools and updates shared state
+- **Quality Control**: Supervisor pattern with revision feedback loop
+
 ---
 
 ## System Architecture

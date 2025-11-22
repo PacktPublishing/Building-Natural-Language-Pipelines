@@ -26,18 +26,6 @@ yelp-navigator/
 └── README.md                   # This file
 ```
 
-## Prerequisites
-
-### Environment Setup
-
-Create a `.env` file in the `yelp-navigator` directory with your API keys:
-
-```bash
-# yelp-navigator/.env
-RAPID_API_KEY=your_rapidapi_key_here
-OPENAI_API_KEY=your_openai_key_here  # Only needed for Pipeline 1
-```
-
 ### Build pipelines
 
 Execute 
@@ -51,9 +39,6 @@ chmod +x build_all_pipelines.sh
 
 Once you've built and serialized the pipelines, you can deploy them with Hayhooks:
 
-### Start Hayhooks Server
-
-```bash
 ### Start Hayhooks Server
 
 From the `yelp-navigator` directory:
