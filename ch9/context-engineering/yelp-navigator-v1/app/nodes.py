@@ -7,7 +7,7 @@ from shared.prompts import clarification_prompt, supervisor_approval_prompt, sum
 from shared.config import get_llm
 
 # Initialize the language model
-llm = get_llm("qwen3")
+llm = get_llm()
 
 
 def clarification_node(state: AgentState) -> AgentState:

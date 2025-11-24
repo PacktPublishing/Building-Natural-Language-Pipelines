@@ -12,7 +12,7 @@ from shared.prompts import summary_generation_prompt
 from shared.config import get_llm
 
 # Initialize the language model
-llm = get_llm("qwen3")
+llm = get_llm()
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat", END]]:
     """

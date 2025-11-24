@@ -250,14 +250,12 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
                 context += f"   Sample negative review: {low_review.get('text', '')}...\n"
     
     # Analyze the user question to determine response style
-    response_style = "list"  # default
+    response_style = "list"  # default - show multiple businesses
     if user_question:
         user_q_lower = user_question.lower()
-        # Comparative/superlative questions - return focused answer
-        if any(word in user_q_lower for word in ["best", "top", "highest", "which one", "what's the", "tell me about the"]):
-            response_style = "focused"
-        # Specific business questions
-        elif any(word in user_q_lower for word in ["tell me more about", "what about", "how about"]):
+        # ONLY use focused mode for very specific single-business questions
+        # Comparative questions like "best", "top", "highest" should get a ranked list
+        if any(phrase in user_q_lower for phrase in ["tell me more about", "what about", "how about", "details about", "info about"]):
             response_style = "focused"
     
     context += f"""\n\nIMPORTANT INSTRUCTIONS:
@@ -274,27 +272,15 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
             RESPONSE STYLE: FOCUSED ANSWER
             The user asked: "{user_question}"
             
-            This is a specific question about ONE or a FEW businesses. DO NOT list all results.
+            This is a specific question about ONE business. DO NOT list all results.
             
-            Instructions for selecting the "best" business:
-            1. Consider BOTH rating AND review count - a business with many reviews is more reliable
-            2. Use this logic for "best" or "highest rated":
-               - Prioritize businesses with 4.5+ stars AND substantial review counts (100+ reviews)
-               - A 4.5-star business with 2000 reviews is better than a 4.8-star with 10 reviews
-               - Balance quality (rating) with validation (review volume)
-               - If ratings are close (within 0.2 stars), choose the one with more reviews
-            3. Provide a concise answer focused ONLY on that specific business(es)
-            4. Include: name, rating, review count, price, phone, website (if available)
-            5. Explain WHY it's the answer - mention BOTH rating AND review count
-            6. Add 1-2 sentences about what makes this business special (atmosphere, specialties, etc.)
-            7. Keep it conversational but brief - 3-5 sentences total
+            Instructions:
+            1. Provide a focused answer about the specific business they asked about
+            2. Include: name, rating, review count, price, phone, website (if available)
+            3. Add 2-3 sentences about what makes this business special (atmosphere, specialties, etc.)
+            4. Keep it conversational but brief - 3-5 sentences total
             
-            Example for "Which has the best reviews?":
-            "Based on both ratings and review volume, **Storyville Coffee Company** stands out with 4.5 stars backed by 2,531 reviews, 
-            making it the most consistently well-reviewed option. You can reach them at (206) 641-9818 or visit storyville.com. 
-            This popular spot is known for its rich coffee selection and inviting atmosphere, making it a favorite among both locals and visitors."
-            
-            DO NOT list all 8-10 businesses. Answer their SPECIFIC question only.
+            DO NOT list multiple businesses. Answer their SPECIFIC question only.
             """
     else:
         context += f"""
@@ -302,15 +288,22 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
             
             Write a comprehensive, friendly summary that:
             1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
-            2. Highlights the top 5-10 business recommendations from the search results
-            3. For EACH business, include:
+            2. If the user asked for "best", "top", or "highest rated", start with the top 2-3 options and explain why they stand out
+            3. Then provide a complete list of the top 5-10 business recommendations from the search results
+            4. For EACH business, include:
                - Name, rating, and review count
                - Price range and contact info
                - 1-2 sentences describing what makes it unique/special (atmosphere, specialties, customer favorites)
-            4. {'ALWAYS include phone numbers and website URLs for each business' if detail_level in ['detailed', 'reviews'] else 'Include basic contact information'}
-            5. Order businesses by a balance of rating and review count (high ratings with substantial reviews first)
-            6. Is easy to read and conversational
-            7. Ends with a helpful closing statement
+            5. {'ALWAYS include phone numbers and website URLs for each business' if detail_level in ['detailed', 'reviews'] else 'Include basic contact information'}
+            6. Order businesses by a balance of rating AND review count:
+               - Prioritize businesses with 4.5+ stars AND substantial review counts (100+ reviews)
+               - A 4.5-star business with 2000 reviews is more reliable than a 4.8-star with 10 reviews
+               - Balance quality (rating) with validation (review volume)
+               - If ratings are close (within 0.2 stars), rank by review count
+            7. Is easy to read and conversational
+            8. Ends with a helpful closing statement
+            
+            IMPORTANT: Always show multiple businesses (5-10), even for "best" or "top" questions. Users want options to choose from.
             """
     
     context += """

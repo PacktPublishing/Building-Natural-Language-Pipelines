@@ -10,11 +10,56 @@ from langgraph.graph import END
 from .state import AgentState, ClarificationDecision, SupervisorDecision
 from .configuration import Configuration
 from .prompts import clarification_system_prompt_v3, supervisor_prompt_v3, summary_generation_prompt
+from .guardrails import apply_guardrails
 from shared.config import get_llm
 from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
 
 # Initialize the language model
-llm = get_llm("qwen3")
+llm = get_llm()
+
+
+def input_guardrails_node(state: AgentState, config: RunnableConfig) -> Command[Literal["clarify"]]:
+    """
+    Input guardrails node that checks for prompt injection and sanitizes PII.
+    
+    This node runs before clarify_intent_node to ensure input is safe.
+    Applies minimal checks:
+    1. Prompt injection detection - blocks suspicious patterns
+    2. PII sanitization - redacts emails, phones, SSNs
+    
+    Args:
+        state: Current agent state
+        config: Configuration with guardrails settings
+    
+    Returns:
+        Command to proceed to clarify or end with warning
+    """
+    conf = Configuration.from_runnable_config(config)
+    
+    # Apply guardrails if enabled
+    if conf.enable_guardrails or conf.sanitize_pii:
+        updated_state, warning = apply_guardrails(
+            state, 
+            enable_guardrails=conf.enable_guardrails,
+            sanitize_pii_flag=conf.sanitize_pii
+        )
+        
+        # If warning detected (e.g., prompt injection), block and return warning
+        if warning:
+            return Command(
+                goto=END,
+                update={"messages": [AIMessage(content=warning)]}
+            )
+        
+        # If state was updated (e.g., PII sanitized), use updated state
+        if updated_state != state:
+            return Command(
+                goto="clarify",
+                update={"messages": updated_state["messages"]}
+            )
+    
+    # No issues detected, proceed to clarify
+    return Command(goto="clarify")
 
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat"]]:

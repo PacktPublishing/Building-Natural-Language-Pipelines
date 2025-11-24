@@ -1,4 +1,4 @@
-"""V3 Graph with retry policies and checkpointing support.
+"""V3 Graph with retry policies, checkpointing support and guardrails
 
 Note: The default `graph` export does NOT include a checkpointer, making it compatible
 with LangGraph Studio/API which provides persistence automatically. 
@@ -12,14 +12,22 @@ from langgraph.checkpoint.memory import MemorySaver
 from .state import AgentState
 from .configuration import Configuration
 from .nodes import (
-    clarify_intent_node, supervisor_node, general_chat_node, 
+    input_guardrails_node, clarify_intent_node, supervisor_node, general_chat_node, 
     summary_node, search_tool_node, details_tool_node, sentiment_tool_node
 )
 
 
 def build_graph(checkpointer=None):
     """
-    Build the V3 graph with enhanced error handling and optional persistence.
+    Build the V4 graph with input guardrails before clarify.
+    
+    Flow:
+    1. START → input_guardrails (check prompt injection, sanitize PII)
+    2. → clarify (determine intent)
+    3. → supervisor/tools OR general_chat
+    4. → summary → END
+    
+    Guardrails are a separate node for visibility.
     
     Args:
         checkpointer: Optional checkpointer for conversation persistence.
@@ -31,14 +39,14 @@ def build_graph(checkpointer=None):
     """
     workflow = StateGraph(AgentState, config_schema=Configuration)
 
-    # Add Nodes
+    # Add Nodes (V4 with input guardrails)
+    workflow.add_node("input_guardrails", input_guardrails_node)
     workflow.add_node("clarify", clarify_intent_node)
     workflow.add_node("supervisor", supervisor_node)
     workflow.add_node("general_chat", general_chat_node)
     workflow.add_node("summary", summary_node)
     
-    # Tool Nodes with Retry Policies (High Priority Feature #1)
-    # These retry policies handle transient failures like network issues
+    # Tool Nodes with Retry Policies
     retry_policy = RetryPolicy(
         max_attempts=3,
         initial_interval=1.0,
@@ -62,23 +70,25 @@ def build_graph(checkpointer=None):
         retry_policy=retry_policy
     )
 
-    # Edges
-    # Start at clarification. The node logic handles the rest via Command(goto=...)
-    workflow.add_edge(START, "clarify")
+    # Edges (V4 flow with input guardrails)
+    workflow.add_edge(START, "input_guardrails")
+    # input_guardrails → clarify (via Command)
+    # clarify → supervisor/general_chat (via Command)
+    # supervisor → tools (via Command)
+    # tools → supervisor (via Command)
+    # supervisor → summary (via Command)
+    # summary/general_chat → END (via Command)
 
-    # Compile with checkpointing (High Priority Feature #2)
+    # Compile with checkpointing
     if checkpointer is False:
-        # Explicitly disable checkpointing
         return workflow.compile()
     elif checkpointer is None:
-        # Default: use MemorySaver for basic in-memory persistence
         checkpointer = MemorySaver()
     
     return workflow.compile(checkpointer=checkpointer)
 
 
 # Default export for LangGraph Studio/API
-# NO checkpointer - the platform provides persistence automatically
 graph = build_graph(checkpointer=False)
 
 
@@ -98,12 +108,10 @@ def get_graph_with_persistence(checkpointer=None):
     checkpointer = MemorySaver()
     graph = get_graph_with_persistence(checkpointer)
     
-    # Use PostgreSQL for production:
-    from langgraph.checkpoint.postgres import PostgresSaver
-    checkpointer = PostgresSaver(connection_string="postgresql://...")
+    # Use SQLite persistence for production:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+    checkpointer = SqliteSaver.from_conn_string("checkpoints.db")
     graph = get_graph_with_persistence(checkpointer)
-    
-    # Disable persistence for testing:
-    graph = get_graph_with_persistence(checkpointer=False)
     """
     return build_graph(checkpointer)
+
