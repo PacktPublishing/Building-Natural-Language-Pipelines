@@ -8,12 +8,12 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 2. **Configure LLM Provider**: All three versions (V1, V2, V3) support:
    - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
-   - **Ollama** (local): `gpt-oss:20b` - Requires local installation:
+   - **Ollama** (local): Tested and received correct responses from `gpt-oss:20b`, `deepseek-r1` - Requires local installation:
 
    [Install Ollama](https://ollama.com/download)
 
      ```sh   
-     # Pull the model
+     # Pull the model - add the model you want to test
      ollama pull gpt-oss:20b
      ```
    
@@ -26,6 +26,16 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
    # Initialize the language model
    llm = get_llm("gpt-oss:20b")
    ```
+
+   **PLEASE NOTE LOCAL MODELS MAY BE SLOWER THAN OPENAI - BE PATIENT WITH YOUR LOCAL AGENT**
+
+   |Model | Size | Token Window| Tool | Reasoning |
+   | - | - | - | - | -| 
+   | qwen3:latest| 5.2GB | 40K | Yes | Yes | 
+   | deepseek-r1:latest | 5.2GB | 128K | Yes | Yes|
+   | gpt-oss:latest | 14GB | 128K | Yes | Yes|
+
+
 
 3. **Start Haystack pipelines**:
    ```sh

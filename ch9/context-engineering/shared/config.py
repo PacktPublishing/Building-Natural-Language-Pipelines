@@ -62,7 +62,7 @@ def get_llm(
         try:
 
             return ChatOllama(
-                    model=model,  # Ollama uses different naming; adjust as needed
+                    model=model,  
                     temperature=temperature,
                     timeout=timeout,
                 )

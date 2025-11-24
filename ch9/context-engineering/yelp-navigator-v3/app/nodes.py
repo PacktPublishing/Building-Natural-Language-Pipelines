@@ -14,7 +14,7 @@ from shared.config import get_llm
 from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
 
 # Initialize the language model
-llm = get_llm("gpt-oss:20b")
+llm = get_llm("qwen3")
 
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat"]]:
