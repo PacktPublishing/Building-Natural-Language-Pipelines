@@ -24,6 +24,7 @@ Three implementations demonstrating how architectural decisions impact token eff
 - **Dynamic flow**: Error-aware supervisor with graceful degradation
 - **Error handling**: Retry policies, rate limit detection, clean exits
 - **Persistence**: Checkpointing support (in-memory or SQLite)
+- **Guardrails**: Input and validation nodes (prompt injection, PII sanitization)
 
 ## Node Design Comparison
 
@@ -159,12 +160,33 @@ Configured at graph compilation level for all tool nodes.
 - Supervisor receives error context for intelligent decision-making
 - Graceful degradation: Finalize with partial data when needed
 
+#### 5. Guardrails (Input Validation)
+**Input Guardrails Node** (runs before clarification):
+- **Prompt injection detection**: Blocks suspicious patterns
+  - Examples: "ignore previous instructions", "system: you are", "forget everything"
+- **PII sanitization**: Redacts sensitive data from user inputs
+  - Emails, phone numbers, SSNs, credit cards, IP addresses
+
+**Implementation:**
+- Simple regex patterns (no LLM calls, fast execution)
+- Separate nodes for visibility in graph
+- Logs all validation activities
+- Configurable via `Configuration` settings
+- Non-blocking: sanitizes rather than rejects
+
+**Configuration:**
+```python
+enable_guardrails: bool = True   # Prompt injection + quality + leakage checks
+sanitize_pii: bool = True        # PII redaction (input + output)
+```
+
 **Architecture:**
 - Same supervisor + tool node separation as V2 (maintains token efficiency)
 - Retry policies configured at graph compilation level
 - Enhanced state schema with error tracking fields
 - Error-aware supervisor prompts for intelligent recovery
 - Tools return structured error responses with `rate_limited` flags
+- Input guardrails as separate nodes for visibility
 
 **Documentation:**
 - See `yelp-navigator-v3/persistence.md` for checkpointing guide
@@ -186,6 +208,7 @@ Configured at graph compilation level for all tool nodes.
 | Persistence | None | None | MemorySaver / SqliteSaver |
 | Error Tracking | None | None | Full metadata + retry counts |
 | Graceful Degradation | ❌ | ❌ | ✅ |
+| Input Guardrails | ❌ | ❌ | ✅ (prompt injection, PII) |
 | Production Ready | ❌ | ⚠️ Prototype | ✅ |
 
 ### When to Choose Each Version
@@ -211,6 +234,7 @@ Configured at graph compilation level for all tool nodes.
 - Rate limiting concerns
 - Better observability and debugging
 - Graceful degradation on failures
+- Security requirements (prompt injection protection, PII handling)
 
 ### Cost Impact at Scale
 
@@ -226,6 +250,7 @@ Configured at graph compilation level for all tool nodes.
 
 ## Run Your Own Tests
 
+### Token Usage Tests
 ```bash
 # Simple query test
 uv run python measure_token_usage.py \
@@ -239,4 +264,5 @@ uv run python measure_token_usage.py \
     --test-location "New York, NY" \
     --detail-level reviews
 ```
+
 

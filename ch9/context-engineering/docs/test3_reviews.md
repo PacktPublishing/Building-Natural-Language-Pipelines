@@ -1,25 +1,25 @@
 # Token Usage Measurement Report
 
-*Generated: 2025-11-16 20:15:35*
+*Generated: 2025-11-24 15:41:31*
 
 ## Summary
 
-- **Total V1 Tokens**: 5,307
-- **Total V2 Tokens**: 1,318
-- **Total Reduction**: 3,989 tokens (75.2%)
-- **Average Reduction per Query**: 3989 tokens
+- **Total V1 Tokens**: 5,659
+- **Total V2 Tokens**: 1,409
+- **Total Reduction**: 4,250 tokens (75.1%)
+- **Average Reduction per Query**: 4250 tokens
 
 ## Cost Impact (GPT-4 Pricing)
 
-- **V1 Cost**: $0.1592
-- **V2 Cost**: $0.0395
-- **Savings**: $0.1197 (75.2%)
+- **V1 Cost**: $0.1698
+- **V2 Cost**: $0.0423
+- **Savings**: $0.1275 (75.1%)
 
-- **Monthly Savings (10K queries)**: $1196.70
+- **Monthly Savings (10K queries)**: $1275.00
 
 ## Detailed Results
 
 | Query                             | Detail Level   |   V1 Tokens |   V2 Tokens |   Reduction (tokens) | Reduction (%)   |
 |:----------------------------------|:---------------|------------:|------------:|---------------------:|:----------------|
-| sushi restaurants in New York, NY | reviews        |        5307 |        1318 |                 3989 | 75.2%           |
+| sushi restaurants in New York, NY | reviews        |        5659 |        1409 |                 4250 | 75.1%           |
 
