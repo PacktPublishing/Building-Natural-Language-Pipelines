@@ -52,6 +52,15 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 </details>
 
+<details>
+<summary><strong>Chapter 5: Build custom components: synthetic data generation and evaluation</strong></summary>
+
+| | | 
+|-|-|
+|![](./ch5/jupyter-notebooks/images/web_knowledge_graph_pipeline.png) | ![](./ch5/jupyter-notebooks/images/advanced_branching_kg_pipeline.png)
+
+</details>
+
 Chapters 8 and Chapter 9: Capstone and Context Engineering
 
 | | | 
