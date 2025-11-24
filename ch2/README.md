@@ -23,13 +23,27 @@ This repository contains beginner-friendly notebooks for Chapter 2, introducing 
 
 6. **Set up API keys:**
 
-Create a `.env` file in the `jupyter-notebooks/` directory with your API key:
+Copy the `.env.example` file to `.env` in the `jupyter-notebooks/` directory:
 ```sh
-TAVILY_API_KEY=your_tavily_key_here
+cp jupyter-notebooks/.env.example jupyter-notebooks/.env
+```
+
+Then edit the `.env` file and add your API key:
+```sh
+# Required API Keys
+TAVILY_API_KEY=<your-tavily-api-key>
+SERPERDEV_API_KEY=<your-serperdev-api-key>
+SEARCH_API_KEY=<your-search-api-key>
+
+## Optional if you're using OpenAI
+OPENAI_API_KEY=<your-openai-api-key>
 ```
 
 To obtain the API key:
 - Tavily API key: Register at [Tavily](https://tavily.com) (free tier available for learning)
+- SerperDev API: Register at [SerperDev API](https://serpapi.com/)
+- OpenAI API: Register at [OpenAI API](https://openai.com/api/)
+- Search API: Register at [Search API](https://www.searchapi.io/)
 
 7. **Install Ollama for local LLM inference:**
 
