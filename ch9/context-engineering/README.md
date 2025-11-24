@@ -17,7 +17,7 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
      ollama pull gpt-oss:20b
      ```
    
-   **Note**: Other LLMs can be configured in [`shared/config.py`](./shared/config.py), but they must support thinking, tool calling (function calling) as well as structured output to work with the agent architecture. Adding a model that doesn't suppor these capabilities may result in unexpected behavior or errors from the agent.
+   **Note**: Other LLMs can be configured in [`shared/config.py`](./shared/config.py), but they must support thinking, tool calling (function calling) as well as structured output to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
 
    To initialize a different model, you can select the model for each of the versions under the `nodes.py` files.
    For example, for [yelp-navigator-v3/app/nodes.py](./yelp-navigator-v3/app/nodes.py) you can specify the model name (either supported by Ollama or OpenAI):
