@@ -91,6 +91,7 @@ class AgentState(MessagesState):
     execution_start_time: Optional[str] = None  # ISO format string for serialization
     total_error_count: int = 0
     retry_counts: Dict[str, int] = {}  # Track retries per tool
+    consecutive_failures: Dict[str, int] = {}  # Track consecutive failures per tool
     
     # Final Output
     final_summary: str = ""

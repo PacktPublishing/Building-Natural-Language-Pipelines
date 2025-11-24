@@ -14,7 +14,7 @@ from shared.config import get_llm
 from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
 
 # Initialize the language model
-llm = get_llm()
+llm = get_llm("gpt-oss:20b")
 
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat"]]:
@@ -25,9 +25,6 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     conf = Configuration.from_runnable_config(config)
     
     try:
-        # Define the structured output model
-        clarifier_model = llm.with_structured_output(ClarificationDecision)
-        
         # Create context from history
         messages = state["messages"]
         
@@ -37,10 +34,32 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
             current_location=state.get('search_location', '')
         )
         
-        # Invoke model with the dynamic system prompt
-        decision: ClarificationDecision = clarifier_model.invoke(
-            [SystemMessage(content=system_prompt_content)] + messages
-        )
+        # Try structured output first, with fallback for incompatible models
+        try:
+            clarifier_model = llm.with_structured_output(ClarificationDecision)
+            decision: ClarificationDecision = clarifier_model.invoke(
+                [SystemMessage(content=system_prompt_content)] + messages
+            )
+        except Exception as struct_error:
+            # Fallback: some models don't support structured output well
+            # Try with method="json_mode" or give up and use default values
+            print(f"Warning: Structured output failed ({str(struct_error)}), using fallback parsing")
+            
+            # Get the last user message
+            last_user_msg = ""
+            for msg in reversed(messages):
+                if hasattr(msg, 'type') and msg.type == "human":
+                    last_user_msg = msg.content
+                    break
+            
+            # Simple fallback: assume business search with minimal parsing
+            decision = ClarificationDecision(
+                need_clarification=False,
+                intent="business_search",
+                search_query=last_user_msg if last_user_msg else "restaurants",
+                search_location=state.get('search_location', 'San Francisco, CA'),
+                detail_level="general"
+            )
         
         # Handle Clarification
         if decision.need_clarification and conf.allow_clarification:
@@ -53,6 +72,14 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
         if decision.intent == "general_chat":
             return Command(goto="general_chat")
         else:
+            # Validate that we have minimum required info for search
+            if not decision.search_query or not decision.search_location:
+                error_msg = "I need both a search term and location to help you. What are you looking for and where?"
+                return Command(
+                    goto=END,
+                    update={"messages": [AIMessage(content=error_msg)]}
+                )
+            
             # Check if this is a new search query
             is_new_search = (
                 decision.search_query != state.get("search_query") or
@@ -117,6 +144,24 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
     has_details_data = agent_outputs.get("details", {}).get("success", False)
     has_sentiment_data = agent_outputs.get("sentiment", {}).get("success", False)
     
+    # Check for consecutive failures to prevent infinite loops
+    consecutive_failures = state.get('consecutive_failures', {})
+    MAX_CONSECUTIVE_FAILURES = 3
+    
+    # If any tool has failed too many times consecutively, finalize with what we have
+    for tool_name, failure_count in consecutive_failures.items():
+        if failure_count >= MAX_CONSECUTIVE_FAILURES:
+            error_message = (
+                f"I apologize, but I'm experiencing persistent issues with the {tool_name} service. "
+                f"Let me provide you with the best information I can based on what's available."
+            )
+            return Command(
+                goto="summary",
+                update={
+                    "messages": [AIMessage(content=error_message)],
+                }
+            )
+    
     # Check for rate limiting or service unavailability
     rate_limited = False
     service_unavailable = False
@@ -170,7 +215,16 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
     )
     
     try:
-        decision: SupervisorDecision = supervisor_model.invoke([SystemMessage(content=context)])
+        # Gemini requires at least one non-system message, so include a HumanMessage
+        # For other models, the system message alone works fine
+        messages_for_invoke = [
+            SystemMessage(content=context),
+            HumanMessage(content="Please analyze the current state and decide the next action.")
+        ]
+        decision: SupervisorDecision = supervisor_model.invoke(messages_for_invoke)
+        
+        # Debug: log the decision
+        print(f"Supervisor decision: {decision.next_action} (should_finalize_early: {decision.should_finalize_early})")
         
         # If supervisor decides to finalize early due to errors, respect that
         if decision.should_finalize_early or decision.next_action == "finalize":
@@ -188,9 +242,14 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
         
     except Exception as e:
         # If supervisor fails, try to finalize with what we have
+        print(f"Supervisor error: {str(e)}")
+        error_msg = f"I encountered an issue coordinating the search: {str(e)}"
         return Command(
             goto="summary",
-            update={"total_error_count": state.get("total_error_count", 0) + 1}
+            update={
+                "messages": [AIMessage(content=error_msg)],
+                "total_error_count": state.get("total_error_count", 0) + 1
+            }
         )
 
 
@@ -266,7 +325,12 @@ def summary_node(state: AgentState):
             user_question=user_question
         )
         
-        response = llm.invoke([SystemMessage(content=prompt)])
+        # Gemini requires at least one non-system message
+        messages_for_summary = [
+            SystemMessage(content=prompt),
+            HumanMessage(content="Please generate the final summary based on the information provided.")
+        ]
+        response = llm.invoke(messages_for_summary)
         
         return Command(
             goto=END,
@@ -297,6 +361,7 @@ def search_tool_node(state: AgentState):
     """
     start_time = time.time()
     query = f"{state['search_query']} in {state['search_location']}"
+    print(f"Search tool executing with query: '{query}'")
     
     try:
         result = search_businesses.invoke({"query": query})
@@ -316,11 +381,16 @@ def search_tool_node(state: AgentState):
             existing_outputs = state.get('agent_outputs', {})
             existing_outputs['search'] = result
             
+            # Reset consecutive failures on success
+            consecutive_failures = state.get('consecutive_failures', {})
+            consecutive_failures['search'] = 0
+            
             return Command(
                 goto="supervisor",
                 update={
                     "pipeline_data": full_output,
                     "agent_outputs": existing_outputs,
+                    "consecutive_failures": consecutive_failures,
                     "last_node_executed": "search_tool"
                 }
             )
@@ -333,11 +403,16 @@ def search_tool_node(state: AgentState):
             existing_outputs = state.get('agent_outputs', {})
             existing_outputs['search'] = result
             
+            # Increment consecutive failures
+            consecutive_failures = state.get('consecutive_failures', {})
+            consecutive_failures['search'] = consecutive_failures.get('search', 0) + 1
+            
             return Command(
                 goto="supervisor",
                 update={
                     "agent_outputs": existing_outputs,
                     "total_error_count": state.get("total_error_count", 0) + 1,
+                    "consecutive_failures": consecutive_failures,
                     "last_node_executed": "search_tool"
                 }
             )
@@ -345,6 +420,7 @@ def search_tool_node(state: AgentState):
     except Exception as e:
         # Unexpected error during tool execution
         execution_time = time.time() - start_time
+        print(f"Search tool error: {type(e).__name__}: {str(e)}")
         error_result = {
             "success": False,
             "error": str(e),
@@ -360,12 +436,17 @@ def search_tool_node(state: AgentState):
         retry_counts = state.get("retry_counts", {})
         retry_counts["search"] = retry_counts.get("search", 0) + 1
         
+        # Increment consecutive failures
+        consecutive_failures = state.get('consecutive_failures', {})
+        consecutive_failures['search'] = consecutive_failures.get('search', 0) + 1
+        
         return Command(
             goto="supervisor",
             update={
                 "agent_outputs": existing_outputs,
                 "total_error_count": state.get("total_error_count", 0) + 1,
                 "retry_counts": retry_counts,
+                "consecutive_failures": consecutive_failures,
                 "last_node_executed": "search_tool"
             }
         )
@@ -399,7 +480,18 @@ def details_tool_node(state: AgentState):
         existing_outputs = state.get('agent_outputs', {})
         existing_outputs['details'] = result
         
-        update_dict = {"agent_outputs": existing_outputs, "last_node_executed": "details_tool"}
+        # Track consecutive failures
+        consecutive_failures = state.get('consecutive_failures', {})
+        if result.get("success"):
+            consecutive_failures['details'] = 0
+        else:
+            consecutive_failures['details'] = consecutive_failures.get('details', 0) + 1
+        
+        update_dict = {
+            "agent_outputs": existing_outputs,
+            "consecutive_failures": consecutive_failures,
+            "last_node_executed": "details_tool"
+        }
         
         if not result.get("success"):
             update_dict["total_error_count"] = state.get("total_error_count", 0) + 1
@@ -423,12 +515,17 @@ def details_tool_node(state: AgentState):
         retry_counts = state.get("retry_counts", {})
         retry_counts["details"] = retry_counts.get("details", 0) + 1
         
+        # Increment consecutive failures
+        consecutive_failures = state.get('consecutive_failures', {})
+        consecutive_failures['details'] = consecutive_failures.get('details', 0) + 1
+        
         return Command(
             goto="supervisor",
             update={
                 "agent_outputs": existing_outputs,
                 "total_error_count": state.get("total_error_count", 0) + 1,
                 "retry_counts": retry_counts,
+                "consecutive_failures": consecutive_failures,
                 "last_node_executed": "details_tool"
             }
         )
@@ -462,7 +559,18 @@ def sentiment_tool_node(state: AgentState):
         existing_outputs = state.get('agent_outputs', {})
         existing_outputs['sentiment'] = result
         
-        update_dict = {"agent_outputs": existing_outputs, "last_node_executed": "sentiment_tool"}
+        # Track consecutive failures
+        consecutive_failures = state.get('consecutive_failures', {})
+        if result.get("success"):
+            consecutive_failures['sentiment'] = 0
+        else:
+            consecutive_failures['sentiment'] = consecutive_failures.get('sentiment', 0) + 1
+        
+        update_dict = {
+            "agent_outputs": existing_outputs,
+            "consecutive_failures": consecutive_failures,
+            "last_node_executed": "sentiment_tool"
+        }
         
         if not result.get("success"):
             update_dict["total_error_count"] = state.get("total_error_count", 0) + 1
@@ -486,12 +594,17 @@ def sentiment_tool_node(state: AgentState):
         retry_counts = state.get("retry_counts", {})
         retry_counts["sentiment"] = retry_counts.get("sentiment", 0) + 1
         
+        # Increment consecutive failures
+        consecutive_failures = state.get('consecutive_failures', {})
+        consecutive_failures['sentiment'] = consecutive_failures.get('sentiment', 0) + 1
+        
         return Command(
             goto="supervisor",
             update={
                 "agent_outputs": existing_outputs,
                 "total_error_count": state.get("total_error_count", 0) + 1,
                 "retry_counts": retry_counts,
+                "consecutive_failures": consecutive_failures,
                 "last_node_executed": "sentiment_tool"
             }
         )

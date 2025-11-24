@@ -6,14 +6,27 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 1. **Complete main setup**: Follow [ch9 README setup](../README.md#setup-instructions) and configure `.env`
 
-2. **Start Haystack pipelines**:
+2. **Configure LLM Provider**: All three versions (V1, V2, V3) support:
+   - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
+   - **Ollama** (local): `gpt-oss:20b` - Requires local installation:
+     ```sh
+     # Install Ollama (macOS)
+     brew install ollama
+     
+     # Pull the model
+     ollama pull gpt-oss:20b
+     ```
+   
+   **Note**: Other LLMs can be configured in `shared/config.py`, but they must support tool calling (function calling) to work with the agent architecture.
+
+3. **Start Haystack pipelines**:
    ```sh
    cd ../../ch8/yelp-navigator
    uv run sh build_all_pipelines.sh
    sh start_hayhooks.sh  # Leave running
    ```
 
-3. **Start LangGraph Studio**:
+4. **Start LangGraph Studio**:
    ```sh
    cd ch9/context-engineering/
    uv run langgraph dev

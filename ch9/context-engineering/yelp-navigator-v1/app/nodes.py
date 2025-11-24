@@ -7,7 +7,7 @@ from shared.prompts import clarification_prompt, supervisor_approval_prompt, sum
 from shared.config import get_llm
 
 # Initialize the language model
-llm = get_llm()
+llm = get_llm("gpt-oss:20b")
 
 
 def clarification_node(state: AgentState) -> AgentState:

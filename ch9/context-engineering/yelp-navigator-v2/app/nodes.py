@@ -12,7 +12,7 @@ from shared.prompts import summary_generation_prompt
 from shared.config import get_llm
 
 # Initialize the language model
-llm = get_llm()
+llm = get_llm("gpt-oss:20b")
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat", END]]:
     """
