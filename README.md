@@ -77,7 +77,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 | Microservice architecture| Multi-agent system using microservices|
 | ![](./microservicearchitecture.png) | ![](./agentarchitecture.png)|
 
-> **📝 Model Flexibility**: The majority of exercises throughout this book can be completed using either **OpenAI APIs** or **local models via Ollama** (such as [Mistral Nemo](https://ollama.com/library/mistral-nemo), [GPT-OSS](https://ollama.com/library/gpt-oss), or [Deepseek-R1](https://ollama.com/library/deepseek-r1) and [Qwen3](https://ollama.com/library/qwen3)), with the exception of the cost tracking exercises in Chapter 6 which specifically demonstrate OpenAI API usage monitoring. Each notebook provides specific model recommendations to help you choose the most suitable option for that particular exercise.
+> **📝 Model Flexibility**: The majority of exercises throughout this book can be completed using either **OpenAI APIs** or **local models via Ollama** (such as [Mistral Nemo](https://ollama.com/library/mistral-nemo), [GPT-OSS](https://ollama.com/library/gpt-oss), or [Deepseek-R1](https://ollama.com/library/deepseek-r1) and [Qwen3](https://ollama.com/library/qwen3)), with the exception of the cost tracking exercises in Chapter 6 which specifically demonstrate OpenAI API usage monitoring. Each notebook provides specific model recommendations to help you choose the most suitable option for that particular exercise. The frameworks explored are extensible and models from other providers can be used to substitute OpenAI or local models. 
 
 
 
