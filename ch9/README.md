@@ -19,18 +19,30 @@ This chapter explores context engineering patterns for building efficient AI age
 	Then edit `.env` and add your API keys:
 	```sh
 	# Required
+	# ============================================================================
+	# API KEYS - Configure at least one LLM provider
+	# ============================================================================
+
+	# LLM Providers (choose one or more):
+
+	# OpenAI (GPT models) - Default provider
 	OPENAI_API_KEY=your_openai_key_here
-	YELP_API_KEY=your_yelp_key_here
-	
-	# Optional (for LangGraph Studio)
+	OPENAI_MODEL=gpt-4o-mini
+	OPENAI_CHAT_MODEL=gpt-4o-mini
+
+	# ============================================================================
+	# OPTIONAL: LangSmith Tracing & Monitoring
+	# ============================================================================
+
 	LANGSMITH_API_KEY=your_langsmith_key_here
 	LANGCHAIN_TRACING_V2=true
-	LANGCHAIN_PROJECT=chapter-9-agents
+	LANGCHAIN_PROJECT=yelp-navigator-LangGraph-Local
+
+	# ============================================================================
 	```
 	
 	To obtain the API keys:
 	- **OpenAI**: Sign up at [OpenAI's platform](https://platform.openai.com)
-	- **Yelp**: Register at [Yelp Business Review RapidAPI](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews)
 	- **LangSmith** (optional): Sign up at [LangSmith](https://smith.langchain.com/)
 
 3. **Install dependencies:**

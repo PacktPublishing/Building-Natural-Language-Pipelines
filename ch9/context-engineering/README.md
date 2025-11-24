@@ -33,7 +33,7 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 ## Setup
 
-1. **Complete main setup**: Follow [ch9 README setup](../README.md#setup-instructions) and configure `.env`. You can use the same structure as the [.env.example](https://github.com/PacktPublishing/Building-Natural-Language-Pipelines/blob/main/ch9/context-engineering/.env.example)
+1. **Complete main setup**: Follow [ch9 README setup](../README.md#setup-instructions) and configure `.env`. 
 
 2. **Configure LLM Provider**: All three versions (V1, V2, V3) support:
    - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
