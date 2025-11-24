@@ -31,7 +31,7 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
    Tested agentic system on V1, V2, V3
 
-   |Model | Size | Token Window| Tool | Reasoning | Information |
+   |Model | Size | Context Window| Tool | Reasoning | Information |
    | - | - | - | - | -| - | 
    | gpt-oss:latest | 14GB | 128K | Yes | Yes| https://ollama.com/library/gpt-oss
    | deepseek-r1:latest | 5.2GB | 128K | Yes | Yes| https://ollama.com/library/deepseek-r1 
