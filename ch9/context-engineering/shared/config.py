@@ -11,13 +11,13 @@ def get_llm(
     model: str = None, 
     temperature: float = 0,
     max_retries: int = 2,
-    timeout: int = 60
+    timeout: int = 120
 ) -> Union[ChatOpenAI, ChatOllama]:
     """Get a configured LLM instance with automatic provider detection.
     
-    Supports multiple LLM providers:
-    - OpenAI: gpt-4, gpt-4-turbo, gpt-3.5-turbo, gpt-4o, gpt-4o-mini, etc.
-    - Ollama: gpt-oss models (requires local Ollama server) 
+    Tested and supported models:
+    - OpenAI: gpt-4o-mini (default)
+    - Ollama: gpt-oss:latest, deepseek-r1:latest, qwen3:latest
     
     Args:
         model: Model name (defaults to OPENAI_MODEL env var or gpt-4o-mini)
@@ -26,23 +26,43 @@ def get_llm(
         timeout: Request timeout in seconds (default: 60)
         
     Returns:
-        Configured LLM instance (ChatOpenAI, ChatOllama, or ChatAnthropic)
+        Configured LLM instance (ChatOpenAI or ChatOllama)
         
     Raises:
         ValueError: If model provider is not supported or API key is missing
-        ImportError: If required provider library is not installed
+        RuntimeError: If model initialization fails
     """
     if model is None:
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        
-    # Attempt fallback to default OpenAI model
+    
+    # Tested Ollama models with tool calling support
+    OLLAMA_MODELS = {"gpt-oss:latest", "deepseek-r1:latest", "qwen3:latest"}
+    
+    # Determine provider based on model name
+    is_ollama = model in OLLAMA_MODELS or "gpt-oss" in model.lower() or "deepseek" in model.lower() or "qwen" in model.lower()
+    
+    if is_ollama:
         try:
-            openai_api_key = os.getenv("OPENAI_API_KEY")
-            if not openai_api_key:
-                raise ValueError(
-                    "Cannot fallback: OPENAI_API_KEY not found. "
-                    "Please configure at least one LLM provider."
-                )
+            return ChatOllama(
+                model=model,
+                temperature=temperature,
+                timeout=timeout,
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to initialize Ollama model '{model}'. "
+                f"Please ensure Ollama is running ('ollama serve') and the model is available ('ollama pull {model}'). "
+                f"Error: {str(e)}"
+            ) from e
+    else:
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if not openai_api_key:
+            raise ValueError(
+                f"OPENAI_API_KEY not found in environment. "
+                f"Please set your OpenAI API key to use model '{model}'."
+            )
+        
+        try:
             return ChatOpenAI(
                 model=model,
                 temperature=temperature,
@@ -51,29 +71,12 @@ def get_llm(
                 timeout=timeout,
                 max_retries=max_retries,
             )
-        except Exception as fallback_error:
-            raise RuntimeError(
-                f"Failed to initialize both requested model and fallback: {str(fallback_error)}"
-            ) from e
-
-        
-    else:
-    
-        try:
-
-            return ChatOllama(
-                    model=model,  
-                    temperature=temperature,
-                    timeout=timeout,
-                )
-                
         except Exception as e:
-            # Provide fallback with clear error message
-            error_msg = (
-                f"Failed to initialize model '{model}': {str(e)}\n"
-                f"Falling back to default model 'gpt-4o-mini'"
-            )
-            print(f"WARNING: {error_msg}")
+            raise RuntimeError(
+                f"Failed to initialize OpenAI model '{model}'. "
+                f"Please verify your API key and model name. "
+                f"Error: {str(e)}"
+            ) from e
             
             
     
