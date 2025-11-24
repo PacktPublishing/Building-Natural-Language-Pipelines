@@ -25,6 +25,33 @@ Author: Laura Funderburk
 
 This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** systems and **multi-agent applications** using the [Haystack 2.0](https://haystack.deepset.ai/), [Ragas](https://docs.ragas.io/en/stable/) and [LangGraph](https://www.langchain.com/langgraph) frameworks. Beginning with **state-based agent development** using LangGraph, you'll learn to build intelligent agents with tool integration, middleware patterns, and multi-agent coordination. You'll then master **Haystack's component architecture**, progressing through creating intelligent search systems with semantic and hybrid retrieval, building custom components for specialized tasks, and implementing comprehensive evaluation frameworks. The journey advances through production deployment strategies with Docker and REST APIs, culminating in hands-on projects including named entity recognition systems, zero-shot text classification pipelines, sentiment analysis tools, and sophisticated multi-agent orchestration systems that coordinate multiple specialized Haystack pipelines through LangGraph supervisors.
 
+<details>
+<summary><strong>Chapter 2: Single agents and multi agents with LangChain and LangGraph</strong></summary>
+
+| | | 
+|-|-|
+| ![](./ch2/jupyter-notebooks/images/mathagent.png) | ![](./ch2/jupyter-notebooks/images/supervisortools.png)|
+
+</details>
+
+<details>
+<summary><strong>Chapter 3: Building robust agent tools with Haystack</strong></summary>
+
+| | |
+|-|-|
+| ![](./ch3/jupyter-notebooks/images/full_pipeline_with_supercomponent.png) | ![](./ch3/jupyter-notebooks/images/prompt_pipeline.png) | 
+
+</details>
+
+<details>
+<summary><strong>Chapter 4: RAG pipelines: indexing and retrieval</strong></summary>
+
+| | | 
+|-|-|
+|![](./ch4/jupyter-notebooks/images/indexing_pipeline.png) | ![](./ch4/jupyter-notebooks/images/hybrid_rag_pipeline.png)
+
+</details>
+
 Chapters 8 and Chapter 9: Capstone and Context Engineering
 
 | | | 
