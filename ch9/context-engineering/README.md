@@ -8,7 +8,7 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 2. **Configure LLM Provider**: All three versions (V1, V2, V3) support:
    - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
-   - **Ollama** (local): Tested and received correct responses from `gpt-oss:20b`, `deepseek-r1` - Requires local installation:
+   - **Ollama** (local): Requires local installation:
 
    [Install Ollama](https://ollama.com/download)
 
@@ -29,11 +29,15 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
    **PLEASE NOTE LOCAL MODELS MAY BE SLOWER THAN OPENAI - BE PATIENT WITH YOUR LOCAL AGENT**
 
+   Tested agentic system on V1, V2, V3
+
    |Model | Size | Token Window| Tool | Reasoning |
    | - | - | - | - | -| 
-   | qwen3:latest| 5.2GB | 40K | Yes | Yes | 
-   | deepseek-r1:latest | 5.2GB | 128K | Yes | Yes|
    | gpt-oss:latest | 14GB | 128K | Yes | Yes|
+   | deepseek-r1:latest | 5.2GB | 128K | Yes | Yes|
+   | qwen3:latest| 5.2GB | 40K | Yes | Yes | 
+   
+   
 
 
 
