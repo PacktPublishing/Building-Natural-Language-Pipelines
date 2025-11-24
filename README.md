@@ -29,6 +29,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 | | | 
 |-|-|
+| Agent with one tool | Agent calling supervisor | 
 | ![](./ch2/jupyter-notebooks/images/mathagent.png) | ![](./ch2/jupyter-notebooks/images/supervisortools.png)|
 
 
@@ -37,6 +38,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 | | |
 |-|-|
+| Supercomponents and pipeline | Prompt template pipeline| 
 | ![](./ch3/jupyter-notebooks/images/full_pipeline_with_supercomponent.png) | ![](./ch3/jupyter-notebooks/images/prompt_pipeline.png) | 
 
 </details>
@@ -46,6 +48,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 | | | 
 |-|-|
+| Indexing pipeline | Hybrid RAG pipeline| 
 |![](./ch4/jupyter-notebooks/images/indexing_pipeline.png) | ![](./ch4/jupyter-notebooks/images/hybrid_rag_pipeline.png)
 
 </details>
@@ -55,6 +58,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 | | | 
 |-|-|
+| Knowledge graph and synthetic data generation (SDG) pipeline | SDG applied to websites and PDFS |
 |![](./ch5/jupyter-notebooks/images/web_knowledge_graph_pipeline.png) | ![](./ch5/jupyter-notebooks/images/advanced_branching_kg_pipeline.png)
 
 </details>
@@ -70,6 +74,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 | | | 
 |-|-|
+| Microservice architecture| Multi-agent system using microservices|
 | ![](./microservicearchitecture.png) | ![](./agentarchitecture.png)|
 
 > **📝 Model Flexibility**: The majority of exercises throughout this book can be completed using either **OpenAI APIs** or **local models via Ollama** (such as [Mistral Nemo](https://ollama.com/library/mistral-nemo), [GPT-OSS](https://ollama.com/library/gpt-oss), or [Deepseek-R1](https://ollama.com/library/deepseek-r1) and [Qwen3](https://ollama.com/library/qwen3)), with the exception of the cost tracking exercises in Chapter 6 which specifically demonstrate OpenAI API usage monitoring. Each notebook provides specific model recommendations to help you choose the most suitable option for that particular exercise.
