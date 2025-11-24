@@ -4,6 +4,8 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 ## What's Inside
 
+![](./docs/v1-v2-v3.png)
+
 - **`yelp-navigator-v1/`** - Monolithic architecture (baseline for comparison)
 - **`yelp-navigator-v2/`** - Supervisor pattern with efficient token usage
 - **`yelp-navigator-v3/`** - Production-ready with retry policies + checkpointing
@@ -22,7 +24,7 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 | Guardrails | None | None | Prompt injection detection + PII sanitization |
 | Production Ready | ❌ Learning | ⚠️ Prototype | ✅ Production |
 
-![](./docs/v1-v2-v3.png)
+
 
 **Choose:**
 - **V1** for learning monolithic agent patterns
