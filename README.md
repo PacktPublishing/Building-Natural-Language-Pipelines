@@ -59,23 +59,12 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 </details>
 
-<details>
-<summary><strong>Chapter 6: Reproducible evaluation with Ragas and Weights and Biases</strong></summary>
 
-| | | 
-|-|-|
-|![](./ch6/jupyter-notebooks/get_started_rag_evaluation_with_ragas.ipynb)|
+<strong>Chapter 6: Reproducible evaluation of hybrid and naive RAG with Ragas and Weights and Biases</strong>
 
-</details>
 
-<details>
-<summary><strong>Chapter 7: Deploy pipelines as an API with FastAPI</strong></summary>
+<strong>Chapter 7: Deploy pipelines as an API with FastAPI and Hayhooks</strong>
 
-| | | 
-|-|-|
-|![](./ch5/jupyter-notebooks/images/web_knowledge_graph_pipeline.png) | ![](./ch)
-
-</details>
 
 <strong>Chapters 8 and Chapter 9: Capstone and Context Engineering<strong>
 
