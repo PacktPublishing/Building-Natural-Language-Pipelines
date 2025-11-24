@@ -25,6 +25,9 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     conf = Configuration.from_runnable_config(config)
     
     try:
+        # Define the structured output model
+        clarifier_model = llm.with_structured_output(ClarificationDecision)
+        
         # Create context from history
         messages = state["messages"]
         
@@ -34,32 +37,10 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
             current_location=state.get('search_location', '')
         )
         
-        # Try structured output first, with fallback for incompatible models
-        try:
-            clarifier_model = llm.with_structured_output(ClarificationDecision)
-            decision: ClarificationDecision = clarifier_model.invoke(
-                [SystemMessage(content=system_prompt_content)] + messages
-            )
-        except Exception as struct_error:
-            # Fallback: some models don't support structured output well
-            # Try with method="json_mode" or give up and use default values
-            print(f"Warning: Structured output failed ({str(struct_error)}), using fallback parsing")
-            
-            # Get the last user message
-            last_user_msg = ""
-            for msg in reversed(messages):
-                if hasattr(msg, 'type') and msg.type == "human":
-                    last_user_msg = msg.content
-                    break
-            
-            # Simple fallback: assume business search with minimal parsing
-            decision = ClarificationDecision(
-                need_clarification=False,
-                intent="business_search",
-                search_query=last_user_msg if last_user_msg else "restaurants",
-                search_location=state.get('search_location', 'San Francisco, CA'),
-                detail_level="general"
-            )
+        # Invoke model with the dynamic system prompt
+        decision: ClarificationDecision = clarifier_model.invoke(
+            [SystemMessage(content=system_prompt_content)] + messages
+        )
         
         # Handle Clarification
         if decision.need_clarification and conf.allow_clarification:
@@ -72,14 +53,6 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
         if decision.intent == "general_chat":
             return Command(goto="general_chat")
         else:
-            # Validate that we have minimum required info for search
-            if not decision.search_query or not decision.search_location:
-                error_msg = "I need both a search term and location to help you. What are you looking for and where?"
-                return Command(
-                    goto=END,
-                    update={"messages": [AIMessage(content=error_msg)]}
-                )
-            
             # Check if this is a new search query
             is_new_search = (
                 decision.search_query != state.get("search_query") or
@@ -129,7 +102,6 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
                 "total_error_count": state.get("total_error_count", 0) + 1
             }
         )
-
 
 def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "details_tool", "sentiment_tool", "summary"]]:
     """
