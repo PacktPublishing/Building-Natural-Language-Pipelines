@@ -51,7 +51,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 </details>
 
 <details>
-<summary><strong>Chapter 5: Build custom components: synthetic data generation and evaluation</strong></summary>
+<summary><strong>Chapter 5: Build custom components: synthetic data generation with Ragas</strong></summary>
 
 | | | 
 |-|-|
@@ -59,7 +59,25 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 </details>
 
-Chapters 8 and Chapter 9: Capstone and Context Engineering
+<details>
+<summary><strong>Chapter 6: Reproducible evaluation with Ragas and Weights and Biases</strong></summary>
+
+| | | 
+|-|-|
+|![](./ch6/jupyter-notebooks/get_started_rag_evaluation_with_ragas.ipynb)|
+
+</details>
+
+<details>
+<summary><strong>Chapter 7: Deploy pipelines as an API with FastAPI</strong></summary>
+
+| | | 
+|-|-|
+|![](./ch5/jupyter-notebooks/images/web_knowledge_graph_pipeline.png) | ![](./ch)
+
+</details>
+
+<strong>Chapters 8 and Chapter 9: Capstone and Context Engineering<strong>
 
 | | | 
 |-|-|
