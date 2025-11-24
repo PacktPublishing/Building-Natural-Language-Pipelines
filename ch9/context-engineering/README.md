@@ -2,6 +2,33 @@
 
 Three versions of the Yelp Navigator agent demonstrating how state management affects token efficiency and production readiness.
 
+## What's Inside
+
+- **`yelp-navigator-v1/`** - Monolithic architecture (baseline for comparison)
+- **`yelp-navigator-v2/`** - Supervisor pattern with efficient token usage
+- **`yelp-navigator-v3/`** - Production-ready with retry policies + checkpointing
+- **`shared/`** - Common tools, prompts, and configuration
+- **`docs/`** - Architecture comparison and measurement guides
+
+### Version Comparison
+
+| Feature | V1 | V2 | V3 |
+|---------|----|----|-----|
+| Token Efficiency | Baseline | 16-50% better | 16-50% better |
+| Architecture | Monolithic agents | Supervisor pattern | Supervisor pattern |
+| Error Handling | Basic | Basic | Retry policies + graceful degradation |
+| Persistence | None | None | Checkpointing (thread-based) |
+| Error Tracking | None | None | Execution metadata + retry counts |
+| Guardrails | None | None | Prompt injection detection + PII sanitization |
+| Production Ready | ❌ Learning | ⚠️ Prototype | ✅ Production |
+
+![](./docs/v1-v2-v3.png)
+
+**Choose:**
+- **V1** for learning monolithic agent patterns
+- **V2** for understanding supervisor patterns and token optimization
+- **V3** for production deployments requiring reliability and persistence
+
 ## Setup
 
 1. **Complete main setup**: Follow [ch9 README setup](../README.md#setup-instructions) and configure `.env`. You can use the same structure as the [.env.example](https://github.com/PacktPublishing/Building-Natural-Language-Pipelines/blob/main/ch9/context-engineering/.env.example)
@@ -57,32 +84,7 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 
 ---
 
-## What's Inside
 
-- **`yelp-navigator-v1/`** - Monolithic architecture (baseline for comparison)
-- **`yelp-navigator-v2/`** - Supervisor pattern with efficient token usage
-- **`yelp-navigator-v3/`** - Production-ready with retry policies + checkpointing
-- **`shared/`** - Common tools, prompts, and configuration
-- **`docs/`** - Architecture comparison and measurement guides
-
-### Version Comparison
-
-| Feature | V1 | V2 | V3 |
-|---------|----|----|-----|
-| Token Efficiency | Baseline | 16-50% better | 16-50% better |
-| Architecture | Monolithic agents | Supervisor pattern | Supervisor pattern |
-| Error Handling | Basic | Basic | Retry policies + graceful degradation |
-| Persistence | None | None | Checkpointing (thread-based) |
-| Error Tracking | None | None | Execution metadata + retry counts |
-| Guardrails | None | None | Prompt injection detection + PII sanitization |
-| Production Ready | ❌ Learning | ⚠️ Prototype | ✅ Production |
-
-![](./docs/v1-v2-v3.png)
-
-**Choose:**
-- **V1** for learning monolithic agent patterns
-- **V2** for understanding supervisor patterns and token optimization
-- **V3** for production deployments requiring reliability and persistence
 
 ---
 
