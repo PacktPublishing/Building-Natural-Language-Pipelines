@@ -60,6 +60,14 @@ This notebook uses the Yelp Business Reviews API through RapidAPI:
 - Sign up at: https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews
 - Store your API key in a `.env` file as `RAPID_API_KEY`
 
+If you don't want to work with OpenAI, you can use Ollama.
+
+[Install Ollama](https://ollama.com/download)
+
+```sh   
+# Pull the model - add the model you want to test
+ollama pull gpt-oss:20b
+```
 
 ---
 
