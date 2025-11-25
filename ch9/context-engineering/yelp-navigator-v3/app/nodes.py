@@ -200,7 +200,7 @@ def general_chat_node(state: AgentState):
     update_dict = {"messages": [AIMessage(content=reply)]}
     
     # Track errors if any occurred
-    if error_info:
+    if error_info and "error_count" in error_info:
         update_dict["total_error_count"] = state.get("total_error_count", 0) + error_info["error_count"]
     
     return Command(goto=END, update=update_dict)
