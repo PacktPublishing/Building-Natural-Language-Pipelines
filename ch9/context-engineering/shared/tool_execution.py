@@ -75,13 +75,14 @@ def execute_tool_with_tracking(
         result = tool_func.invoke(tool_args)
         execution_time = time.time() - start_time if add_metadata else None
         
-        # Add metadata if requested and tool succeeded
-        if add_metadata and result.get("success"):
+        # Add metadata if requested (for both success and failure)
+        if add_metadata:
             result['metadata'] = {
                 'execution_time_seconds': round(execution_time, 2),
                 'timestamp': datetime.now().isoformat(),
-                'retry_count': state.get("retry_counts", {}).get(tool_name, 0)
             }
+            if result.get("success"):
+                result['metadata']['retry_count'] = state.get("retry_counts", {}).get(tool_name, 0)
         
         # Update agent outputs with the result
         agent_outputs = state.get('agent_outputs', {}).copy()
