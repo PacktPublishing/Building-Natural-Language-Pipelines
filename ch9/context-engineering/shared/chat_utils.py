@@ -6,20 +6,12 @@ different versions (V2, V3) with optional error tracking features.
 from typing import Dict, Any, Optional, Tuple
 
 
-def handle_general_chat(
-    state: Dict[str, Any],
-    track_errors: bool = False
-) -> Tuple[str, Optional[Dict[str, Any]]]:
+def handle_general_chat() -> Tuple[str, Optional[Dict[str, Any]]]:
     """
     Handle non-business chat queries with a welcoming message that redirects to business searches.
     
     It always returns a friendly welcome message that explains what the chatbot
     is designed for (business search and analysis) and prompts the user to ask about businesses.
-    
-    Args:
-        state: Current agent state containing messages history
-        track_errors: Whether to track errors (V3 feature). If True, returns
-                     error tracking dict on failure.
     
     Returns:
         Tuple of (reply_content, error_tracking_dict)
