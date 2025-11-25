@@ -49,10 +49,10 @@ This chapter explores context engineering patterns for building efficient AI age
 
 	[Install Ollama](https://ollama.com/download)
 
-		```sh   
-		# Pull the model - add the model you want to test
-		ollama pull gpt-oss:20b
-		```
+	```sh   
+	# Pull the model - add the model you want to test
+	ollama pull gpt-oss:20b
+	```
 
 3. **Install dependencies:**
 	```sh
