@@ -70,7 +70,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 <strong>Chapter 7: Deploy pipelines as an API with FastAPI and Hayhooks</strong>
 
 
-<strong>Chapters 8 and Chapter 9: Capstone and Context Engineering<strong>
+<strong>Chapter 8 and Chapter 9: Capstone and Context Engineering<strong>
 
 | | | 
 |-|-|
