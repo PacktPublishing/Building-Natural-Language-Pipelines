@@ -5,14 +5,14 @@ This module provides a unified function for generating summaries with optional
 features for user question extraction and dual-message format support.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable
 from langchain_core.messages import SystemMessage, HumanMessage
 
 
 def generate_summary(
     state: Dict[str, Any],
     llm: Any,
-    summary_prompt_func: callable,
+    summary_prompt_func: Callable[..., Any],
     include_user_question: bool = False,
     use_dual_messages: bool = False
 ) -> str:
