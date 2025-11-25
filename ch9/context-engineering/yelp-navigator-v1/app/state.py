@@ -4,7 +4,11 @@ from operator import add
 
 
 class AgentState(TypedDict):
-    """State for the multi-agent system."""
+    """State for the pipeline architecture.
+    
+    Pipeline flow is controlled by graph routing based on detail_level,
+    not by next_agent field.
+    """
     # Conversation tracking
     messages: Annotated[List[BaseMessage], add]
     
@@ -14,11 +18,12 @@ class AgentState(TypedDict):
     clarified_location: str  # Where (e.g., "Austin, Texas")
     
     # Detail level: "general", "detailed", or "reviews"
+    # This determines the pipeline path after search
     detail_level: str
     
     # Workflow control
     clarification_complete: bool
-    next_agent: str  # Which agent to call next
+    next_agent: str  # Only used by supervisor approval for revision routing
     
     # Results from agents
     agent_outputs: Dict[str, Any]

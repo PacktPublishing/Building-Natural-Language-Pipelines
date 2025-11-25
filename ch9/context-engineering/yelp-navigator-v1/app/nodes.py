@@ -79,7 +79,7 @@ def clarification_node(state: AgentState) -> AgentState:
 
 
 def search_node(state: AgentState) -> AgentState:
-    """Node that finds businesses using search tool."""
+    """Node that finds businesses using search tool. Pipeline step 2."""
     
     clarified_query = state.get("clarified_query", "")
     clarified_location = state.get("clarified_location", "")
@@ -108,33 +108,22 @@ def search_node(state: AgentState) -> AgentState:
     else:
         summary = f"ERROR: Search failed: {result.get('error', 'Unknown error')}"
     
-    # Determine next agent based on detail level
-    detail_level = state.get("detail_level", "general")
-    
-    if detail_level == "general":
-        next_agent = "summary"
-    elif detail_level == "detailed":
-        next_agent = "details"
-    else:  # reviews
-        next_agent = "details"
-    
+    # Pipeline continues to next step based on detail_level (handled by graph routing)
     return {
         **update,
-        "messages": [AIMessage(content=summary)],
-        "next_agent": next_agent
+        "messages": [AIMessage(content=summary)]
     }
 
 
 def details_node(state: AgentState) -> AgentState:
-    """Node that fetches website information."""
+    """Node that fetches website information. Pipeline step 3a."""
     
     agent_outputs = state.get("agent_outputs", {})
     search_output = agent_outputs.get("search", {})
     
     if not search_output.get("success"):
         return {
-            "messages": [AIMessage(content="WARNING: Skipping details - no search results available")],
-            "next_agent": "summary"
+            "messages": [AIMessage(content="WARNING: Skipping details - no search results available")]
         }
     
     # Get pipeline1 output from search results
@@ -164,27 +153,22 @@ def details_node(state: AgentState) -> AgentState:
     else:
         summary = f"ERROR: Details fetch failed: {result.get('error', 'Unknown error')}"
     
-    # Determine next agent
-    detail_level = state.get("detail_level", "general")
-    next_agent = "sentiment" if detail_level == "reviews" else "summary"
-    
+    # Pipeline continues to next step (handled by graph routing)
     return {
         **update,
-        "messages": [AIMessage(content=summary)],
-        "next_agent": next_agent
+        "messages": [AIMessage(content=summary)]
     }
 
 
 def sentiment_node(state: AgentState) -> AgentState:
-    """Node that analyzes reviews for sentiment."""
+    """Node that analyzes reviews for sentiment. Pipeline step 3b or 4."""
     
     agent_outputs = state.get("agent_outputs", {})
     search_output = agent_outputs.get("search", {})
     
     if not search_output.get("success"):
         return {
-            "messages": [AIMessage(content="WARNING: Skipping sentiment analysis - no search results available")],
-            "next_agent": "summary"
+            "messages": [AIMessage(content="WARNING: Skipping sentiment analysis - no search results available")]
         }
     
     # Get pipeline1 output from search results
@@ -224,10 +208,10 @@ def sentiment_node(state: AgentState) -> AgentState:
     else:
         summary = f"ERROR: Sentiment analysis failed: {result.get('error', 'Unknown error')}"
     
+    # Pipeline always continues to summary (handled by graph routing)
     return {
         **update,
-        "messages": [AIMessage(content=summary)],
-        "next_agent": "summary"
+        "messages": [AIMessage(content=summary)]
     }
 
 
@@ -302,7 +286,7 @@ def supervisor_approval_node(state: AgentState) -> AgentState:
 
 
 def summary_node(state: AgentState) -> AgentState:
-    """Node that creates the final human-readable response."""
+    """Node that creates the final human-readable response. Pipeline step 4 or 5."""
     
     # Use shared summary generation logic
     final_summary = generate_summary(
@@ -313,9 +297,9 @@ def summary_node(state: AgentState) -> AgentState:
         use_dual_messages=False
     )
     
+    # Pipeline always continues to supervisor approval (handled by graph routing)
     return {
         "messages": [AIMessage(content=f"\n\nSUMMARY DRAFT:\n\n{final_summary}")],
         "final_summary": final_summary,
-        "next_agent": "supervisor_approval",
         "needs_revision": False  # Reset flag after generating new summary
     }
