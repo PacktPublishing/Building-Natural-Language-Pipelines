@@ -35,7 +35,7 @@ This chapter explores context engineering patterns for building efficient AI age
 	# ============================================================================
 
 	LANGSMITH_API_KEY=your_langsmith_key_here
-	LANGCHAIN_TRACING_V2=true
+	LANGCHAIN_TRACING_V2=false 
 	LANGCHAIN_PROJECT=yelp-navigator-LangGraph-Local
 
 	# ============================================================================
