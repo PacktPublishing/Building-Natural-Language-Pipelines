@@ -7,9 +7,11 @@ from .config import get_llm
 
 BASE_URL = "http://localhost:1416"
 
+MODEL =  "phi4-mini:3.8b" #"gpt-4o-mini" #change to your preferred model 
+
 # OpenAI Chat Completion Tool
 @tool
-def chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4o-mini", stream: bool = False, base_url: str = BASE_URL) -> Dict[str, Any]:
+def chat_completion(messages: List[Dict[str, str]], model: str = MODEL, stream: bool = False, base_url: str = BASE_URL) -> Dict[str, Any]:
     """Send a general chat completion request using OpenAI's chat completion API.
     
     Args:

@@ -2,6 +2,17 @@
 
 This chapter explores context engineering patterns for building efficient AI agents, demonstrating how strategic state management and architectural decisions impact token usage and cost.
 
+In Chapter 8, we explored how agents work and compared frameworks.  Now we'll examine an advanced concern: **How do architectural choices  affect token efficiency and production readiness?**
+
+## Prerequisites from Earlier Chapters
+
+- [**Chapter 2**](../ch2/README.md): LangGraph state management, conditional routing
+- [**Chapter 7**](../ch7-hayhooks/README.md): Refresh basics of deploying a pipeline as a REST endpoint via Hayhooks
+- [**Chapter 8**](../ch8/yelp-navigator/README.md): Uses pipelines developed in Chapter 8 as REST endpoints for a LangGraph-based agent.
+- [**Chapter 8**](../ch8/yelp-navigator/langgraph_multiagent_supervisor.ipynb): Agent graph patterns
+
+If you need to review these concepts, refer back to the relevant chapters.
+
 ## Setup Instructions
 
 1. **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
@@ -18,7 +29,6 @@ This chapter explores context engineering patterns for building efficient AI age
 	
 	Then edit `.env` and add your API keys:
 	```sh
-	# Required
 	# ============================================================================
 	# API KEYS - Configure at least one LLM provider
 	# ============================================================================

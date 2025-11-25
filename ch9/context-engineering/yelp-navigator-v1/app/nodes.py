@@ -5,6 +5,8 @@ from .state import AgentState
 from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment
 from shared.prompts import clarification_prompt, supervisor_approval_prompt, summary_generation_prompt
 from shared.config import get_llm
+from shared.tool_execution import execute_tool_with_tracking
+from shared.summary_utils import generate_summary
 
 # Initialize the language model
 llm = get_llm()
@@ -83,14 +85,18 @@ def search_node(state: AgentState) -> AgentState:
     clarified_location = state.get("clarified_location", "")
     full_query = f"{clarified_query} in {clarified_location}"
     
-    # Call the search tool
-    result = search_businesses.invoke({"query": full_query})
-    
-    # Store the result
-    agent_outputs = state.get("agent_outputs", {})
-    agent_outputs["search"] = result
+    # Use shared tool execution logic
+    update = execute_tool_with_tracking(
+        tool_func=search_businesses,
+        tool_name="search",
+        tool_args={"query": full_query},
+        state=state,
+        track_errors=False,
+        add_metadata=False
+    )
     
     # Create summary message
+    result = update["agent_outputs"]["search"]
     if result.get("success"):
         businesses = result.get("businesses", [])
         summary = f"""Search Agent Results:
@@ -113,8 +119,8 @@ def search_node(state: AgentState) -> AgentState:
         next_agent = "details"
     
     return {
+        **update,
         "messages": [AIMessage(content=summary)],
-        "agent_outputs": agent_outputs,
         "next_agent": next_agent
     }
 
@@ -134,12 +140,18 @@ def details_node(state: AgentState) -> AgentState:
     # Get pipeline1 output from search results
     pipeline1_output = search_output.get("full_output", {})
     
-    # Call the details tool with keyword argument
-    result = get_business_details.invoke({"pipeline1_output": pipeline1_output})
-    
-    agent_outputs["details"] = result
+    # Use shared tool execution logic
+    update = execute_tool_with_tracking(
+        tool_func=get_business_details,
+        tool_name="details",
+        tool_args={"pipeline1_output": pipeline1_output},
+        state=state,
+        track_errors=False,
+        add_metadata=False
+    )
     
     # Create summary message
+    result = update["agent_outputs"]["details"]
     if result.get("success"):
         details = result.get("businesses_with_details", [])
         summary = f"""Details Agent Results:\
@@ -157,8 +169,8 @@ def details_node(state: AgentState) -> AgentState:
     next_agent = "sentiment" if detail_level == "reviews" else "summary"
     
     return {
+        **update,
         "messages": [AIMessage(content=summary)],
-        "agent_outputs": agent_outputs,
         "next_agent": next_agent
     }
 
@@ -178,12 +190,18 @@ def sentiment_node(state: AgentState) -> AgentState:
     # Get pipeline1 output from search results
     pipeline1_output = search_output.get("full_output", {})
     
-    # Call the sentiment tool with keyword argument
-    result = analyze_reviews_sentiment.invoke({"pipeline1_output": pipeline1_output})
-    
-    agent_outputs["sentiment"] = result
+    # Use shared tool execution logic
+    update = execute_tool_with_tracking(
+        tool_func=analyze_reviews_sentiment,
+        tool_name="sentiment",
+        tool_args={"pipeline1_output": pipeline1_output},
+        state=state,
+        track_errors=False,
+        add_metadata=False
+    )
     
     # Create summary message
+    result = update["agent_outputs"]["sentiment"]
     if result.get("success"):
         # Create a mapping from business_id to business name from search results
         business_name_map = {}
@@ -207,8 +225,8 @@ def sentiment_node(state: AgentState) -> AgentState:
         summary = f"ERROR: Sentiment analysis failed: {result.get('error', 'Unknown error')}"
     
     return {
+        **update,
         "messages": [AIMessage(content=summary)],
-        "agent_outputs": agent_outputs,
         "next_agent": "summary"
     }
 
@@ -286,26 +304,14 @@ def supervisor_approval_node(state: AgentState) -> AgentState:
 def summary_node(state: AgentState) -> AgentState:
     """Node that creates the final human-readable response."""
     
-    agent_outputs = state.get("agent_outputs", {})
-    clarified_query = state.get("clarified_query", "")
-    clarified_location = state.get("clarified_location", "")
-    detail_level = state.get("detail_level", "general")
-    needs_revision = state.get("needs_revision", False)
-    revision_feedback = state.get("revision_feedback", "")
-    
-    # Get summary generation prompt from prompts module
-    context = summary_generation_prompt(
-        clarified_query=clarified_query,
-        clarified_location=clarified_location,
-        detail_level=detail_level,
-        agent_outputs=agent_outputs,
-        needs_revision=needs_revision,
-        revision_feedback=revision_feedback
+    # Use shared summary generation logic
+    final_summary = generate_summary(
+        state=state,
+        llm=llm,
+        summary_prompt_func=summary_generation_prompt,
+        include_user_question=False,
+        use_dual_messages=False
     )
-    
-    # Generate summary using LLM
-    response = llm.invoke([SystemMessage(content=context)])
-    final_summary = response.content
     
     return {
         "messages": [AIMessage(content=f"\n\nSUMMARY DRAFT:\n\n{final_summary}")],

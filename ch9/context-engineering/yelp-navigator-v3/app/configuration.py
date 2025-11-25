@@ -11,9 +11,6 @@ load_dotenv(find_dotenv(), override=False)
 class Configuration:
     """Enhanced configuration for V4 with guardrails support."""
     
-    # Models
-    model_name: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    
     # Behavior
     allow_clarification: bool = True
     max_search_steps: int = 5  # Prevent infinite search loops
