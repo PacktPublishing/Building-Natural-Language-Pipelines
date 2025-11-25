@@ -13,9 +13,8 @@ def handle_general_chat(
     """
     Handle non-business chat queries with a welcoming message that redirects to business searches.
     
-    Instead of answering general questions, this function returns a friendly welcome message
-    that explains what the chatbot is designed for (business search and analysis) and prompts
-    the user to ask about businesses.
+    It always returns a friendly welcome message that explains what the chatbot
+    is designed for (business search and analysis) and prompts the user to ask about businesses.
     
     Args:
         state: Current agent state containing messages history
