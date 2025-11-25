@@ -5,7 +5,7 @@ This module provides a shared function for executing tools with optional error t
 and metadata collection, eliminating code duplication across versions.
 """
 
-from typing import Dict, Any, Callable, Optional
+from typing import Dict, Any, Callable
 from datetime import datetime
 import time
 
