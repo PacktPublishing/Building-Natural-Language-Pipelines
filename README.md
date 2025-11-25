@@ -204,5 +204,6 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **State Management Patterns**: Understanding how architectural decisions impact token usage and cost (16-50% reduction)
 - **Monolithic vs Supervisor Patterns**: Comparing design approaches with automated token measurement tools
 - **Production Features**: Error handling with retry policies, conversation persistence with checkpointing, and graceful degradation
+- **Guardrails**: Input validation with prompt injection detection and PII sanitization for secure agent interactions
 - **Checkpointing Systems**: Thread-based session management with both in-memory (development) and SQLite (production) persistence options
 
