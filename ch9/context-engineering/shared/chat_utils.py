@@ -4,7 +4,6 @@ This module provides unified chat handling logic that can be used across
 different versions (V2, V3) with optional error tracking features.
 """
 from typing import Dict, Any, Optional, Tuple
-from shared.tools import chat_completion
 
 
 def handle_general_chat(
