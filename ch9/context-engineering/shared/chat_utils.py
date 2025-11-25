@@ -12,10 +12,11 @@ def handle_general_chat(
     track_errors: bool = False
 ) -> Tuple[str, Optional[Dict[str, Any]]]:
     """
-    Handle non-business chat queries using the chat completion endpoint.
+    Handle non-business chat queries with a welcoming message that redirects to business searches.
     
-    This function provides unified chat handling logic that converts LangChain
-    messages to OpenAI format and processes the response appropriately.
+    Instead of answering general questions, this function returns a friendly welcome message
+    that explains what the chatbot is designed for (business search and analysis) and prompts
+    the user to ask about businesses.
     
     Args:
         state: Current agent state containing messages history
@@ -24,9 +25,8 @@ def handle_general_chat(
     
     Returns:
         Tuple of (reply_content, error_tracking_dict)
-        - reply_content: The assistant's response message
-        - error_tracking_dict: Dict with error_count if track_errors=True and error occurred,
-                              None otherwise
+        - reply_content: The welcome/redirect message
+        - error_tracking_dict: None (no errors expected in simple message return)
     
     Example:
         # V2 usage (no error tracking)
@@ -34,62 +34,22 @@ def handle_general_chat(
         
         # V3 usage (with error tracking)
         reply, error_info = handle_general_chat(state, track_errors=True)
-        if error_info:
-            # Handle error tracking
-            update_dict["total_error_count"] = state.get("total_error_count", 0) + error_info["error_count"]
     """
-    def message_to_dict(msg):
-        """Convert LangChain messages to OpenAI format."""
-        if hasattr(msg, "type") and hasattr(msg, "content"):
-            # Map LangChain message types to OpenAI roles
-            role_mapping = {
-                "human": "user",
-                "ai": "assistant",
-                "system": "system"
-            }
-            role = role_mapping.get(msg.type.lower(), "user")
-            return {"role": role, "content": msg.content}
-        if isinstance(msg, dict):
-            return msg
-        return {"role": "user", "content": str(msg)}
+    # Return a friendly welcome message that redirects to business search functionality
+    reply = """👋 Hello! I'm your Yelp Business Navigator assistant.
+
+I'm specifically designed to help you:
+• Search for businesses, restaurants, and services
+• Analyze customer reviews and sentiment
+• Provide detailed recommendations based on ratings and reviews
+• Find contact information and websites for businesses
+
+To get started, you can ask me things like:
+- "Find Italian restaurants in Boston"
+- "Show me coffee shops in Seattle with great reviews"
+- "What are the best-rated Mexican restaurants in Austin?"
+- "Find pizza places near San Francisco"
+
+What type of business would you like to search for today?"""
     
-    try:
-        # Convert conversation history to OpenAI message format
-        messages = [message_to_dict(m) for m in state["messages"]]
-        
-        # Call the chat completion endpoint
-        response = chat_completion.invoke({"messages": messages})
-        
-        # Extract the assistant's reply from the OpenAI-compatible response
-        reply = None
-        if response.get("success"):
-            response_data = response.get("response", {})
-            choices = response_data.get("choices", [])
-            
-            if choices and len(choices) > 0:
-                # Extract content from the first choice's message
-                message = choices[0].get("message", {})
-                reply = message.get("content", "")
-                
-            if not reply:
-                # Fallback if structure is unexpected
-                reply = "I received a response but couldn't extract the content. Please try again."
-        else:
-            # Handle error case
-            error_msg = response.get('error', 'Unknown error')
-            reply = f"I encountered an error: {error_msg}. Please try again."
-        
-        # If we got a reply (even if it's an error message), return it without error tracking
-        # since we successfully handled the request
-        if reply and response.get("success"):
-            return reply, None
-        
-        # If we couldn't get a successful response, track error if requested
-        error_dict = {"error_count": 1} if track_errors else None
-        return reply if reply else "I encountered an error. Please try again.", error_dict
-        
-    except Exception as e:
-        # Unexpected exception
-        reply = f"I encountered an unexpected error: {str(e)}. Please try again."
-        error_dict = {"error_count": 1} if track_errors else None
-        return reply, error_dict
+    return reply, None
