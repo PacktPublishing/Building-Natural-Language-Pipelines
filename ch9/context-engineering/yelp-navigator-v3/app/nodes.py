@@ -12,7 +12,7 @@ from .configuration import Configuration
 from .prompts import clarification_system_prompt_v3, supervisor_prompt_v3, summary_generation_prompt
 from .guardrails import apply_guardrails
 from shared.config import get_llm
-from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
+from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment
 from shared.tool_execution import execute_tool_with_tracking
 from shared.summary_utils import generate_summary
 from shared.chat_utils import handle_general_chat
