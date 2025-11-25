@@ -15,7 +15,7 @@ from shared.config import get_llm
 from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
 
 # Initialize the language model
-llm = get_llm()
+llm = get_llm("deepseek-r1:latest")
 
 
 def input_guardrails_node(state: AgentState, config: RunnableConfig) -> Command[Literal["clarify"]]:
