@@ -18,7 +18,7 @@ Author: Laura Funderburk
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
-  - [Chapter 9: Future trends and beyond](#chapter-9-advanced-ai-agent-architectures)
+  - [Chapter 9: Future trends and beyond](#chapter-9-future-trends-and-beyond)
 
 
 ## What You'll Learn to Build
