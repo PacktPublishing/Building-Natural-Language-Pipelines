@@ -82,12 +82,14 @@ This folder demonstrates context engineering through three implementations of th
 |---|---|---|---|
 | **Yelp Navigator V1** | Monolithic design where each agent node handles tool execution, decision-making, and routing. All tool results accumulate in a single `agent_outputs` dictionary that every node receives. | Baseline | None |
 | **Yelp Navigator V2** | Supervisor pattern that separates concerns: a supervisor node makes routing decisions with minimal context (boolean flags), while dedicated tool nodes execute operations. | 16-50% fewer tokens | None |
-| **Yelp Navigator V3** | Production-ready version using V2's supervisor pattern plus retry policies for transient failures and checkpointing for conversation persistence. | Same as V2 | ✅ Retry policies, checkpointing, error tracking |
+| **Yelp Navigator V3** | Production-ready version using V2's supervisor pattern plus retry policies for transient failures and checkpointing for conversation persistence. Includes input guardrails for security. | Same as V2 | ✅ Retry policies, checkpointing, error tracking, input guardrails (prompt injection detection + PII sanitization) |
 
 **Key Files:**
 - `docs/ARCHITECTURE_COMPARISON.md` - Detailed comparison of all three architectures
+- `docs/guardrails.md` - Complete guide to input guardrails (prompt injection + PII sanitization)
 - `measure_token_usage.py` - Automated token measurement script with test scenarios
 - `test_examples.sh` - Run all test cases to compare architectures
+- `test_guardrails.py` - Test suite for input guardrails
 - `shared/` - Common prompts and tools used by all versions
 - `yelp-navigator-v3/persistence.md` - Guide to using checkpointing with in-memory and SQLite persistence
 
@@ -98,6 +100,7 @@ This folder demonstrates context engineering through three implementations of th
 - Conversation persistence with checkpointing
 - Measuring and optimizing token usage in production agents
 - Context reduction techniques (boolean flags vs full data)
+- Implementing input guardrails for security (prompt injection detection + PII sanitization)
 
 See the [context-engineering README](./context-engineering/README.md) for setup and usage instructions.
 
@@ -110,5 +113,6 @@ See the [context-engineering README](./context-engineering/README.md) for setup 
 3. **Supervisor Pattern** - Separating decision-making from tool execution
 4. **Token Optimization** - Measuring and reducing token consumption
 5. **Architectural Trade-offs** - When to use different patterns
-6. **Production Features** - Retry policies, checkpointing, and error handling
-7. **Cost Analysis** - Token measurement and scaling implications
+6. **Production Features** - Retry policies, checkpointing, error handling, and input guardrails
+7. **Security & Safety** - Prompt injection detection and PII sanitization
+8. **Cost Analysis** - Token measurement and scaling implications
