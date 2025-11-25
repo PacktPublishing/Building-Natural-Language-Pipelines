@@ -45,6 +45,15 @@ This chapter explores context engineering patterns for building efficient AI age
 	- **OpenAI**: Sign up at [OpenAI's platform](https://platform.openai.com)
 	- **LangSmith** (optional): Sign up at [LangSmith](https://smith.langchain.com/)
 
+	The agent explored in [context-engineering](./context-engineering/) supports GPT-OSS, DeepSeek-R1 and Qwen3. You can download Ollama and install the models to run the agent with local models instead of OpenAI. 
+
+	[Install Ollama](https://ollama.com/download)
+
+		```sh   
+		# Pull the model - add the model you want to test
+		ollama pull gpt-oss:20b
+		```
+
 3. **Install dependencies:**
 	```sh
 	uv sync
