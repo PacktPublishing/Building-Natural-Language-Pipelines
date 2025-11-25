@@ -7,7 +7,7 @@ from .config import get_llm
 
 BASE_URL = "http://localhost:1416"
 
-MODEL =  "phi4-mini:3.8b" #"gpt-4o-mini" #change to your preferred model 
+MODEL =  "gpt-oss:20b" #"gpt-4o-mini" #change to your preferred model 
 
 # OpenAI Chat Completion Tool
 @tool

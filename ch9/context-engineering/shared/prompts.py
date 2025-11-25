@@ -294,7 +294,7 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
                - Name, rating, and review count
                - Price range and contact info
                - 1-2 sentences describing what makes it unique/special (atmosphere, specialties, customer favorites)
-            5. {'ALWAYS include phone numbers and website URLs for each business' if detail_level in ['detailed', 'reviews'] else 'Include basic contact information'}
+            5. ALWAYS include phone numbers and website URLs for each business (if available in the data)
             6. Order businesses by a balance of rating AND review count:
                - Prioritize businesses with 4.5+ stars AND substantial review counts (100+ reviews)
                - A 4.5-star business with 2000 reviews is more reliable than a 4.8-star with 10 reviews
