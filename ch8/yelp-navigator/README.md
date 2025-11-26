@@ -20,12 +20,12 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 
 ### Case studies - can we achieve the same amount of fluid decision making with Haystack?
 
-**🔄 Case study 1: Using the `Agent` class ** 
+**🔄 Case study 1: Using the `Agent` class** 
 1. Deploy pipelines (same command as above)
 2. Open: [haystack_agent_with_tools.ipynb](./haystack_agent_with_tools.ipynb)
 
 
-**🔄 Case study 2: Using built-in primitives ** 
+**🔄 Case study 2: Using built-in primitives** 
 1. Deploy pipelines (same command as above)
 2. Open: [haystack_looping_supervisor.ipynb](./haystack_looping_supervisor.ipynb)
 
