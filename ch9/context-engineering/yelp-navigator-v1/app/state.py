@@ -1,12 +1,13 @@
-from typing import Annotated, TypedDict, List, Dict, Any
+from typing import Dict, Any
 from langchain_core.messages import BaseMessage
-from operator import add
+from langgraph.graph import MessagesState
 
 
-class AgentState(TypedDict):
-    """State for the multi-agent system."""
-    # Conversation tracking
-    messages: Annotated[List[BaseMessage], add]
+class AgentState(MessagesState):
+    """State shared across all nodes in the workflow.
+    
+    Inherits 'messages: Annotated[List[BaseMessage], add_messages]' from MessagesState.
+    """
     
     # User intent
     user_query: str
@@ -14,19 +15,20 @@ class AgentState(TypedDict):
     clarified_location: str  # Where (e.g., "Austin, Texas")
     
     # Detail level: "general", "detailed", or "reviews"
+    # This determines the pipeline path after search
     detail_level: str
     
     # Workflow control
     clarification_complete: bool
-    next_agent: str  # Which agent to call next
+    next_agent: str  # Only used by supervisor approval for revision routing
     
-    # Results from agents
-    agent_outputs: Dict[str, Any]
+    # Node results
+    agent_outputs: Dict[str, Any]  # Results from each node (search, details, sentiment)
     
     # Final output
-    final_summary: str
+    final_summary: str  # User-friendly response
     
-    # Supervisor approval tracking
-    approval_attempts: int  # Track how many times supervisor has reviewed
-    needs_revision: bool  # Flag indicating if summary needs improvement
-    revision_feedback: str  # What needs to be improved
+    # Quality control (for Supervisor Approval Node)
+    approval_attempts: int      # How many times supervisor has reviewed (max 2)
+    needs_revision: bool        # True if summary needs improvement
+    revision_feedback: str      # What to improve

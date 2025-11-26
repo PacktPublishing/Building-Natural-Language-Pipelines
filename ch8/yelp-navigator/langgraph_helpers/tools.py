@@ -19,6 +19,7 @@ def set_base_url(url: str):
 def search_businesses(query: str) -> Dict[str, Any]:
     """Search for businesses using natural language query."""
     try:
+        print(f"[search_businesses] Calling API with query: {query}")
         response = requests.post(f"{BASE_URL}/business_search/run", json={"query": query}, timeout=30)
         if response.status_code == 200:
             data = response.json()
