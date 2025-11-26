@@ -175,8 +175,6 @@ cd context-engineering/
 
 **Note:** V2 and V3 have identical token efficiency since V3 uses the same supervisor pattern. V3 adds production features (retry policies, checkpointing) without impacting token usage.
 
-See [`docs/ARCHITECTURE_COMPARISON.md`](./context-engineering/docs/ARCHITECTURE_COMPARISON.md) for detailed architecture analysis.
-
 ---
 
 ## Test V3 Persistence (Checkpointing)
@@ -206,12 +204,6 @@ Agent: [Returns search results]
 User: "Which one has the best reviews?"
 Agent: [Remembers "coffee shops" and "Seattle", analyzes reviews]
 ```
-
-See [`./context-engineering//docs/persistence.md`](./context-engineering/docs/persistence.md) for detailed guide on:
-- Thread-based session management
-- In-memory vs SQLite checkpointing
-- Production considerations
-- Troubleshooting tips
 
 ---
 
