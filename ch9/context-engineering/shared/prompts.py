@@ -299,7 +299,7 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
                - Name (bold or highlighted)
                - Rating (X stars) and review count (Y reviews)
                - Price range (if available)
-               - **Phone number** (REQUIRED - format as: Phone: XXX-XXX-XXXX)
+               - **Phone number** (REQUIRED - format as: Phone: [number], e.g., +1-XXX-XXX-XXXX or similar)
                - **Website** (REQUIRED - format as: Website: URL)
                - 1-2 sentences describing what makes it unique/special (atmosphere, specialties, customer favorites)
             5. CRITICAL: Phone numbers and website URLs are MANDATORY for each business. Look for these in the search results data under 'phone' and 'website' fields.
