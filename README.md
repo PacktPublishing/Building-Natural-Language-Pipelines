@@ -195,12 +195,11 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Haystack Agent Mini Project**: Hands-on exercise combining NER and classification pipelines with agent orchestration and Hayhooks deployment
 
 #### **[Yelp Navigator - Multi-Agent System - Advanced](./ch8/yelp-navigator/)**
-- **Pipeline Chaining**: Connecting multiple specialized Haystack pipelines into complex workflows
+- **Modular Pipeline Architecture**: Creating 3 specialized pipelines (business search, details, sentiment) with NER and text classification
 - **Hayhooks Deployment**: Deploying pipelines as REST API endpoints for agent consumption
+- **Pipeline Chaining**: Connecting multiple specialized Haystack pipelines into complex workflows
 - **LangGraph Multi-Agent Orchestration**: Building intelligent supervisor systems that coordinate specialized agents
-- **Modular Pipeline Architecture**: Creating 4 specialized pipelines (business search, details, sentiment, reporting)
-- **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
-- **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
+- **Case study**: Can we achieve the same fluid dynamic reasoning with Haystack primitives
 
 ### **[Optional - Advanced LangGraph Supervisor Patterns for Production](./epilogue-advanced/)**
 
