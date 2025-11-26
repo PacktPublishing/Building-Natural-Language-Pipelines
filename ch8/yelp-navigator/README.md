@@ -16,7 +16,7 @@ sh start_hayhooks.sh
 ```
 Leave running in the terminal - you can watch the pipelines being used by the agents.
 
-**Please note - you have up to 50 queries with the [Yelp Business Review](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews) - you can upgrade to a larger plan or unsubscribe and subscribe again. 
+**Please note - you have up to 50 queries with the [Yelp Business Review](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews) - you can upgrade to a larger plan or unsubscribe and subscribe again.**
 
 ### Choose Your Path
 
