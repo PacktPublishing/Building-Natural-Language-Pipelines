@@ -13,10 +13,15 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 2. Open: [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb)
 3. Learn to chain Haystack pipeline API calls
 
-**🤖 Option 2: Multi-Agent System** (Advanced)
+**🔄 Option 2: Multi-Agent System with Haystack** (Advanced)
+1. Deploy pipelines (same command as above)
+2. Open: [haystack_multiagent_supervisor.ipynb](./haystack_multiagent_supervisor.ipynb)
+3. Run the same multi-agent pattern implemented natively in Haystack
+
+**🤖 Option 3: Multi-Agent System with LangGraph** (Advanced)
 1. Deploy pipelines (same command as above)
 2. Open: [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb)
-3. Run the full multi-agent orchestration system
+3. Run the full multi-agent orchestration system with LangGraph
 
 ---
 
@@ -35,7 +40,8 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 
 ### 📓 Notebooks
 - [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb) - Chain Haystack pipelines via REST API calls
-- [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb) - Multi-agent system with supervisor pattern
+- [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb) - Multi-agent system with supervisor pattern (LangGraph)
+- [haystack_multiagent_supervisor.ipynb](./haystack_multiagent_supervisor.ipynb) - Multi-agent system with supervisor pattern (Haystack native)
 
 ### 📚 Documentation
 - [Pipeline Setup Guide](./docs/yelp-navigator-hayhooks-guide.md) - Deploy pipelines with Hayhooks
@@ -53,8 +59,7 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 
 Modular components for the multi-agent system:
 
-- **`agents.py`** - Clarification and supervisor agents
-- **`nodes.py`** - Search, details, sentiment, and summary agent nodes
+- **`nodes.py`** - Search, details, sentiment, summary and approval nodes
 - **`tools.py`** - Wrappers for calling Hayhooks pipeline endpoints
 
 ---
