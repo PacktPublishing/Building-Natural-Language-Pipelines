@@ -1,6 +1,6 @@
 """Shared state models for Yelp Navigator V2 and V3."""
 from typing import Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ============================================================================
 # BASE DECISION MODELS (shared by V2 and V3)
@@ -24,11 +24,19 @@ class BaseClarificationDecision(BaseModel):
     )
     search_location: Optional[str] = Field(
         default=None,
-        description="Target location (e.g., 'Boston, MA')."
+        description="Target location (e.g., 'Boston, MA'). MUST NOT be None - use 'United States' if unspecified."
     )
     detail_level: Literal["general", "detailed", "reviews"] = Field(
         default="general"
     )
+    
+    @model_validator(mode='after')
+    def validate_location(self):
+        """Ensure location is never None for business searches."""
+        # Only validate if this is a business search (not general chat)
+        if self.intent == 'business_search' and not self.search_location:
+            self.search_location = "United States"  # Default fallback
+        return self
 
 
 class BaseSupervisorDecision(BaseModel):

@@ -13,14 +13,24 @@ def route_after_clarification(state: AgentState) -> str:
     return "clarification"
 
 
-def route_from_agents(state: AgentState) -> str:
-    """Route to the next agent based on state."""
-    next_agent = state.get("next_agent", "end")
+def route_after_search(state: AgentState) -> str:
+    """Route based on detail level: general->summary, detailed/reviews->details."""
+    detail_level = state.get("detail_level", "general")
     
-    if next_agent == "end":
-        return END
+    if detail_level == "general":
+        return "summary"
+    else:  # detailed or reviews - both need details first
+        return "details"
+
+
+def route_after_details(state: AgentState) -> str:
+    """Route from details node based on detail level."""
+    detail_level = state.get("detail_level", "general")
     
-    return next_agent
+    if detail_level == "reviews":
+        return "sentiment"
+    else:
+        return "summary"
 
 
 def route_from_supervisor_approval(state: AgentState) -> str:
@@ -34,7 +44,16 @@ def route_from_supervisor_approval(state: AgentState) -> str:
     return next_agent
 
 def build_workflow_graph() -> StateGraph[AgentState]:
-    """Builds the multi-agent workflow graph for Yelp Navigator with supervisor approval."""
+    """Builds a true pipeline architecture for Yelp Navigator.
+    
+    Pipeline Flow:
+    1. Clarify → Search (sequential, clarify may loop)
+    2. Search → Sentiment OR Details OR Summary (based on detail_level)
+    3. Details → Sentiment OR Summary (based on detail_level)
+    4. Sentiment → Summary (always)
+    5. Summary → Approval (always)
+    6. Approval → END or back to any step for revision
+    """
     # Build the graph
     workflow = StateGraph(AgentState)
 
@@ -46,43 +65,38 @@ def build_workflow_graph() -> StateGraph[AgentState]:
     workflow.add_node("summary", summary_node)
     workflow.add_node("supervisor_approval", supervisor_approval_node)
 
-    # Add edges
+    # Add edges - TRUE PIPELINE ARCHITECTURE
+    # START -> Clarification (may loop back to itself)
     workflow.add_edge(START, "clarification")
 
-    # Conditional routing from clarification - goes directly to search when complete
+    # Clarification loops or moves to search
     workflow.add_conditional_edges(
         "clarification",
         route_after_clarification,
         {"clarification": "clarification", "search": "search"}
     )
 
-    # Conditional routing from specialized agents
+    # Search -> Details OR Summary (based on detail level)
     workflow.add_conditional_edges(
         "search",
-        route_from_agents,
-        {"details": "details", "sentiment": "sentiment", "summary": "summary", END: END}
+        route_after_search,
+        {"details": "details", "summary": "summary"}
     )
 
+    # Details -> Sentiment OR Summary (based on detail level)
     workflow.add_conditional_edges(
         "details",
-        route_from_agents,
-        {"sentiment": "sentiment", "summary": "summary", END: END}
+        route_after_details,
+        {"sentiment": "sentiment", "summary": "summary"}
     )
 
-    workflow.add_conditional_edges(
-        "sentiment",
-        route_from_agents,
-        {"summary": "summary", END: END}
-    )
+    # Sentiment -> Summary (always)
+    workflow.add_edge("sentiment", "summary")
 
-    # Summary now routes to supervisor approval instead of END
-    workflow.add_conditional_edges(
-        "summary",
-        route_from_agents,
-        {"supervisor_approval": "supervisor_approval", END: END}
-    )
+    # Summary -> Supervisor Approval (always)
+    workflow.add_edge("summary", "supervisor_approval")
 
-    # Supervisor approval can route back to agents or to END
+    # Supervisor Approval can route back to agents or to END
     workflow.add_conditional_edges(
         "supervisor_approval",
         route_from_supervisor_approval,

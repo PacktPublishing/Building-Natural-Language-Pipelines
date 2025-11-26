@@ -12,10 +12,17 @@ from .configuration import Configuration
 from .prompts import clarification_system_prompt_v3, supervisor_prompt_v3, summary_generation_prompt
 from .guardrails import apply_guardrails
 from shared.config import get_llm
-from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
+from shared.tools import search_businesses, get_business_details, analyze_reviews_sentiment
+from shared.tool_execution import execute_tool_with_tracking
+from shared.summary_utils import generate_summary
+from shared.chat_utils import handle_general_chat
+from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 
-# Initialize the language model
-llm = get_llm("deepseek-r1:latest")
+# Initialize the language model (it defaults to gpt-4o-mini, pass model name)
+# For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
+# Ensure you have the appropriate model running if using Ollama
+# For more details, see shared/config.py
+llm = get_llm("qwen3:latest")
 
 
 def input_guardrails_node(state: AgentState, config: RunnableConfig) -> Command[Literal["clarify"]]:
@@ -152,208 +159,73 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
     """
     V3 Supervisor with enhanced error awareness.
     Decides which tool to call based on state and error context.
+    Uses shared supervisor logic from supervisor_utils with V3 features enabled.
     """
-    supervisor_model = llm.with_structured_output(SupervisorDecision)
-    
-    # Check what data we have
-    agent_outputs = state.get('agent_outputs', {})
-    has_search_data = agent_outputs.get("search", {}).get("success", False)
-    has_details_data = agent_outputs.get("details", {}).get("success", False)
-    has_sentiment_data = agent_outputs.get("sentiment", {}).get("success", False)
-    
-    # Check for consecutive failures to prevent infinite loops
-    consecutive_failures = state.get('consecutive_failures', {})
-    MAX_CONSECUTIVE_FAILURES = 3
-    
-    # If any tool has failed too many times consecutively, finalize with what we have
-    for tool_name, failure_count in consecutive_failures.items():
-        if failure_count >= MAX_CONSECUTIVE_FAILURES:
-            error_message = (
-                f"I apologize, but I'm experiencing persistent issues with the {tool_name} service. "
-                f"Let me provide you with the best information I can based on what's available."
-            )
-            return Command(
-                goto="summary",
-                update={
-                    "messages": [AIMessage(content=error_message)],
-                }
-            )
-    
-    # Check for rate limiting or service unavailability
-    rate_limited = False
-    service_unavailable = False
-    for tool_name, output in agent_outputs.items():
-        if not output.get("success", True):
-            if output.get("rate_limited", False):
-                rate_limited = True
-            error_msg = output.get("error", "").lower()
-            if "unavailable" in error_msg or "connection" in error_msg or "timeout" in error_msg:
-                service_unavailable = True
-    
-    # If rate limited or service unavailable, exit immediately
-    if rate_limited or service_unavailable:
-        error_type = "rate limit" if rate_limited else "service unavailability"
-        error_message = (
-            f"I apologize, but I'm unable to complete your request due to {error_type}. "
-            f"The Yelp API service is currently unavailable or has rate limits in effect. "
-            f"Please try again later."
-        )
-        return Command(
-            goto=END,
-            update={
-                "messages": [AIMessage(content=error_message)],
-                "final_summary": error_message
-            }
-        )
-    
-    # Build error context for supervisor awareness
-    error_context = ""
-    error_count = state.get("total_error_count", 0)
-    if error_count > 0:
-        error_details = []
-        for tool_name, output in agent_outputs.items():
-            if not output.get("success", True):
-                error_msg = output.get("error", "Unknown error")
-                retry_count = state.get("retry_counts", {}).get(tool_name, 0)
-                error_details.append(f"- {tool_name}: {error_msg} (retries: {retry_count})")
-        
-        if error_details:
-            error_context = "Errors encountered:\n" + "\n".join(error_details)
-    
-    # Construct context for supervisor
-    context = supervisor_prompt_v3(
-        search_query=state['search_query'],
-        search_location=state['search_location'],
-        detail_level=state['detail_level'],
-        has_search_data=has_search_data,
-        has_details_data=has_details_data,
-        has_sentiment_data=has_sentiment_data,
-        error_context=error_context
+    # Use shared supervisor decision logic (V3 mode: with error checking)
+    next_action, error_message, update_dict = make_supervisor_decision(
+        state=state,
+        llm=llm,
+        supervisor_decision_model=SupervisorDecision,
+        prompt_generator=supervisor_prompt_v3,
+        check_failures=True,       # V3: Enable error tracking and circuit breaker
+        use_dual_messages=True,    # V3: Use both system and human messages (Gemini compatible)
+        max_consecutive_failures=3
     )
     
-    try:
-        # Gemini requires at least one non-system message, so include a HumanMessage
-        # For other models, the system message alone works fine
-        messages_for_invoke = [
-            SystemMessage(content=context),
-            HumanMessage(content="Please analyze the current state and decide the next action.")
-        ]
-        decision: SupervisorDecision = supervisor_model.invoke(messages_for_invoke)
+    # Handle error cases
+    if error_message:
+        # Build update dict with error info
+        update = {"messages": [AIMessage(content=error_message)]}
         
-        # Debug: log the decision
-        print(f"Supervisor decision: {decision.next_action} (should_finalize_early: {decision.should_finalize_early})")
+        # Check if this is a critical error that should exit immediately (not just go to summary)
+        if "rate limit" in error_message.lower() or "unavailable" in error_message.lower():
+            update["final_summary"] = error_message
+            if update_dict:
+                update.update(update_dict)
+            return Command(goto=END, update=update)
         
-        # If supervisor decides to finalize early due to errors, respect that
-        if decision.should_finalize_early or decision.next_action == "finalize":
-            return Command(goto="summary")
-        
-        # Map decision to next node
-        mapping = {
-            "search": "search_tool",
-            "get_details": "details_tool",
-            "analyze_sentiment": "sentiment_tool",
-            "finalize": "summary"
-        }
-        
-        return Command(goto=mapping[decision.next_action])
-        
-    except Exception as e:
-        # If supervisor fails, try to finalize with what we have
-        print(f"Supervisor error: {str(e)}")
-        error_msg = f"I encountered an issue coordinating the search: {str(e)}"
-        return Command(
-            goto="summary",
-            update={
-                "messages": [AIMessage(content=error_msg)],
-                "total_error_count": state.get("total_error_count", 0) + 1
-            }
-        )
+        # Otherwise, go to summary with what we have
+        if update_dict:
+            update.update(update_dict)
+        return Command(goto="summary", update=update)
+    
+    # Map decision to next node
+    mapping = get_node_mapping()
+    return Command(goto=mapping[next_action])
 
 
 def general_chat_node(state: AgentState):
     """Handles non-Yelp/business queries using the chat completion endpoint."""
-    def message_to_dict(msg):
-        """Convert LangChain messages to OpenAI format."""
-        if hasattr(msg, "type") and hasattr(msg, "content"):
-            role_mapping = {"human": "user", "ai": "assistant", "system": "system"}
-            role = role_mapping.get(msg.type.lower(), "user")
-            return {"role": role, "content": msg.content}
-        if isinstance(msg, dict):
-            return msg
-        return {"role": "user", "content": str(msg)}
-
-    try:
-        # Convert conversation history to OpenAI message format
-        messages = [message_to_dict(m) for m in state["messages"]]
-        
-        # Call the chat completion endpoint
-        response = chat_completion.invoke({"messages": messages})
-        
-        # Extract the assistant's reply
-        reply = None
-        if response.get("success"):
-            response_data = response.get("response", {})
-            choices = response_data.get("choices", [])
-            
-            if choices and len(choices) > 0:
-                message = choices[0].get("message", {})
-                reply = message.get("content", "")
-                
-            if not reply:
-                reply = f"I received a response but couldn't extract the content. Please try again."
-        else:
-            error_msg = response.get('error', 'Unknown error')
-            reply = f"I encountered an error: {error_msg}. Please try again."
-
-        return Command(
-            goto=END,
-            update={"messages": [AIMessage(content=reply)]}
-        )
-        
-    except Exception as e:
-        return Command(
-            goto=END,
-            update={
-                "messages": [AIMessage(content=f"I encountered an unexpected error: {str(e)}. Please try again.")],
-                "total_error_count": state.get("total_error_count", 0) + 1
-            }
-        )
+    # Use shared chat handling logic with error tracking enabled
+    reply, error_info = handle_general_chat(state, track_errors=True)
+    
+    # Build update dict
+    update_dict = {"messages": [AIMessage(content=reply)]}
+    
+    # Track errors if any occurred
+    if error_info and "error_count" in error_info:
+        update_dict["total_error_count"] = state.get("total_error_count", 0) + error_info["error_count"]
+    
+    return Command(goto=END, update=update_dict)
 
 
 def summary_node(state: AgentState):
     """Generates the final report using the detailed v1-style prompt."""
     try:
-        # Extract the latest user question for context-aware summarization
-        user_question = ""
-        messages = state.get("messages", [])
-        for msg in reversed(messages):
-            if hasattr(msg, 'type') and msg.type == "human":
-                user_question = msg.content
-                break
-        
-        # Use the detailed prompt from shared/prompts.py
-        prompt = summary_generation_prompt(
-            clarified_query=state['search_query'],
-            clarified_location=state['search_location'],
-            detail_level=state['detail_level'],
-            agent_outputs=state.get('agent_outputs', {}),
-            needs_revision=False,
-            revision_feedback="",
-            user_question=user_question
+        # Use shared summary generation logic with V3 features enabled
+        final_summary = generate_summary(
+            state=state,
+            llm=llm,
+            summary_prompt_func=summary_generation_prompt,
+            include_user_question=True,   # V3 feature: extract user question
+            use_dual_messages=True         # V3 feature: use both system and human messages
         )
-        
-        # Gemini requires at least one non-system message
-        messages_for_summary = [
-            SystemMessage(content=prompt),
-            HumanMessage(content="Please generate the final summary based on the information provided.")
-        ]
-        response = llm.invoke(messages_for_summary)
         
         return Command(
             goto=END,
             update={
-                "messages": [response],
-                "final_summary": response.content,
+                "messages": [AIMessage(content=final_summary)],
+                "final_summary": final_summary,
                 "last_node_executed": "summary"
             }
         )
@@ -376,97 +248,20 @@ def search_tool_node(state: AgentState):
     V3 Search tool node with enhanced error handling and metadata tracking.
     Note: Retry policy is configured at graph compilation level.
     """
-    start_time = time.time()
     query = f"{state['search_query']} in {state['search_location']}"
     print(f"Search tool executing with query: '{query}'")
     
-    try:
-        result = search_businesses.invoke({"query": query})
-        execution_time = time.time() - start_time
-        
-        # Enhance result with metadata
-        if result.get("success"):
-            result['metadata'] = {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat(),
-                'query_used': query,
-                'retry_count': state.get("retry_counts", {}).get("search", 0)
-            }
-            
-            # Store the full output for downstream pipelines
-            full_output = result.get('full_output', {})
-            existing_outputs = state.get('agent_outputs', {})
-            existing_outputs['search'] = result
-            
-            # Reset consecutive failures on success
-            consecutive_failures = state.get('consecutive_failures', {})
-            consecutive_failures['search'] = 0
-            
-            return Command(
-                goto="supervisor",
-                update={
-                    "pipeline_data": full_output,
-                    "agent_outputs": existing_outputs,
-                    "consecutive_failures": consecutive_failures,
-                    "last_node_executed": "search_tool"
-                }
-            )
-        else:
-            # Tool returned an error
-            result['metadata'] = {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat()
-            }
-            existing_outputs = state.get('agent_outputs', {})
-            existing_outputs['search'] = result
-            
-            # Increment consecutive failures
-            consecutive_failures = state.get('consecutive_failures', {})
-            consecutive_failures['search'] = consecutive_failures.get('search', 0) + 1
-            
-            return Command(
-                goto="supervisor",
-                update={
-                    "agent_outputs": existing_outputs,
-                    "total_error_count": state.get("total_error_count", 0) + 1,
-                    "consecutive_failures": consecutive_failures,
-                    "last_node_executed": "search_tool"
-                }
-            )
-            
-    except Exception as e:
-        # Unexpected error during tool execution
-        execution_time = time.time() - start_time
-        print(f"Search tool error: {type(e).__name__}: {str(e)}")
-        error_result = {
-            "success": False,
-            "error": str(e),
-            "error_type": type(e).__name__,
-            "metadata": {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat()
-            }
-        }
-        
-        existing_outputs = state.get('agent_outputs', {})
-        existing_outputs['search'] = error_result
-        retry_counts = state.get("retry_counts", {})
-        retry_counts["search"] = retry_counts.get("search", 0) + 1
-        
-        # Increment consecutive failures
-        consecutive_failures = state.get('consecutive_failures', {})
-        consecutive_failures['search'] = consecutive_failures.get('search', 0) + 1
-        
-        return Command(
-            goto="supervisor",
-            update={
-                "agent_outputs": existing_outputs,
-                "total_error_count": state.get("total_error_count", 0) + 1,
-                "retry_counts": retry_counts,
-                "consecutive_failures": consecutive_failures,
-                "last_node_executed": "search_tool"
-            }
-        )
+    # Use shared tool execution logic with V3 features enabled
+    update = execute_tool_with_tracking(
+        tool_func=search_businesses,
+        tool_name="search",
+        tool_args={"query": query},
+        state=state,
+        track_errors=True,
+        add_metadata=True
+    )
+    
+    return Command(goto="supervisor", update=update)
 
 
 def details_tool_node(state: AgentState):
@@ -474,78 +269,19 @@ def details_tool_node(state: AgentState):
     V3 Details tool node with enhanced error handling.
     Note: Retry policy is configured at graph compilation level.
     """
-    start_time = time.time()
     pipeline1_output = state.get('pipeline_data', {})
     
-    try:
-        result = get_business_details.invoke({"pipeline1_output": pipeline1_output})
-        execution_time = time.time() - start_time
-        
-        # Enhance result with metadata
-        if result.get("success"):
-            result['metadata'] = {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat(),
-                'retry_count': state.get("retry_counts", {}).get("details", 0)
-            }
-        else:
-            result['metadata'] = {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat()
-            }
-        
-        existing_outputs = state.get('agent_outputs', {})
-        existing_outputs['details'] = result
-        
-        # Track consecutive failures
-        consecutive_failures = state.get('consecutive_failures', {})
-        if result.get("success"):
-            consecutive_failures['details'] = 0
-        else:
-            consecutive_failures['details'] = consecutive_failures.get('details', 0) + 1
-        
-        update_dict = {
-            "agent_outputs": existing_outputs,
-            "consecutive_failures": consecutive_failures,
-            "last_node_executed": "details_tool"
-        }
-        
-        if not result.get("success"):
-            update_dict["total_error_count"] = state.get("total_error_count", 0) + 1
-        
-        return Command(goto="supervisor", update=update_dict)
-        
-    except Exception as e:
-        execution_time = time.time() - start_time
-        error_result = {
-            "success": False,
-            "error": str(e),
-            "error_type": type(e).__name__,
-            "metadata": {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat()
-            }
-        }
-        
-        existing_outputs = state.get('agent_outputs', {})
-        existing_outputs['details'] = error_result
-        retry_counts = state.get("retry_counts", {})
-        retry_counts["details"] = retry_counts.get("details", 0) + 1
-        
-        # Increment consecutive failures
-        consecutive_failures = state.get('consecutive_failures', {})
-        consecutive_failures['details'] = consecutive_failures.get('details', 0) + 1
-        
-        return Command(
-            goto="supervisor",
-            update={
-                "agent_outputs": existing_outputs,
-                "total_error_count": state.get("total_error_count", 0) + 1,
-                "retry_counts": retry_counts,
-                "consecutive_failures": consecutive_failures,
-                "last_node_executed": "details_tool"
-            }
-        )
+    # Use shared tool execution logic with V3 features enabled
+    update = execute_tool_with_tracking(
+        tool_func=get_business_details,
+        tool_name="details",
+        tool_args={"pipeline1_output": pipeline1_output},
+        state=state,
+        track_errors=True,
+        add_metadata=True
+    )
+    
+    return Command(goto="supervisor", update=update)
 
 
 def sentiment_tool_node(state: AgentState):
@@ -553,75 +289,16 @@ def sentiment_tool_node(state: AgentState):
     V3 Sentiment tool node with enhanced error handling.
     Note: Retry policy is configured at graph compilation level.
     """
-    start_time = time.time()
     pipeline1_output = state.get('pipeline_data', {})
     
-    try:
-        result = analyze_reviews_sentiment.invoke({"pipeline1_output": pipeline1_output})
-        execution_time = time.time() - start_time
-        
-        # Enhance result with metadata
-        if result.get("success"):
-            result['metadata'] = {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat(),
-                'retry_count': state.get("retry_counts", {}).get("sentiment", 0)
-            }
-        else:
-            result['metadata'] = {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat()
-            }
-        
-        existing_outputs = state.get('agent_outputs', {})
-        existing_outputs['sentiment'] = result
-        
-        # Track consecutive failures
-        consecutive_failures = state.get('consecutive_failures', {})
-        if result.get("success"):
-            consecutive_failures['sentiment'] = 0
-        else:
-            consecutive_failures['sentiment'] = consecutive_failures.get('sentiment', 0) + 1
-        
-        update_dict = {
-            "agent_outputs": existing_outputs,
-            "consecutive_failures": consecutive_failures,
-            "last_node_executed": "sentiment_tool"
-        }
-        
-        if not result.get("success"):
-            update_dict["total_error_count"] = state.get("total_error_count", 0) + 1
-        
-        return Command(goto="supervisor", update=update_dict)
-        
-    except Exception as e:
-        execution_time = time.time() - start_time
-        error_result = {
-            "success": False,
-            "error": str(e),
-            "error_type": type(e).__name__,
-            "metadata": {
-                'execution_time_seconds': round(execution_time, 2),
-                'timestamp': datetime.now().isoformat()
-            }
-        }
-        
-        existing_outputs = state.get('agent_outputs', {})
-        existing_outputs['sentiment'] = error_result
-        retry_counts = state.get("retry_counts", {})
-        retry_counts["sentiment"] = retry_counts.get("sentiment", 0) + 1
-        
-        # Increment consecutive failures
-        consecutive_failures = state.get('consecutive_failures', {})
-        consecutive_failures['sentiment'] = consecutive_failures.get('sentiment', 0) + 1
-        
-        return Command(
-            goto="supervisor",
-            update={
-                "agent_outputs": existing_outputs,
-                "total_error_count": state.get("total_error_count", 0) + 1,
-                "retry_counts": retry_counts,
-                "consecutive_failures": consecutive_failures,
-                "last_node_executed": "sentiment_tool"
-            }
-        )
+    # Use shared tool execution logic with V3 features enabled
+    update = execute_tool_with_tracking(
+        tool_func=analyze_reviews_sentiment,
+        tool_name="sentiment",
+        tool_args={"pipeline1_output": pipeline1_output},
+        state=state,
+        track_errors=True,
+        add_metadata=True
+    )
+    
+    return Command(goto="supervisor", update=update)

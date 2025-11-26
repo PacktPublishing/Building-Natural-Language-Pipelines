@@ -2,11 +2,11 @@
 
 from typing import Dict, Any
 from langchain_core.tools import tool
-from typing import Dict, Any
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-def search_agent_node(state: Dict[str, Any], search_businesses: tool) -> Dict[str, Any]:
+
+def search_node(state: Dict[str, Any], search_businesses: tool) -> Dict[str, Any]:
     """Search agent that finds businesses."""
     full_query = f"{state.get('clarified_query', '')} in {state.get('clarified_location', '')}"
     result = search_businesses.invoke({"query": full_query})
@@ -28,7 +28,7 @@ def search_agent_node(state: Dict[str, Any], search_businesses: tool) -> Dict[st
     return {"messages": [AIMessage(content=summary)], "agent_outputs": agent_outputs, "next_agent": next_agent}
 
 
-def details_agent_node(state: Dict[str, Any], get_business_details: tool) -> Dict[str, Any]:
+def details_node(state: Dict[str, Any], get_business_details: tool) -> Dict[str, Any]:
     """Details agent that fetches website information."""
     agent_outputs = state.get("agent_outputs", {})
     search_output = agent_outputs.get("search", {})
@@ -51,7 +51,7 @@ def details_agent_node(state: Dict[str, Any], get_business_details: tool) -> Dic
     return {"messages": [AIMessage(content=summary)], "agent_outputs": agent_outputs, "next_agent": next_agent}
 
 
-def sentiment_agent_node(state: Dict[str, Any], analyze_reviews_sentiment: tool) -> Dict[str, Any]:
+def sentiment_node(state: Dict[str, Any], analyze_reviews_sentiment: tool) -> Dict[str, Any]:
     """Sentiment agent that analyzes reviews."""
     agent_outputs = state.get("agent_outputs", {})
     search_output = agent_outputs.get("search", {})

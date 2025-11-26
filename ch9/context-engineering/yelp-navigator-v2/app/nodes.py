@@ -6,10 +6,19 @@ from langgraph.graph import END
 
 from .state import AgentState, ClarificationDecision, SupervisorDecision
 from .configuration import Configuration
-from .tools import search_businesses, get_business_details, analyze_reviews_sentiment, chat_completion
-from .prompts import clarification_system_prompt, supervisor_prompt, summary_prompt
+from .tools import search_businesses, get_business_details, analyze_reviews_sentiment
+from .prompts import clarification_system_prompt, supervisor_prompt
 from shared.prompts import summary_generation_prompt
 from shared.config import get_llm
+from shared.tool_execution import execute_tool_with_tracking
+from shared.summary_utils import generate_summary
+from shared.chat_utils import handle_general_chat
+from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
+
+# Initialize the language model (it defaults to gpt-4o-mini, pass model name)
+# For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
+# Ensure you have pulled the appropriate model running if using Ollama
+# For more details, see shared/config.py
 
 # Initialize the language model
 llm = get_llm()
@@ -89,80 +98,34 @@ def supervisor_node(state: AgentState) -> Command[Literal["search_tool", "detail
     """
     Acts as the brain of the search process.
     Decides which tool to call based on what data we have vs. what we need.
+    Uses shared supervisor logic from supervisor_utils.
     """
-    
-    supervisor_model = llm.with_structured_output(SupervisorDecision)
-    
-    # Check what data we *actually* have based on the structured state
-    agent_outputs = state.get('agent_outputs', {})
-    has_search_data = agent_outputs.get("search", {}).get("success", False)
-    has_details_data = agent_outputs.get("details", {}).get("success", False)
-    has_sentiment_data = agent_outputs.get("sentiment", {}).get("success", False)
-
-    # Construct context for supervisor using the *new* prompt
-    context = supervisor_prompt(
-        search_query=state['search_query'],
-        search_location=state['search_location'],
-        detail_level=state['detail_level'],
-        has_search_data=has_search_data,
-        has_details_data=has_details_data,
-        has_sentiment_data=has_sentiment_data
+    # Use shared supervisor decision logic (V2 mode: no error checking)
+    next_action, error_message, update_dict = make_supervisor_decision(
+        state=state,
+        llm=llm,
+        supervisor_decision_model=SupervisorDecision,
+        prompt_generator=supervisor_prompt,
+        check_failures=False,      # V2: No error tracking
+        use_dual_messages=False    # V2: Single system message
     )
     
-    decision: SupervisorDecision = supervisor_model.invoke([SystemMessage(content=context)])
+    # Handle error cases
+    if error_message:
+        update = {"messages": [AIMessage(content=error_message)]}
+        if update_dict:
+            update.update(update_dict)
+        return Command(goto="summary", update=update)
     
     # Map decision to next node
-    mapping = {
-        "search": "search_tool",
-        "get_details": "details_tool",
-        "analyze_sentiment": "sentiment_tool",
-        "finalize": "summary"
-    }
-    
-    return Command(goto=mapping[decision.next_action])
+    mapping = get_node_mapping()
+    return Command(goto=mapping[next_action])
 
 def general_chat_node(state: AgentState):
     """Handles non-Yelp/business queries using the chat completion endpoint."""
-    def message_to_dict(msg):
-        """Convert LangChain messages to OpenAI format."""
-        if hasattr(msg, "type") and hasattr(msg, "content"):
-            # Map LangChain message types to OpenAI roles
-            role_mapping = {
-                "human": "user",
-                "ai": "assistant",
-                "system": "system"
-            }
-            role = role_mapping.get(msg.type.lower(), "user")
-            return {"role": role, "content": msg.content}
-        if isinstance(msg, dict):
-            return msg
-        return {"role": "user", "content": str(msg)}
-
-    # Convert conversation history to OpenAI message format
-    messages = [message_to_dict(m) for m in state["messages"]]
+    # Use shared chat handling logic
+    reply, _ = handle_general_chat(state, track_errors=False)
     
-    # Call the chat completion endpoint
-    response = chat_completion.invoke({"messages": messages})
-    
-    # Extract the assistant's reply from the OpenAI-compatible response
-    reply = None
-    if response.get("success"):
-        response_data = response.get("response", {})
-        choices = response_data.get("choices", [])
-        
-        if choices and len(choices) > 0:
-            # Extract content from the first choice's message
-            message = choices[0].get("message", {})
-            reply = message.get("content", "")
-            
-        if not reply:
-            # Fallback if structure is unexpected
-            reply = f"WARNING: Received response but couldn't extract content: {response_data}"
-    else:
-        # Handle error case
-        error_msg = response.get('error', 'Unknown error')
-        reply = f"ERROR: Chat completion failed: {error_msg}"
-
     return Command(
         goto=END,
         update={"messages": [AIMessage(content=reply)]}
@@ -170,73 +133,64 @@ def general_chat_node(state: AgentState):
 
 def summary_node(state: AgentState):
     """Generates the final report using the detailed v1-style prompt."""
-    # Use the detailed v1 prompt from shared/prompts.py
-    # This prompt is excellent as it's already designed to use 'agent_outputs'
-    prompt = summary_generation_prompt(
-        clarified_query=state['search_query'],
-        clarified_location=state['search_location'],
-        detail_level=state['detail_level'],
-        agent_outputs=state.get('agent_outputs', {}), 
-        needs_revision=False,
-        revision_feedback=""
+    # Use shared summary generation logic
+    final_summary = generate_summary(
+        state=state,
+        llm=llm,
+        summary_prompt_func=summary_generation_prompt,
+        include_user_question=False,
+        use_dual_messages=False
     )
     
-    response = llm.invoke([SystemMessage(content=prompt)])
     return Command(
         goto=END,
-        update={"messages": [response], "final_summary": response.content}
+        update={"messages": [AIMessage(content=final_summary)], "final_summary": final_summary}
     )
 
 
 def search_tool_node(state: AgentState):
     query = f"{state['search_query']} in {state['search_location']}"
-    result = search_businesses.invoke({"query": query})
-    # Store the full output for downstream pipelines
-    full_output = result.get('full_output', {}) if result.get('success') else {}
     
-    # Store in state as agent_outputs dict (v1 compatible format)
-    existing_outputs = state.get('agent_outputs', {})
-    existing_outputs['search'] = result
-    
-    return Command(
-        goto="supervisor", # Return to supervisor to decide next step
-        update={
-            "pipeline_data": full_output,
-            "agent_outputs": existing_outputs
-        }
+    # Use shared tool execution logic
+    update = execute_tool_with_tracking(
+        tool_func=search_businesses,
+        tool_name="search",
+        tool_args={"query": query},
+        state=state,
+        track_errors=False,
+        add_metadata=False
     )
+    
+    return Command(goto="supervisor", update=update)
 
 def details_tool_node(state: AgentState):
     # Use the actual pipeline data from search results
     pipeline1_output = state.get('pipeline_data', {})
-    result = get_business_details.invoke({"pipeline1_output": pipeline1_output})
     
-    # Store in state as agent_outputs dict (v1 compatible format)
-    existing_outputs = state.get('agent_outputs', {})
-    existing_outputs['details'] = result
-    
-    
-    return Command(
-        goto="supervisor",
-        update={
-            "agent_outputs": existing_outputs
-        }
+    # Use shared tool execution logic
+    update = execute_tool_with_tracking(
+        tool_func=get_business_details,
+        tool_name="details",
+        tool_args={"pipeline1_output": pipeline1_output},
+        state=state,
+        track_errors=False,
+        add_metadata=False
     )
+    
+    return Command(goto="supervisor", update=update)
 
 def sentiment_tool_node(state: AgentState):
     # Use the actual pipeline data from search results
     pipeline1_output = state.get('pipeline_data', {})
-    result = analyze_reviews_sentiment.invoke({"pipeline1_output": pipeline1_output})
     
-    # Store in state as agent_outputs dict (v1 compatible format)
-    existing_outputs = state.get('agent_outputs', {})
-    existing_outputs['sentiment'] = result
-    
-    
-    return Command(
-        goto="supervisor",
-        update={
-            # "raw_results": raw_results, # <--- REMOVED
-            "agent_outputs": existing_outputs
-        }
+    # Use shared tool execution logic
+    update = execute_tool_with_tracking(
+        tool_func=analyze_reviews_sentiment,
+        tool_name="sentiment",
+        tool_args={"pipeline1_output": pipeline1_output},
+        state=state,
+        track_errors=False,
+        add_metadata=False
     )
+    
+    return Command(goto="supervisor", update=update)

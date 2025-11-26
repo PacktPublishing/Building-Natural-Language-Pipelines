@@ -1,7 +1,7 @@
 """V3 State definitions with enhanced error tracking and metadata."""
 from typing import Dict, Any, Optional, Literal
 from langgraph.graph import MessagesState
-from pydantic import Field, field_validator
+from pydantic import Field, model_validator
 from shared.state import BaseClarificationDecision, BaseSupervisorDecision
 
 # --- Enhanced Structured Outputs (Decision Models) ---
@@ -33,12 +33,12 @@ class ClarificationDecision(BaseClarificationDecision):
         description="general=basic info, detailed=include websites, reviews=include sentiment"
     )
     
-    @field_validator('clarification_question')
-    def validate_clarification(cls, v, info):
+    @model_validator(mode='after')
+    def validate_clarification(self):
         """Ensure clarification_question is provided when needed."""
-        if info.data.get('need_clarification') and not v:
+        if self.need_clarification and not self.clarification_question:
             raise ValueError("clarification_question required when need_clarification=True")
-        return v
+        return self
 
 class SupervisorDecision(BaseSupervisorDecision):
     """V3 enhanced supervisor decision with reasoning and confidence."""
