@@ -53,18 +53,40 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 - `business_details/` - Website content fetching and processing
 - `business_sentiment/` - Review fetching and sentiment analysis
 
-### 🤖 LangGraph Helpers 
+### 🤖 Agent Helpers 
 
+**LangGraph Implementation:**
 - [`langgraph_helpers/`](./langgraph_helpers/)
+  - **`nodes.py`** - Search, details, sentiment, summary and approval nodes
+  - **`tools.py`** - Wrappers for calling Hayhooks pipeline endpoints
 
-Modular components for the multi-agent system:
-
-- **`nodes.py`** - Search, details, sentiment, summary and approval nodes
-- **`tools.py`** - Wrappers for calling Hayhooks pipeline endpoints
+**Haystack Implementation:**
+- [`haystack_helpers/`](./haystack_helpers/)
+  - **`components.py`** - Custom Haystack components (ClarificationComponent, SearchComponent, etc.)
+  - **`state.py`** - Shared state management for multi-agent coordination
 
 ---
 
 ## System Architecture
 
-**Pipeline Chain**: Search → Details → Sentiment → Report  
-**Multi-Agent Flow**: Clarification → Search → Conditional(Details + Sentiment) → Summary → Supervisor Approval → User
+### Pipeline Chain (Simple)
+Search → Details → Sentiment → Report
+
+### Multi-Agent Flow (Advanced)
+Clarification → Search → Conditional(Details + Sentiment) → Summary → Supervisor Approval → User
+
+### Implementation Approaches
+
+**LangGraph Implementation** ([langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb))
+- Uses `StateGraph` for workflow orchestration
+- Inherits from `MessagesState` for automatic message handling
+- Conditional routing with `add_conditional_edges`
+- Graph-based visualization with Mermaid
+
+**Haystack Implementation** ([haystack_multiagent_supervisor.ipynb](./haystack_multiagent_supervisor.ipynb))
+- Uses Haystack `Pipeline` with custom components
+- State management via `StateMultiplexer` components
+- Feedback loops via component output connections
+- Native Haystack pipeline visualization
+
+Both implementations follow the same multi-agent supervisor pattern with identical functionality, demonstrating how the same architectural pattern can be expressed in different frameworks.
