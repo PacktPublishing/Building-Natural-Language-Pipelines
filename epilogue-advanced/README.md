@@ -1,17 +1,116 @@
-# Context Engineering - Yelp Navigator
+# Advanced LangGraph Supervisor Patterns for Production
 
-Three versions of the Yelp Navigator agent demonstrating how state management affects token efficiency and production readiness.
+This folder contains an extended, production-grade implementation of the agentic supervisor described in Chapter 8.
+
+It demonstrates how to incorporate:
+
+- guardrails
+- retries
+- tool-level error handling
+- configurable agent decisions
+- persistent state
+- structured outputs
+- advanced control flow
+
+It serves as an optional deep dive for readers who want to see how the concepts explored in Chapters 8–9 can be expanded into a robust, real-world system. 
+
+
+<summary><h2>Setup Instructions</h2></summary>
+<details>
+
+- **Install [uv](https://docs.astral.sh/uv/getting-started/installation/):**
+```sh
+pip install uv
+```
+
+- **Set up API keys:**
+
+Copy the example environment file and populate it with your API keys:
+```sh
+cp .env.example .env
+```
+
+Then edit `.env` and add your API keys:
+```sh
+# Required
+# ============================================================================
+# API KEYS - Configure at least one LLM provider
+# ============================================================================
+
+# LLM Providers (choose one or more):
+
+# OpenAI (GPT models) - Default provider
+OPENAI_API_KEY=your_openai_key_here
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_CHAT_MODEL=gpt-4o-mini
+
+# ============================================================================
+# OPTIONAL: LangSmith Tracing & Monitoring
+# ============================================================================
+
+LANGSMITH_API_KEY=your_langsmith_key_here
+LANGCHAIN_TRACING_V2=false 
+LANGCHAIN_PROJECT=yelp-navigator-LangGraph-Local
+
+# ============================================================================
+```
+	
+To obtain the API keys:
+- **OpenAI**: Sign up at [OpenAI's platform](https://platform.openai.com)
+- **LangSmith** (optional): Sign up at [LangSmith](https://smith.langchain.com/)
+
+
+The agent explored in this folder supports GPT-OSS, DeepSeek-R1 and Qwen3. You can download Ollama and install the models to run the agent with local models instead of OpenAI. 
+
+[Install Ollama](https://ollama.com/download)
+
+```sh   
+# Pull the model - add the model you want to test
+ollama pull gpt-oss:20b
+```
+
+-  **Install dependencies:**
+```sh
+uv sync
+```
+
+**Activate the virtual environment (see setup):**
+```sh
+source .venv/bin/activate
+```
+</details>
+
+<summary><h2>To run the agent with LangSmith</h2></summary>
+
+- **Start Haystack pipelines**:
+
+This assumes you've already completed chapter 8 and are comfortable deploying the pipelines as microservices.
+
+```sh
+cd ../../ch8/
+source .venv/bin/acitvate 
+uv run sh build_all_pipelines.sh
+sh start_hayhooks.sh  # Leave running
+```
+
+- **Start LangGraph Studio**:
+```sh
+cd ch9/context-engineering/
+uv run langgraph dev
+```
+   
+Opens at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`
+
 
 ## What's Inside
 
-![](./docs/v1-v2-v3.png)
+![](./context-engineering/docs/v1-v2-v3.png)
 
 - **`yelp-navigator-v1/`** - Monolithic architecture (baseline for comparison)
 - **`yelp-navigator-v2/`** - Supervisor pattern with efficient token usage
 - **`yelp-navigator-v3/`** - Production-ready with retry policies + checkpointing
 - **`shared/`** - Common tools, prompts, and configuration
 - **`docs/`** - Architecture comparison, persistence, guardrails, and measurement guides
-- **`test_guardrails.py`** - Test suite for input guardrails
 
 ### Version Comparison
 
@@ -25,62 +124,30 @@ Three versions of the Yelp Navigator agent demonstrating how state management af
 | Guardrails | None | None | Prompt injection detection + PII sanitization |
 | Production Ready | ❌ Learning | ⚠️ Prototype | ✅ Production |
 
-
-
-**Choose:**
-- **V1** for learning monolithic agent patterns
-- **V2** for understanding supervisor patterns and token optimization
-- **V3** for production deployments requiring reliability and persistence
-
-## Setup
-
-1. **Complete main setup**: Follow [ch9 README setup](../README.md#setup-instructions) and configure `.env`. 
-
-2. **Configure LLM Provider**: All three versions (V1, V2, V3) support:
+**Configure LLM Provider**: All three versions (V1, V2, V3) support:
    - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
    - **Ollama** (local): Requires local installation:
    
-   **Note**: Other LLMs can be configured in [`shared/config.py`](./shared/config.py), but they must support thinking, tool calling (function calling) to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
+**Note**: Other LLMs can be configured in [`shared/config.py`](./shared/config.py), but they must support thinking, tool calling (function calling) to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
 
-   To initialize a different model, you can select the model for each of the versions under the `nodes.py` files.
-   For example, for [yelp-navigator-v3/app/nodes.py](./yelp-navigator-v3/app/nodes.py) you can specify the model name (either supported by Ollama or OpenAI):
+To initialize a different model, you can select the model for each of the versions under the `nodes.py` files.
+For example, for [yelp-navigator-v3/app/nodes.py](./yelp-navigator-v3/app/nodes.py) you can specify the model name (either supported by Ollama or OpenAI):
 
-   ```python
-   # Initialize the language model
-   llm = get_llm("gpt-oss:20b")
-   ```
+```python
+# Initialize the language model
+llm = get_llm("gpt-oss:20b")
+```
 
-   **PLEASE NOTE LOCAL MODELS MAY BE SLOWER THAN OPENAI - BE PATIENT WITH YOUR LOCAL AGENT**
+**PLEASE NOTE LOCAL MODELS MAY BE SLOWER THAN OPENAI - BE PATIENT WITH YOUR LOCAL AGENT**
 
-   Tested agentic system on V1, V2, V3
+Tested agentic system on V1, V2, V3
 
-   |Model | Size | Context Window| Tool | Reasoning | Information |
-   | - | - | - | - | -| - | 
-   | gpt-oss:20b | 14GB | 128K | Yes | Yes| https://ollama.com/library/gpt-oss
-   | deepseek-r1:latest | 5.2GB | 128K | Yes | Yes| https://ollama.com/library/deepseek-r1 
-   | qwen3:latest| 5.2GB | 40K | Yes | Yes |  https://ollama.com/library/qwen3
+|Model | Size | Context Window| Tool | Reasoning | Information |
+| - | - | - | - | -| - | 
+| gpt-oss:20b | 14GB | 128K | Yes | Yes| https://ollama.com/library/gpt-oss
+| deepseek-r1:latest | 5.2GB | 128K | Yes | Yes| https://ollama.com/library/deepseek-r1 
+| qwen3:latest| 5.2GB | 40K | Yes | Yes |  https://ollama.com/library/qwen3
    
-
-3. **Start Haystack pipelines**:
-   ```sh
-   cd ../../ch8/yelp-navigator
-   uv run sh build_all_pipelines.sh
-   sh start_hayhooks.sh  # Leave running
-   ```
-
-4. **Start LangGraph Studio**:
-   ```sh
-   cd ch9/context-engineering/
-   uv run langgraph dev
-   ```
-   Opens at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`
-
----
-
-
-
----
-
 ## Measure Token Efficiency
 
 **Quick test:**
@@ -160,9 +227,9 @@ Guardrails are configurable via `Configuration` in [`yelp-navigator-v3/app/confi
 
 ```python
 class Configuration:
-    enable_guardrails: bool = True      # Prompt injection detection
-    sanitize_pii: bool = True           # PII sanitization
-    allow_clarification: bool = True    # Allow clarification questions
+	enable_guardrails: bool = True      # Prompt injection detection
+	sanitize_pii: bool = True           # PII sanitization
+	allow_clarification: bool = True    # Allow clarification questions
 ```
 
 **How it works:**
@@ -188,8 +255,3 @@ Run the guardrails test suite:
 cd yelp-navigator-v3
 uv run python test_guardrails.py
 ```
-
-**Documentation:**
-- 📖 [Comprehensive Guardrails Guide](./docs/guardrails.md) - Full documentation with examples and best practices
-- 🔧 [`guardrails.py`](./yelp-navigator-v3/app/guardrails.py) - Implementation details
-- 🧪 [`test_guardrails.py`](./test_guardrails.py) - Test suite
