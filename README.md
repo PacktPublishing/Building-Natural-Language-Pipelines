@@ -11,6 +11,7 @@ Author: Laura Funderburk
 - [What You'll Learn to Build](#what-youll-learn-to-build)
 - [Setting Up](#setting-up)
 - [Chapter Breakdown](#chapter-breakdown)
+  - Chapter 1: Introduction to natural language processing pipelines (no required code exercises)
   - [Chapter 2: Diving Deep into Large Language Models](#chapter-2-diving-deep-into-large-language-models)
   - [Chapter 3: Introduction to Haystack](#chapter-3-introduction-to-haystack)
   - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
@@ -18,7 +19,8 @@ Author: Laura Funderburk
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
-  - [Chapter 9: Future trends and beyond](#chapter-9-future-trends-and-beyond)
+  - Chapter 9: Future trends and beyond (no required code exercises)
+  - [Optional: Advanced multi-agent architecture for production]
 
 
 ## What You'll Learn to Build
