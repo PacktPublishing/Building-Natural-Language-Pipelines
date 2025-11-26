@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "dependencies": [
+    "./yelp-navigator-v1",
+    "./yelp-navigator-v2",
+    "./yelp-navigator-v3"
+  ],
+  "env": ".env",
+  "python_version": "3.13",
+  "graphs": {
+    "yelp-navigator-v1": "yelp-navigator-v1.app.graph:graph",
+    "yelp-navigator-v2": "yelp-navigator-v2.app.graph:graph",
+    "yelp-navigator-v3": "yelp-navigator-v3.app.graph:graph"
+  },
+  "assistants": {
+    "yelp-navigator-v1": {
+      "graph_id": "yelp-navigator-v1",
+      "name": "Yelp Navigator v1",
+      "description": "Original multi-agent system to help users find and evaluate Yelp businesses."
+    },
+    "yelp-navigator-v2": {
+      "graph_id": "yelp-navigator-v2",
+      "name": "Yelp Navigator v2",
+      "description": "Enhanced multi-agent system with improved context handling to help users find and evaluate Yelp businesses."
+    },
+    "yelp-navigator-v3": {
+      "graph_id": "yelp-navigator-v3",
+      "name": "Yelp Navigator v3",
+      "description": "Advanced multi-agent system with conversation persistence, error handling, and retry policies."
+    }
+  }
+}
