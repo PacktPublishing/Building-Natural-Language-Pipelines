@@ -20,7 +20,7 @@ from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 
 # Initialize the language model (it defaults to gpt-4o-mini, pass model name)
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
-# Ensure you have pulled the appropriate model running if using Ollama
+# Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
 llm = get_llm("qwen3:latest")
 
