@@ -129,10 +129,10 @@ Opens at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`
    - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
    - **Ollama** (local): Requires local installation:
    
-**Note**: Other LLMs can be configured in [`shared/config.py`](./shared/config.py), but they must support thinking, tool calling (function calling) to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
+**Note**: Other LLMs can be configured in [`shared/config.py`](./context-engineering/shared/config.py), but they must support thinking, tool calling (function calling) to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
 
 To initialize a different model, you can select the model for each of the versions under the `nodes.py` files.
-For example, for [yelp-navigator-v3/app/nodes.py](./yelp-navigator-v3/app/nodes.py) you can specify the model name (either supported by Ollama or OpenAI):
+For example, for [yelp-navigator-v3/app/nodes.py](./context-engineering/yelp-navigator-v3/app/nodes.py) you can specify the model name (either supported by Ollama or OpenAI):
 
 ```python
 # Initialize the language model
@@ -153,12 +153,14 @@ Tested agentic system on V1, V2, V3
 
 **Quick test:**
 ```sh
+cd context-engineering/
 uv run python measure_token_usage.py
 ```
 
 **Test complexity scaling:**
 ```sh
 # Simple: ~16% savings (V2/V3 vs V1)
+cd context-engineering/
 uv run python measure_token_usage.py --test-query "Italian restaurants" --test-location "Boston, MA" --detail-level general
 
 # Complex: ~50% savings (V2/V3 vs V1, estimated)
@@ -167,12 +169,13 @@ uv run python measure_token_usage.py --test-query "sushi restaurants" --test-loc
 
 **Run all tests:**
 ```sh
+cd context-engineering/
 ./test_examples.sh
 ```
 
 **Note:** V2 and V3 have identical token efficiency since V3 uses the same supervisor pattern. V3 adds production features (retry policies, checkpointing) without impacting token usage.
 
-See [`docs/ARCHITECTURE_COMPARISON.md`](./docs/ARCHITECTURE_COMPARISON.md) for detailed architecture analysis.
+See [`docs/ARCHITECTURE_COMPARISON.md`](./context-engineering/docs/ARCHITECTURE_COMPARISON.md) for detailed architecture analysis.
 
 ---
 
@@ -182,7 +185,7 @@ V3 supports conversation persistence using checkpointing, allowing the agent to 
 
 **Run persistence examples:**
 ```sh
-cd yelp-navigator-v3/
+cd context-engineering/yelp-navigator-v3/
 
 # In-memory persistence (temporary, for development)
 uv run python inmemory_persistence.py
@@ -204,7 +207,7 @@ User: "Which one has the best reviews?"
 Agent: [Remembers "coffee shops" and "Seattle", analyzes reviews]
 ```
 
-See [`./docs/persistence.md`](./docs/persistence.md) for detailed guide on:
+See [`./context-engineering//docs/persistence.md`](./context-engineering/docs/persistence.md) for detailed guide on:
 - Thread-based session management
 - In-memory vs SQLite checkpointing
 - Production considerations
@@ -224,7 +227,7 @@ V3 includes lightweight input guardrails that run before processing user queries
 
 **Configuration:**
 
-Guardrails are configurable via `Configuration` in [`yelp-navigator-v3/app/configuration.py`](./yelp-navigator-v3/app/configuration.py):
+Guardrails are configurable via `Configuration` in [`yelp-navigator-v3/app/configuration.py`](./context-engineering/yelp-navigator-v3/app/configuration.py):
 
 ```python
 class Configuration:
@@ -253,6 +256,6 @@ Agent: "Please rephrase your question naturally."
 Run the guardrails test suite:
 
 ```bash
-cd yelp-navigator-v3
+cd context-engineering/yelp-navigator-v3
 uv run python test_guardrails.py
 ```
