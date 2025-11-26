@@ -4,9 +4,10 @@ from typing import Optional
 # Haystack Imports
 from haystack import component
 from haystack.components.generators.chat import OpenAIChatGenerator
+from haystack.components.agents.state import State
 from haystack.dataclasses import ChatMessage
 
-from .state import YelpAgentState
+from .state import create_yelp_state, add_message_to_state
 
 # Hayhooks Configuration
 BASE_URL = "http://localhost:1416"
@@ -21,16 +22,18 @@ class StateMultiplexer:
     A helper component that accepts state from multiple possible upstream sources
     and passes the first valid one downstream. Essential for nodes that have 
     multiple incoming edges (e.g., from Clarifier AND from Supervisor loop-back).
+    
+    Uses Haystack's official State class for state management.
     """
     def __init__(self, name: str = "Multiplexer"):
         self.name = name
 
-    @component.output_types(state=YelpAgentState)
+    @component.output_types(state=State)
     def run(self, 
-            source_1: Optional[YelpAgentState] = None, 
-            source_2: Optional[YelpAgentState] = None,
-            source_3: Optional[YelpAgentState] = None,
-            source_4: Optional[YelpAgentState] = None):
+            source_1: Optional[State] = None, 
+            source_2: Optional[State] = None,
+            source_3: Optional[State] = None,
+            source_4: Optional[State] = None):
         
         # Return the first non-None state found
         active_state = source_1 or source_2 or source_3 or source_4
@@ -49,25 +52,25 @@ class StateMultiplexer:
 class ClarificationComponent:
     """
     Clarifies user intent and extracts query, location, and detail level.
+    Uses Haystack's official State class with get/set methods.
     """
     def __init__(self):
         self.generator = OpenAIChatGenerator(model="gpt-4o")
 
-    @component.output_types(state=YelpAgentState)
+    @component.output_types(state=State)
     def run(self, query: str):
         print(f"\n🧠 [Clarification] Processing: {query}")
         
-        # Create initial state
-        state = YelpAgentState()
-        state.user_query = query
+        # Create initial state using Haystack State
+        state = create_yelp_state(user_query=query)
         
         # Force defaults after 2 attempts
-        if state.clarification_attempts >= 2:
-            state.clarified_query = "restaurants"
-            state.clarified_location = "United States"
-            state.detail_level = "general"
-            state.clarification_complete = True
-            state.add_message("Using defaults: restaurants in United States, general detail level.")
+        if state.get("clarification_attempts", 0) >= 2:
+            state.set("clarified_query", "restaurants")
+            state.set("clarified_location", "United States")
+            state.set("detail_level", "general")
+            state.set("clarification_complete", True)
+            add_message_to_state(state, "Using defaults: restaurants in United States, general detail level.")
             return {"state": state}
         
         # Use LLM to extract information
@@ -99,14 +102,18 @@ class ClarificationComponent:
                 elif line.startswith("DETAIL_LEVEL:"): 
                     info['detail_level'] = line.replace("DETAIL_LEVEL:", "").strip()
             
-            state.clarified_query = info.get('query', 'restaurants')
-            state.clarified_location = info.get('location', 'United States')
-            state.detail_level = info.get('detail_level', 'general')
-            state.clarification_complete = True
-            state.add_message(f"Clarified: {state.clarified_query} in {state.clarified_location} ({state.detail_level})")
+            state.set("clarified_query", info.get('query', 'restaurants'))
+            state.set("clarified_location", info.get('location', 'United States'))
+            state.set("detail_level", info.get('detail_level', 'general'))
+            state.set("clarification_complete", True)
+            clarified_query = state.get("clarified_query")
+            clarified_location = state.get("clarified_location")
+            detail_level = state.get("detail_level")
+            add_message_to_state(state, f"Clarified: {clarified_query} in {clarified_location} ({detail_level})")
         else:
-            state.clarification_attempts += 1
-            state.add_message("Clarification incomplete. Please try again.")
+            current_attempts = state.get("clarification_attempts", 0)
+            state.set("clarification_attempts", current_attempts + 1)
+            add_message_to_state(state, "Clarification incomplete. Please try again.")
         
         return {"state": state}
 
@@ -115,16 +122,19 @@ class ClarificationComponent:
 class SearchComponent:
     """
     Search agent that finds businesses using Hayhooks API.
+    Uses Haystack's official State class.
     """
     def __init__(self):
         pass
 
-    @component.output_types(to_details=YelpAgentState, to_summary=YelpAgentState)
-    def run(self, state: YelpAgentState):
-        print(f"\n🔍 [Search] Looking for: {state.clarified_query} in {state.clarified_location}")
+    @component.output_types(to_details=State, to_summary=State)
+    def run(self, state: State):
+        clarified_query = state.get("clarified_query", "")
+        clarified_location = state.get("clarified_location", "")
+        print(f"\n🔍 [Search] Looking for: {clarified_query} in {clarified_location}")
         
         # Call real Hayhooks search tool
-        full_query = f"{state.clarified_query} in {state.clarified_location}"
+        full_query = f"{clarified_query} in {clarified_location}"
         try:
             response = requests.post(
                 f"{BASE_URL}/business_search/run",
@@ -154,22 +164,30 @@ class SearchComponent:
                 summary += "\n".join(f"{i}. {b['name']} - {b['rating']} stars ({b['review_count']} reviews)" 
                                    for i, b in enumerate(search_output['businesses'][:5], 1))
                 
-                state.agent_outputs["search"] = search_output
-                state.add_message(summary)
+                # Update state using set method
+                agent_outputs = state.get("agent_outputs", {})
+                agent_outputs["search"] = search_output
+                state.set("agent_outputs", agent_outputs)
+                add_message_to_state(state, summary)
                 
                 # Route based on detail level
-                if state.detail_level in ["detailed", "reviews"]:
+                detail_level = state.get("detail_level", "general")
+                if detail_level in ["detailed", "reviews"]:
                     return {"to_details": state}
                 else:
                     return {"to_summary": state}
             else:
-                state.agent_outputs["search"] = {"success": False, "error": f"HTTP {response.status_code}"}
-                state.add_message(f"Search failed: HTTP {response.status_code}")
+                agent_outputs = state.get("agent_outputs", {})
+                agent_outputs["search"] = {"success": False, "error": f"HTTP {response.status_code}"}
+                state.set("agent_outputs", agent_outputs)
+                add_message_to_state(state, f"Search failed: HTTP {response.status_code}")
                 return {"to_summary": state}
                 
         except Exception as e:
-            state.agent_outputs["search"] = {"success": False, "error": str(e)}
-            state.add_message(f"Search error: {e}")
+            agent_outputs = state.get("agent_outputs", {})
+            agent_outputs["search"] = {"success": False, "error": str(e)}
+            state.set("agent_outputs", agent_outputs)
+            add_message_to_state(state, f"Search error: {e}")
             return {"to_summary": state}
 
 
@@ -177,18 +195,20 @@ class SearchComponent:
 class DetailsComponent:
     """
     Details agent that fetches website information using Hayhooks API.
+    Uses Haystack's official State class.
     """
     def __init__(self):
         pass
 
-    @component.output_types(to_sentiment=YelpAgentState, to_summary=YelpAgentState)
-    def run(self, state: YelpAgentState):
+    @component.output_types(to_sentiment=State, to_summary=State)
+    def run(self, state: State):
         print(f"\n🌐 [Details] Fetching website info...")
         
-        search_output = state.agent_outputs.get("search", {})
+        agent_outputs = state.get("agent_outputs", {})
+        search_output = agent_outputs.get("search", {})
         
         if not search_output.get("success"):
-            state.add_message("Skipping details - no search results")
+            add_message_to_state(state, "Skipping details - no search results")
             return {"to_summary": state}
         
         try:
@@ -212,22 +232,29 @@ class DetailsComponent:
                     } for doc in documents]
                 }
                 
-                state.agent_outputs["details"] = details_output
-                state.add_message(f"Retrieved details for {details_output['document_count']} businesses")
+                agent_outputs = state.get("agent_outputs", {})
+                agent_outputs["details"] = details_output
+                state.set("agent_outputs", agent_outputs)
+                add_message_to_state(state, f"Retrieved details for {details_output['document_count']} businesses")
                 
                 # Route based on detail level
-                if state.detail_level == "reviews":
+                detail_level = state.get("detail_level", "general")
+                if detail_level == "reviews":
                     return {"to_sentiment": state}
                 else:
                     return {"to_summary": state}
             else:
-                state.agent_outputs["details"] = {"success": False, "error": f"HTTP {response.status_code}"}
-                state.add_message(f"Details fetch failed: HTTP {response.status_code}")
+                agent_outputs = state.get("agent_outputs", {})
+                agent_outputs["details"] = {"success": False, "error": f"HTTP {response.status_code}"}
+                state.set("agent_outputs", agent_outputs)
+                add_message_to_state(state, f"Details fetch failed: HTTP {response.status_code}")
                 return {"to_summary": state}
                 
         except Exception as e:
-            state.agent_outputs["details"] = {"success": False, "error": str(e)}
-            state.add_message(f"Details error: {e}")
+            agent_outputs = state.get("agent_outputs", {})
+            agent_outputs["details"] = {"success": False, "error": str(e)}
+            state.set("agent_outputs", agent_outputs)
+            add_message_to_state(state, f"Details error: {e}")
             return {"to_summary": state}
 
 
@@ -235,18 +262,20 @@ class DetailsComponent:
 class SentimentComponent:
     """
     Sentiment agent that analyzes reviews using Hayhooks API.
+    Uses Haystack's official State class.
     """
     def __init__(self):
         pass
 
-    @component.output_types(to_summary=YelpAgentState)
-    def run(self, state: YelpAgentState):
+    @component.output_types(to_summary=State)
+    def run(self, state: State):
         print(f"\n💭 [Sentiment] Analyzing reviews...")
         
-        search_output = state.agent_outputs.get("search", {})
+        agent_outputs = state.get("agent_outputs", {})
+        search_output = agent_outputs.get("search", {})
         
         if not search_output.get("success"):
-            state.add_message("Skipping sentiment - no search results")
+            add_message_to_state(state, "Skipping sentiment - no search results")
             return {"to_summary": state}
         
         try:
@@ -271,15 +300,21 @@ class SentimentComponent:
                     } for s in summaries]
                 }
                 
-                state.agent_outputs["sentiment"] = sentiment_output
-                state.add_message(f"Analyzed sentiment for {len(sentiment_output['sentiment_summaries'])} businesses")
+                agent_outputs = state.get("agent_outputs", {})
+                agent_outputs["sentiment"] = sentiment_output
+                state.set("agent_outputs", agent_outputs)
+                add_message_to_state(state, f"Analyzed sentiment for {len(sentiment_output['sentiment_summaries'])} businesses")
             else:
-                state.agent_outputs["sentiment"] = {"success": False, "error": f"HTTP {response.status_code}"}
-                state.add_message(f"Sentiment analysis failed: HTTP {response.status_code}")
+                agent_outputs = state.get("agent_outputs", {})
+                agent_outputs["sentiment"] = {"success": False, "error": f"HTTP {response.status_code}"}
+                state.set("agent_outputs", agent_outputs)
+                add_message_to_state(state, f"Sentiment analysis failed: HTTP {response.status_code}")
                 
         except Exception as e:
-            state.agent_outputs["sentiment"] = {"success": False, "error": str(e)}
-            state.add_message(f"Sentiment error: {e}")
+            agent_outputs = state.get("agent_outputs", {})
+            agent_outputs["sentiment"] = {"success": False, "error": str(e)}
+            state.set("agent_outputs", agent_outputs)
+            add_message_to_state(state, f"Sentiment error: {e}")
         
         return {"to_summary": state}
 
@@ -288,20 +323,26 @@ class SentimentComponent:
 class SummaryComponent:
     """
     Summarizer that creates a friendly response using LLM.
+    Uses Haystack's official State class.
     """
     def __init__(self):
         self.generator = OpenAIChatGenerator(model="gpt-4o")
 
-    @component.output_types(state=YelpAgentState)
-    def run(self, state: YelpAgentState):
+    @component.output_types(state=State)
+    def run(self, state: State):
         print(f"\n📝 [Summary] Generating summary...")
         
-        agent_outputs = state.agent_outputs
+        agent_outputs = state.get("agent_outputs", {})
+        clarified_query = state.get("clarified_query", "")
+        clarified_location = state.get("clarified_location", "")
+        detail_level = state.get("detail_level", "general")
+        needs_revision = state.get("needs_revision", False)
+        revision_feedback = state.get("revision_feedback", "")
         
-        context = f"""Create a friendly summary for: {state.clarified_query} in {state.clarified_location} (detail: {state.detail_level})
+        context = f"""Create a friendly summary for: {clarified_query} in {clarified_location} (detail: {detail_level})
 """
-        if state.needs_revision and state.revision_feedback:
-            context += f"\nADDRESS THIS FEEDBACK: {state.revision_feedback}\n"
+        if needs_revision and revision_feedback:
+            context += f"\nADDRESS THIS FEEDBACK: {revision_feedback}\n"
         
         # Add search results
         if "search" in agent_outputs and agent_outputs["search"].get("success"):
@@ -332,8 +373,8 @@ class SummaryComponent:
         
         messages = [ChatMessage.from_system(context)]
         response = self.generator.run(messages=messages)
-        state.final_summary = response["replies"][0].text
-        state.needs_revision = False
+        state.set("final_summary", response["replies"][0].text)
+        state.set("needs_revision", False)
         
         return {"state": state}
 
@@ -344,32 +385,39 @@ class SupervisorComponent:
     The Loop Closer.
     Decides if the summary is approved or needs revision.
     Routes back to: Search, Details, Sentiment, Summary OR finishes.
+    Uses Haystack's official State class.
     """
     def __init__(self):
         self.generator = OpenAIChatGenerator(model="gpt-4o")
 
     @component.output_types(
-        approved=YelpAgentState, 
-        revise_search=YelpAgentState,
-        revise_details=YelpAgentState,
-        revise_sentiment=YelpAgentState,
-        revise_summary=YelpAgentState
+        approved=State, 
+        revise_search=State,
+        revise_details=State,
+        revise_sentiment=State,
+        revise_summary=State
     )
-    def run(self, state: YelpAgentState):
-        print(f"👮 [Supervisor] Reviewing (Attempt {state.approval_attempts + 1})...")
+    def run(self, state: State):
+        approval_attempts = state.get("approval_attempts", 0)
+        print(f"👮 [Supervisor] Reviewing (Attempt {approval_attempts + 1})...")
         
         # Limit approval attempts
-        if state.approval_attempts >= 2:
+        if approval_attempts >= 2:
             print("⚠️ [Supervisor] Approval limit reached. Accepting current summary.")
-            state.approval_attempts += 1
+            state.set("approval_attempts", approval_attempts + 1)
             return {"approved": state}
         
         # Use LLM to evaluate summary
+        clarified_query = state.get("clarified_query", "")
+        clarified_location = state.get("clarified_location", "")
+        detail_level = state.get("detail_level", "general")
+        final_summary = state.get("final_summary", "")
+        
         evaluation_prompt = f"""Review this summary for completeness and quality.
-                        User request: {state.clarified_query} in {state.clarified_location} (detail: {state.detail_level})
+                        User request: {clarified_query} in {clarified_location} (detail: {detail_level})
 
                         SUMMARY:
-                        {state.final_summary}
+                        {final_summary}
 
                         Respond with either:
                         APPROVED
@@ -384,11 +432,11 @@ class SupervisorComponent:
         evaluation = response["replies"][0].text
         
         # State Update
-        state.approval_attempts += 1
+        state.set("approval_attempts", approval_attempts + 1)
 
         if "APPROVED" in evaluation and "NEEDS_REVISION" not in evaluation:
             print("✅ [Supervisor] Approved!")
-            state.add_message("Summary approved!")
+            add_message_to_state(state, "Summary approved!")
             return {"approved": state}
         else:
             # Parse revision request
@@ -405,9 +453,9 @@ class SupervisorComponent:
             print(f"❌ [Supervisor] Needs revision: {feedback}. Rerunning {rerun_agent}.")
             
             # State Update
-            state.needs_revision = True
-            state.revision_feedback = feedback or "Improve quality"
-            state.add_message(f"Needs revision: {feedback}. Re-running {rerun_agent}...")
+            state.set("needs_revision", True)
+            state.set("revision_feedback", feedback or "Improve quality")
+            add_message_to_state(state, f"Needs revision: {feedback}. Re-running {rerun_agent}...")
             
             # Dynamic Routing based on 'rerun_agent' decision
             if rerun_agent == "search": 

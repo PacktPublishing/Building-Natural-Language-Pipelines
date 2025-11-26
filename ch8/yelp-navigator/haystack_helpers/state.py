@@ -1,43 +1,123 @@
-from typing import List, Dict, Any
-from pydantic import BaseModel, Field
+"""
+Haystack-compatible State implementation for Yelp Navigator multi-agent system.
 
+This module follows Haystack's official State pattern from:
+haystack.components.agents.state.State
+
+Key differences from the custom Pydantic implementation:
+1. Uses Haystack's schema-based State class instead of Pydantic BaseModel
+2. Messages field is automatically added (list[ChatMessage]) 
+3. Handlers control merge behavior (merge_lists, replace_values)
+4. Type validation and serialization built-in
+"""
+
+from typing import Dict, Any
+from haystack.components.agents.state import State
+from haystack.dataclasses import ChatMessage
 
 # ===============================================================================
-# 1. PYDANTIC STATE (The "Shared Memory")
+# 1. STATE SCHEMA DEFINITION (Following Haystack's Pattern)
 # ===============================================================================
 
-class YelpAgentState(BaseModel):
+# Schema defines the structure of our agent's shared memory
+# Each entry maps a parameter name to its type and optional handler
+YELP_AGENT_STATE_SCHEMA = {
+    # Primary Search Context
+    "user_query": {"type": str},
+    "clarified_query": {"type": str},
+    "clarified_location": {"type": str},
+    "detail_level": {"type": str},
+    
+    # Clarification state tracking
+    "clarification_complete": {"type": bool},
+    "clarification_attempts": {"type": int},
+    
+    # Tool Outputs (structured data from API calls)
+    "agent_outputs": {"type": dict},
+    "search_results": {"type": dict},
+    "details_results": {"type": dict},
+    "sentiment_results": {"type": dict},
+    
+    # Final output
+    "final_summary": {"type": str},
+    
+    # Supervisor state
+    "needs_revision": {"type": bool},
+    "revision_feedback": {"type": str},
+    "approval_attempts": {"type": int},
+    
+    # Note: 'messages' field with type list[ChatMessage] is automatically 
+    # added by the State class, using merge_lists handler by default
+}
+
+# ===============================================================================
+# 2. STATE FACTORY FUNCTION
+# ===============================================================================
+
+def create_yelp_state(user_query: str = "", **kwargs) -> State:
     """
-    The shared state object passed between all components.
-    Replicates the 'AgentState' TypedDict from LangGraph but with validation.
+    Factory function to create a Haystack State instance for Yelp Navigator.
+    
+    This uses Haystack's official State class which provides:
+    - Schema validation
+    - Automatic message field (list[ChatMessage])
+    - Default handlers (merge_lists for lists, replace_values for others)
+    - Serialization support (to_dict/from_dict)
+    
+    Args:
+        user_query: Initial user search query
+        **kwargs: Additional initial data to populate the state
+        
+    Returns:
+        State: Initialized Haystack State object
+        
+    Example:
+        >>> state = create_yelp_state("Find pizza in Chicago")
+        >>> state.set("clarified_query", "pizza restaurants")
+        >>> query = state.get("clarified_query")
     """
-    messages: List[str] = Field(default_factory=list)
+    # Prepare initial data with defaults
+    initial_data = {
+        "user_query": user_query,
+        "clarified_query": "",
+        "clarified_location": "",
+        "detail_level": "general",
+        "clarification_complete": False,
+        "clarification_attempts": 0,
+        "agent_outputs": {},
+        "search_results": {},
+        "details_results": {},
+        "sentiment_results": {},
+        "final_summary": "",
+        "needs_revision": False,
+        "revision_feedback": "",
+        "approval_attempts": 0,
+    }
     
-    # User query fields
-    user_query: str = ""
-    clarified_query: str = ""
-    clarified_location: str = ""
-    detail_level: str = "general"  # general, detailed, reviews
+    # Override with any provided kwargs
+    initial_data.update(kwargs)
     
-    # Clarification state
-    clarification_complete: bool = False
-    clarification_attempts: int = 0
+    # Create and return Haystack State instance
+    return State(schema=YELP_AGENT_STATE_SCHEMA, data=initial_data)
+
+# ===============================================================================
+# 3. HELPER UTILITIES (Optional convenience functions)
+# ===============================================================================
+
+def add_message_to_state(state: State, message: str, role: str = "assistant") -> None:
+    """
+    Helper to add a ChatMessage to the state's messages field.
     
-    # Agent outputs storage (matching LangGraph structure)
-    agent_outputs: Dict[str, Any] = Field(default_factory=dict)
+    The State class automatically merges list[ChatMessage] using merge_lists,
+    so new messages are appended to the existing list.
     
-    # Node results storage (deprecated, kept for compatibility)
-    search_results: Dict[str, Any] = Field(default_factory=dict)
-    details_results: Dict[str, Any] = Field(default_factory=dict)
-    sentiment_results: Dict[str, Any] = Field(default_factory=dict)
-    
-    final_summary: str = ""
-    
-    # Supervisor State
-    needs_revision: bool = False
-    revision_feedback: str = ""
-    approval_attempts: int = 0
-    
-    # Helper to append messages easily
-    def add_message(self, msg: str):
-        self.messages.append(msg)
+    Args:
+        state: The State instance to update
+        message: The message text to add
+        role: The role (user, assistant, system, tool)
+    """
+    chat_message = ChatMessage.from_assistant(message) if role == "assistant" else ChatMessage.from_user(message)
+    current_messages = state.get("messages", [])
+    state.set("messages", current_messages + [chat_message])
+
+# ===============================================================================
