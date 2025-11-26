@@ -87,7 +87,7 @@ source .venv/bin/activate
 This assumes you've already completed chapter 8 and are comfortable deploying the pipelines as microservices.
 
 ```sh
-cd ../../ch8/
+cd ../../ch8/yelp-navigator
 source .venv/bin/acitvate 
 uv run sh build_all_pipelines.sh
 sh start_hayhooks.sh  # Leave running
