@@ -115,7 +115,7 @@ Master advanced techniques by building a complete multi-agent orchestration syst
 - Chaining multiple Haystack pipelines
 - Deploying pipelines with Hayhooks (REST APIs)
 - Building multi-agent systems with LangGraph
-- Implementing supervisor patterns
+- Implementing custom agent patterns
 - Handling ambiguous user inputs
 - Generating comprehensive reports from distributed data
 
