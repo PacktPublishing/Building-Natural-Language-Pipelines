@@ -29,6 +29,10 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 
 <strong>Chapter 2: Single agents and multi agents with LangChain and LangGraph</strong>
 
+This chapter contains optional LangGraph demonstrations that introduce state-based agents at a conceptual level.
+These examples are previews intended to build intuition.
+The full, practical use of LangGraph for multi-agent orchestration appears later in Chapter 8 and the epilogue, once the Haystack tool layer has been fully developed.
+
 | | | 
 |-|-|
 | Agent with one tool | Agent calling supervisor | 
