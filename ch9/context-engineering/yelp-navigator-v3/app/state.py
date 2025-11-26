@@ -1,7 +1,7 @@
 """V3 State definitions with enhanced error tracking and metadata."""
 from typing import Dict, Any, Optional, Literal
 from langgraph.graph import MessagesState
-from pydantic import Field, model_validator, ValidationError
+from pydantic import Field, model_validator
 from shared.state import BaseClarificationDecision, BaseSupervisorDecision
 
 # --- Enhanced Structured Outputs (Decision Models) ---
