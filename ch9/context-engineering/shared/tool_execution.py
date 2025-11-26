@@ -7,6 +7,7 @@ and metadata collection, eliminating code duplication across versions.
 
 from typing import Dict, Any, Callable
 from datetime import datetime
+from copy import deepcopy
 import time
 
 
@@ -85,14 +86,14 @@ def execute_tool_with_tracking(
                 result['metadata']['retry_count'] = state.get("retry_counts", {}).get(tool_name, 0)
         
         # Update agent outputs with the result
-        agent_outputs = state.get('agent_outputs', {}).copy()
+        agent_outputs = deepcopy(state.get('agent_outputs', {}))
         agent_outputs[tool_name] = result
         
         update_dict = {"agent_outputs": agent_outputs}
         
         # Track errors if requested
         if track_errors:
-            consecutive_failures = state.get('consecutive_failures', {}).copy()
+            consecutive_failures = deepcopy(state.get('consecutive_failures', {}))
             if result.get("success"):
                 # Reset consecutive failures on success
                 consecutive_failures[tool_name] = 0
@@ -126,17 +127,17 @@ def execute_tool_with_tracking(
             }
         
         # Store error in agent outputs
-        agent_outputs = state.get('agent_outputs', {}).copy()
+        agent_outputs = deepcopy(state.get('agent_outputs', {}))
         agent_outputs[tool_name] = error_result
         
         update_dict = {"agent_outputs": agent_outputs}
         
         # Track error counts and retries if requested
         if track_errors:
-            retry_counts = state.get("retry_counts", {}).copy()
+            retry_counts = deepcopy(state.get("retry_counts", {}))
             retry_counts[tool_name] = retry_counts.get(tool_name, 0) + 1
             
-            consecutive_failures = state.get('consecutive_failures', {}).copy()
+            consecutive_failures = deepcopy(state.get('consecutive_failures', {}))
             consecutive_failures[tool_name] = consecutive_failures.get(tool_name, 0) + 1
             
             update_dict.update({
