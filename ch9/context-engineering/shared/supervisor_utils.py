@@ -97,9 +97,9 @@ def make_supervisor_decision(
     
     # Generate supervisor prompt
     prompt_kwargs = {
-        'search_query': state['search_query'],
-        'search_location': state['search_location'],
-        'detail_level': state['detail_level'],
+        'search_query': state.get('search_query', ''),
+        'search_location': state.get('search_location', ''),
+        'detail_level': state.get('detail_level', ''),
         'has_search_data': has_search_data,
         'has_details_data': has_details_data,
         'has_sentiment_data': has_sentiment_data
