@@ -301,7 +301,9 @@ def summary_node(state: AgentState) -> AgentState:
         use_dual_messages=False
     )
     
-    # Pipeline always continues to supervisor approval (handled by graph routing)
+    # Pipeline always continues to supervisor approval.
+    # Note: This node no longer needs to set 'next_agent' because the workflow graph
+    # (see graph.py) now routes directly from 'summary' to 'supervisor_approval'.
     return {
         "messages": [AIMessage(content=f"\n\nSUMMARY DRAFT:\n\n{final_summary}")],
         "final_summary": final_summary,
