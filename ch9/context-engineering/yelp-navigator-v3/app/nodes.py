@@ -18,7 +18,10 @@ from shared.summary_utils import generate_summary
 from shared.chat_utils import handle_general_chat
 from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 
-# Initialize the language model
+# Initialize the language model (it defaults to gpt-4o-mini, pass model name)
+# For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
+# Ensure you have pulled the appropriate model running if using Ollama
+# For more details, see shared/config.py
 llm = get_llm()
 
 
@@ -110,15 +113,11 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
             
             if is_new_search:
                 # Brand new search - reset everything
-                # Handle None values for location
-                location_str = decision.search_location or "your area"
-                search_msg = f"Understood. Starting a new search for {decision.search_query} in {location_str}..."
-                
                 update_dict = {
                     "search_query": decision.search_query,
                     "search_location": decision.search_location,
                     "detail_level": decision.detail_level,
-                    "messages": [AIMessage(content=search_msg)],
+                    "messages": [AIMessage(content=f"Understood. Starting a new search for {decision.search_query} in {decision.search_location}...")],
                     "pipeline_data": {},
                     "agent_outputs": {},
                     "execution_start_time": datetime.now().isoformat(),

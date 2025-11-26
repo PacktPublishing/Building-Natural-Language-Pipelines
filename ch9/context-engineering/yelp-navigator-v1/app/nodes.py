@@ -8,6 +8,10 @@ from shared.config import get_llm
 from shared.tool_execution import execute_tool_with_tracking
 from shared.summary_utils import generate_summary
 
+# Initialize the language model (it defaults to gpt-4o-mini, pass model name)
+# For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
+# Ensure you have pulled the appropriate model running if using Ollama
+# For more details, see shared/config.py
 # Initialize the language model
 llm = get_llm()
 
