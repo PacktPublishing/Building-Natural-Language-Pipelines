@@ -20,7 +20,7 @@ Author: Laura Funderburk
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
   - Chapter 9: Future trends and beyond (no required code exercises)
-  - [Optional: Advanced multi-agent architecture for production](#optional---advanced)
+  - [Optional: Advanced multi-agent architecture for production](#optional---advanced-langgraph-supervisor-patterns-for-production)
 
 
 ## What You'll Learn to Build
@@ -202,8 +202,8 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
 - **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
 
-### **[Optional - advanced](./epilogue-advanced/)**
-**Advanced LangGraph Supervisor Patterns for Production**
+### **[Optional - Advanced LangGraph Supervisor Patterns for Production](./epilogue-advanced/)**
+
 This folder contains an extended, production-grade implementation of the agentic supervisor described in Chapter 8.
 
 - **Three Agent Architectures**: Progressive implementations from learning (V1 monolithic) to production-ready (V3 with checkpointing)
