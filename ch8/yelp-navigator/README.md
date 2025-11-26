@@ -35,7 +35,7 @@ Leave running in the terminal - you can watch the pipelines being used by the ag
 **🔄 Case study 1: Using the `Agent` class** 
 1. Have pipelines running in the backend
 2. Open: [haystack_agent_with_tools.ipynb](./haystack_agent_with_tools.ipynb)
-3. Run a multi-agent system with the Haystack class and an additional agent.
+3. Run a multi-agent system with the Haystack `Agent` class and an additional agent.
 
 
 **🔄 Case study 2: Using built-in primitives** 
