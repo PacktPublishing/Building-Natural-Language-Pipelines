@@ -95,7 +95,8 @@ sh start_hayhooks.sh  # Leave running
 
 - **Start LangGraph Studio**:
 ```sh
-cd ch9/context-engineering/
+cd context-engineering/
+#assumes you've already run uv sync and activated the environment
 uv run langgraph dev
 ```
    
