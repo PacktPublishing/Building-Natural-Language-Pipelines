@@ -18,10 +18,14 @@ Your goal is to extract three pieces of information:
 Analyze the user's query and extract this information. If the query is too vague and missing critical information,
 you should make reasonable assumptions and proceed rather than asking for clarification.
 
-For example:
+CRITICAL RULES:
+- LOCATION is REQUIRED and MUST NOT be None or empty
 - If they say "restaurants" without a location, use "United States" as default
+- If they mention a state (e.g., "California"), use that state name (e.g., "California")
+- If they mention a city and state (e.g., "bay area"), infer the full location (e.g., "San Francisco Bay Area, California")
 - If they don't specify detail level, use "general"
 - If they mention wanting "reviews" or "what people say", use "reviews" detail level
+- NEVER return None or null for location - always provide a valid location string
 """
 
 # State-aware context template (for follow-up queries in V2 and V3)
@@ -276,9 +280,10 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
             
             Instructions:
             1. Provide a focused answer about the specific business they asked about
-            2. Include: name, rating, review count, price, phone, website (if available)
-            3. Add 2-3 sentences about what makes this business special (atmosphere, specialties, etc.)
-            4. Keep it conversational but brief - 3-5 sentences total
+            2. YOU MUST include: name, rating, review count, price range, **phone number**, and **website URL**
+            3. Format contact info clearly: "Phone: [number]" and "Website: [URL]"
+            4. Add 2-3 sentences about what makes this business special (atmosphere, specialties, etc.)
+            5. Keep it conversational but brief - 3-5 sentences total
             
             DO NOT list multiple businesses. Answer their SPECIFIC question only.
             """
@@ -289,12 +294,15 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
             Write a comprehensive, friendly summary that:
             1. Directly answers the user's question about "{clarified_query} in {clarified_location}"
             2. If the user asked for "best", "top", or "highest rated", start with the top 2-3 options and explain why they stand out
-            3. Then provide a complete list of the top 5-10 business recommendations from the search results
-            4. For EACH business, include:
-               - Name, rating, and review count
-               - Price range and contact info
+            3. Then provide a complete list of the top 5 business recommendations from the search results
+            4. For EACH business, YOU MUST include ALL of the following in this exact order (if available in the data):
+               - Name (bold or highlighted)
+               - Rating (X stars) and review count (Y reviews)
+               - Price range (if available)
+               - **Phone number** (REQUIRED - format as: Phone: XXX-XXX-XXXX)
+               - **Website** (REQUIRED - format as: Website: URL)
                - 1-2 sentences describing what makes it unique/special (atmosphere, specialties, customer favorites)
-            5. ALWAYS include phone numbers and website URLs for each business (if available in the data)
+            5. CRITICAL: Phone numbers and website URLs are MANDATORY for each business. Look for these in the search results data under 'phone' and 'website' fields.
             6. Order businesses by a balance of rating AND review count:
                - Prioritize businesses with 4.5+ stars AND substantial review counts (100+ reviews)
                - A 4.5-star business with 2000 reviews is more reliable than a 4.8-star with 10 reviews
@@ -303,12 +311,20 @@ def summary_generation_prompt(clarified_query: str, clarified_location: str, det
             7. Is easy to read and conversational
             8. Ends with a helpful closing statement
             
-            IMPORTANT: Always show multiple businesses (5-10), even for "best" or "top" questions. Users want options to choose from.
+            IMPORTANT: Always show multiple businesses (5), even for "best" or "top" questions. Users want options to choose from.
             """
     
     context += """
             
+            CRITICAL FORMATTING REQUIREMENTS:
+            - You MUST include phone numbers for every business (found in the 'phone' field of search results)
+            - You MUST include website URLs for every business (found in the 'website' field of search results)
+            - If phone or website shows 'N/A' in the data, state "Contact information not available" but this should be rare
+            - Format phone numbers clearly: "Phone: +1-XXX-XXX-XXXX" or similar
+            - Format websites as clickable links or clear URLs: "Website: https://..."
+            
             Do NOT include any information that is not in the data above.
+            Do NOT skip phone numbers or websites - they are essential contact information for users.
             """
     
     return context

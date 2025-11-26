@@ -110,11 +110,15 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
             
             if is_new_search:
                 # Brand new search - reset everything
+                # Handle None values for location
+                location_str = decision.search_location or "your area"
+                search_msg = f"Understood. Starting a new search for {decision.search_query} in {location_str}..."
+                
                 update_dict = {
                     "search_query": decision.search_query,
                     "search_location": decision.search_location,
                     "detail_level": decision.detail_level,
-                    "messages": [AIMessage(content=f"Understood. Starting a new search for {decision.search_query} in {decision.search_location}...")],
+                    "messages": [AIMessage(content=search_msg)],
                     "pipeline_data": {},
                     "agent_outputs": {},
                     "execution_start_time": datetime.now().isoformat(),
