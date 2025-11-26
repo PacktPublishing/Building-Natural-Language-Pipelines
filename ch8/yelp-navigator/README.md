@@ -4,31 +4,44 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 
 ## Quick Start
 
-**Prerequisites**: Complete the [setup instructions](../README.md#setup-instructions)
+**Prerequisites**: Complete the [setup instructions](../README.md#setup-instructions). 
+
+All exercises require that you run the pipelines developed in [yelp-navigator/pipelines](./pipelines/)
+
+From this directory (`ch8/yelp-navigator`), run 
+
+```bash
+uv run sh build_all_pipelines.sh 
+sh start_hayhooks.sh
+```
+Leave running in the terminal - you can watch the pipelines being used by the agents.
+
+**Please note - you have up to 50 queries with the [Yelp Business Review](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews) - you can upgrade to a larger plan or unsubscribe and subscribe again. 
 
 ### Choose Your Path
 
 **🚀 Option 1: Pipeline Chaining** (Intermediate)
-1. Deploy pipelines: `uv run sh build_all_pipelines.sh && sh start_hayhooks.sh`
+1. Have pipelines running in the backend
 2. Open: [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb)
 3. Learn to chain Haystack pipeline API calls
 
 **🤖 Option 2: Multi-Agent System with LangGraph** (Advanced)
-1. Deploy pipelines (same command as above)
+1. Have pipelines running in the backend
 2. Open: [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb)
 3. Run the full multi-agent orchestration system with LangGraph
 
 ### Case studies - can we achieve the same amount of fluid decision making with Haystack?
 
 **🔄 Case study 1: Using the `Agent` class** 
-1. Deploy pipelines (same command as above)
+1. Have pipelines running in the backend
 2. Open: [haystack_agent_with_tools.ipynb](./haystack_agent_with_tools.ipynb)
+3. Run a multi-agent system with the Haystack class and an additional agent.
 
 
 **🔄 Case study 2: Using built-in primitives** 
-1. Deploy pipelines (same command as above)
+1. Have pipelines running in the backend
 2. Open: [haystack_looping_supervisor.ipynb](./haystack_looping_supervisor.ipynb)
-
+3. Use primitives (state, components, custom components and pipelines)
 
 ---
 
