@@ -70,7 +70,7 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 <strong>Chapter 7: Deploy pipelines as an API with FastAPI and Hayhooks</strong>
 
 
-<strong>Chapter 8 and Chapter 9: Capstone and Context Engineering<strong>
+<strong>Chapter 8 and Optional Advanced Modules: Capstone and Agentic Patterns for Production<strong>
 
 | | | 
 |-|-|
@@ -196,10 +196,10 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
 - **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
 
-### **[Chapter 9: Future trends and beyond](./ch9/)**
-**Context Engineering & Token Optimization**
+### **[Optional - advanced](./epilogue-advanced/)**
+**Advanced LangGraph Supervisor Patterns for Production**
+This folder contains an extended, production-grade implementation of the agentic supervisor described in Chapter 8.
 
-#### **[Context Engineering](./ch9/context-engineering/)**
 - **Three Agent Architectures**: Progressive implementations from learning (V1 monolithic) to production-ready (V3 with checkpointing)
 - **State Management Patterns**: Understanding how architectural decisions impact token usage and cost (16-50% reduction)
 - **Monolithic vs Supervisor Patterns**: Comparing design approaches with automated token measurement tools
