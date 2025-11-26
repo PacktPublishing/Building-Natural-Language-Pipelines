@@ -4,19 +4,44 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 
 ## Quick Start
 
-**Prerequisites**: Complete the [setup instructions](../README.md#setup-instructions)
+**Prerequisites**: Complete the [setup instructions](../README.md#setup-instructions). 
+
+All exercises require that you run the pipelines developed in [yelp-navigator/pipelines](./pipelines/)
+
+From this directory (`ch8/yelp-navigator`), run 
+
+```bash
+uv run sh build_all_pipelines.sh 
+sh start_hayhooks.sh
+```
+Leave running in the terminal - you can watch the pipelines being used by the agents.
+
+**Please note - you have up to 50 queries with the [Yelp Business Review](https://rapidapi.com/beat-analytics-beat-analytics-default/api/yelp-business-reviews) - you can upgrade to a larger plan or unsubscribe and subscribe again.**
 
 ### Choose Your Path
 
 **🚀 Option 1: Pipeline Chaining** (Intermediate)
-1. Deploy pipelines: `uv run sh build_all_pipelines.sh && sh start_hayhooks.sh`
+1. Have pipelines running in the backend
 2. Open: [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb)
 3. Learn to chain Haystack pipeline API calls
 
-**🤖 Option 2: Multi-Agent System** (Advanced)
-1. Deploy pipelines (same command as above)
+**🤖 Option 2: Multi-Agent System with LangGraph** (Advanced)
+1. Have pipelines running in the backend
 2. Open: [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb)
-3. Run the full multi-agent orchestration system
+3. Run the full multi-agent orchestration system with LangGraph
+
+### Case studies - can we achieve the same amount of fluid decision making with Haystack?
+
+**🔄 Case study 1: Using the `Agent` class** 
+1. Have pipelines running in the backend
+2. Open: [haystack_agent_with_tools.ipynb](./haystack_agent_with_tools.ipynb)
+3. Run a multi-agent system with the Haystack `Agent` class and an additional agent.
+
+
+**🔄 Case study 2: Using built-in primitives** 
+1. Have pipelines running in the backend
+2. Open: [haystack_looping_supervisor.ipynb](./haystack_looping_supervisor.ipynb)
+3. Use primitives (state, components, custom components and pipelines)
 
 ---
 
@@ -35,7 +60,8 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 
 ### 📓 Notebooks
 - [pipeline_chaining_guide.ipynb](./pipeline_chaining_guide.ipynb) - Chain Haystack pipelines via REST API calls
-- [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb) - Multi-agent system with supervisor pattern
+- [langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb) - Multi-agent system with supervisor pattern (LangGraph)
+- [haystack_multiagent_supervisor.ipynb](./haystack_multiagent_supervisor.ipynb) - Multi-agent system with supervisor pattern (Haystack native)
 
 ### 📚 Documentation
 - [Pipeline Setup Guide](./docs/yelp-navigator-hayhooks-guide.md) - Deploy pipelines with Hayhooks
@@ -47,19 +73,40 @@ Build an advanced multi-agent orchestration system using LangGraph and Haystack 
 - `business_details/` - Website content fetching and processing
 - `business_sentiment/` - Review fetching and sentiment analysis
 
-### 🤖 LangGraph Helpers 
+### 🤖 Agent Helpers 
 
+**LangGraph Implementation:**
 - [`langgraph_helpers/`](./langgraph_helpers/)
+  - **`nodes.py`** - Search, details, sentiment, summary and approval nodes
+  - **`tools.py`** - Wrappers for calling Hayhooks pipeline endpoints
 
-Modular components for the multi-agent system:
-
-- **`agents.py`** - Clarification and supervisor agents
-- **`nodes.py`** - Search, details, sentiment, and summary agent nodes
-- **`tools.py`** - Wrappers for calling Hayhooks pipeline endpoints
+**Haystack Implementation:**
+- [`haystack_helpers/`](./haystack_helpers/)
+  - **`components.py`** - Custom Haystack components (ClarificationComponent, SearchComponent, etc.)
+  - **`state.py`** - Shared state management for multi-agent coordination
 
 ---
 
 ## System Architecture
 
-**Pipeline Chain**: Search → Details → Sentiment → Report  
-**Multi-Agent Flow**: Clarification → Search → Conditional(Details + Sentiment) → Summary → Supervisor Approval → User
+### Pipeline Chain (Simple)
+Search → Details → Sentiment → Report
+
+### Multi-Agent Flow (Advanced)
+Clarification → Search → Conditional(Details + Sentiment) → Summary → Supervisor Approval → User
+
+### Implementation Approaches
+
+**LangGraph Implementation** ([langgraph_multiagent_supervisor.ipynb](./langgraph_multiagent_supervisor.ipynb))
+- Uses `StateGraph` for workflow orchestration
+- Inherits from `MessagesState` for automatic message handling
+- Conditional routing with `add_conditional_edges`
+- Graph-based visualization with Mermaid
+
+**Haystack Implementation** ([haystack_multiagent_supervisor.ipynb](./haystack_multiagent_supervisor.ipynb))
+- Uses Haystack `Pipeline` with custom components
+- State management via `StateMultiplexer` components
+- Feedback loops via component output connections
+- Native Haystack pipeline visualization
+
+Both implementations follow the same multi-agent supervisor pattern with identical functionality, demonstrating how the same architectural pattern can be expressed in different frameworks.

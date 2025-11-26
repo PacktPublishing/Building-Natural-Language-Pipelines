@@ -1,8 +1,9 @@
 """Node implementations for LangGraph multi-agent system."""
 
 from typing import Dict, Any
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
+from langchain_openai import ChatOpenAI
 
 
 def search_node(state: Dict[str, Any], search_businesses: tool) -> Dict[str, Any]:
@@ -120,7 +121,7 @@ def summary_node(state: Dict[str, Any], llm) -> Dict[str, Any]:
         "final_summary": response.content, "next_agent": "supervisor_approval", "needs_revision": False
     }
 
-def clarification_node(state: Dict[str, Any], llm ) -> Dict[str, Any]:
+def clarification_node(state: Dict[str, Any], llm: Any) -> Dict[str, Any]:
     """Agent that clarifies user intent before delegating to specialized agents."""
     messages = state.get("messages", [])
     clarification_attempts = sum(1 for m in messages if isinstance(m, AIMessage) and "CLARIFIED:" not in m.content)
@@ -167,7 +168,7 @@ def clarification_node(state: Dict[str, Any], llm ) -> Dict[str, Any]:
     return {"messages": [response], "clarification_complete": False, "next_agent": "clarification"}
 
 
-def supervisor_approval_node(state: Dict[str, Any], llm) -> Dict[str, Any]:
+def supervisor_approval_node(state: Dict[str, Any], llm: ChatOpenAI) -> Dict[str, Any]:
     """Supervisor reviews the summary and decides if it's complete or needs revision."""
     approval_attempts = state.get("approval_attempts", 0)
     

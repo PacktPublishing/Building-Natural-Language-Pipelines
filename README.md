@@ -11,6 +11,7 @@ Author: Laura Funderburk
 - [What You'll Learn to Build](#what-youll-learn-to-build)
 - [Setting Up](#setting-up)
 - [Chapter Breakdown](#chapter-breakdown)
+  - Chapter 1: Introduction to natural language processing pipelines (no required code exercises)
   - [Chapter 2: Diving Deep into Large Language Models](#chapter-2-diving-deep-into-large-language-models)
   - [Chapter 3: Introduction to Haystack](#chapter-3-introduction-to-haystack)
   - [Chapter 4: Bringing components together: Haystack pipelines for different use cases](#chapter-4-bringing-components-together-haystack-pipelines-for-different-use-cases)
@@ -18,7 +19,8 @@ Author: Laura Funderburk
   - [Chapter 6: Setting up a reproducible project: naive vs hybrid RAG with reranking and evaluation](#chapter-6-setting-up-a-reproducible-project-naive-vs-hybrid-rag-with-reranking-and-evaluation)
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
-  - [Chapter 9: Future trends and beyond](#chapter-9-future-trends-and-beyond)
+  - Chapter 9: Future trends and beyond (no required code exercises)
+  - [Optional: Advanced multi-agent architecture for production](#optional---advanced-langgraph-supervisor-patterns-for-production)
 
 
 ## What You'll Learn to Build
@@ -26,6 +28,10 @@ Author: Laura Funderburk
 This book guides you through building advanced **Retrieval-Augmented Generation (RAG)** systems and **multi-agent applications** using the [Haystack 2.0](https://haystack.deepset.ai/), [Ragas](https://docs.ragas.io/en/stable/) and [LangGraph](https://www.langchain.com/langgraph) frameworks. Beginning with **state-based agent development** using LangGraph, you'll learn to build intelligent agents with tool integration, middleware patterns, and multi-agent coordination. You'll then master **Haystack's component architecture**, progressing through creating intelligent search systems with semantic and hybrid retrieval, building custom components for specialized tasks, and implementing comprehensive evaluation frameworks. The journey advances through production deployment strategies with Docker and REST APIs, culminating in hands-on projects including named entity recognition systems, zero-shot text classification pipelines, sentiment analysis tools, and sophisticated multi-agent orchestration systems that coordinate multiple specialized Haystack pipelines through supervisor-worker patterns with LangGraph.
 
 <strong>Chapter 2: Single agents and multi agents with LangChain and LangGraph</strong>
+
+This chapter contains optional LangGraph demonstrations that introduce state-based agents at a conceptual level.
+These examples are previews intended to build intuition.
+The full, practical use of LangGraph for multi-agent orchestration appears later in Chapter 8 and the epilogue, once the Haystack tool layer has been fully developed.
 
 | | | 
 |-|-|
@@ -70,14 +76,14 @@ This book guides you through building advanced **Retrieval-Augmented Generation 
 <strong>Chapter 7: Deploy pipelines as an API with FastAPI and Hayhooks</strong>
 
 
-<strong>Chapter 8 and Chapter 9: Capstone and Context Engineering<strong>
+<strong>Chapter 8 and Optional Advanced Modules: Capstone and Agentic Patterns for Production<strong>
 
 | | | 
 |-|-|
 | Microservice architecture| Multi-agent system using microservices|
 | ![](./microservicearchitecture.png) | ![](./agentarchitecture.png)|
 
-> **📝 Sovereign-Friendly & Local Execution**: The majority of exercises throughout this book are written so you can choose between **OpenAI APIs** or **local models via Ollama** (such as [Mistral Nemo](https://ollama.com/library/mistral-nemo), [GPT-OSS](https://ollama.com/library/gpt-oss), or [Deepseek-R1](https://ollama.com/library/deepseek-r1) and [Qwen3](https://ollama.com/library/qwen3)), with the exception of the cost tracking exercises in Chapter 6 which specifically demonstrate OpenAI API usage monitoring. Each notebook provides specific model recommendations to help you choose the most suitable option for that particular exercise. The frameworks explored are extensible and models from other providers can be used to substitute OpenAI or local models. No US cloud, external APIs, or proprietary services are required for the majority of the book, making it easy to run in EU-regulated or air-gapped environments. Chapter 9 includes optional visualizations using LangSmith Studio. These require a free API key, but all exercises can also be run entirely locally and you can disable the tracer `export LANGCHAIN_TRACING_V2="false"`. Scripts are provided so you can run the agent on your terminal - you simply won’t see the studio traces or visualize the agent if you choose not to use LangSmith studio.
+> **📝 Sovereign-Friendly & Local Execution**: The majority of exercises throughout this book are written so you can choose between **OpenAI APIs** or **local models via Ollama** (such as [Mistral Nemo](https://ollama.com/library/mistral-nemo), [GPT-OSS](https://ollama.com/library/gpt-oss), or [Deepseek-R1](https://ollama.com/library/deepseek-r1) and [Qwen3](https://ollama.com/library/qwen3)), with the exception of the cost tracking exercises in Chapter 6 which specifically demonstrate OpenAI API usage monitoring. Each notebook provides specific model recommendations to help you choose the most suitable option for that particular exercise. The frameworks explored are extensible and models from other providers can be used to substitute OpenAI or local models. No US cloud, external APIs, or proprietary services are required for the majority of the book, making it easy to run in EU-regulated or air-gapped environments. The [epilogue-advanced](./epilogue-advanced/) folder includes an optional prototype-to-production multi-agent implementation with LangGraph using LangSmith Studio. These exercises require a free [LangSmith Studio](https://docs.langchain.com/oss/javascript/langgraph/studio) API key, all exercises can also be run entirely locally and you can disable the tracer `export LANGCHAIN_TRACING_V2="false"`. Scripts are provided so you can run the agent on your terminal - you simply won’t see the studio traces or visualize the agent if you choose not to use LangSmith studio.
 
 ## Setting up
 
@@ -189,17 +195,16 @@ Hands-on projects that progress from beginner to advanced complexity, focusing o
 - **Haystack Agent Mini Project**: Hands-on exercise combining NER and classification pipelines with agent orchestration and Hayhooks deployment
 
 #### **[Yelp Navigator - Multi-Agent System - Advanced](./ch8/yelp-navigator/)**
-- **Pipeline Chaining**: Connecting multiple specialized Haystack pipelines into complex workflows
+- **Modular Pipeline Architecture**: Creating 3 specialized pipelines (business search, details, sentiment) with NER and text classification
 - **Hayhooks Deployment**: Deploying pipelines as REST API endpoints for agent consumption
+- **Pipeline Chaining**: Connecting multiple specialized Haystack pipelines into complex workflows
 - **LangGraph Multi-Agent Orchestration**: Building intelligent supervisor systems that coordinate specialized agents
-- **Modular Pipeline Architecture**: Creating 4 specialized pipelines (business search, details, sentiment, reporting)
-- **Ambiguous Input Handling**: Using NER and intelligent routing to process natural language queries
-- **Distributed Data Aggregation**: Generating comprehensive reports from multiple data sources
+- **Case study**: Can we achieve the same fluid dynamic reasoning with Haystack primitives
 
-### **[Chapter 9: Future trends and beyond](./ch9/)**
-**Context Engineering & Token Optimization**
+### **[Optional - Advanced LangGraph Supervisor Patterns for Production](./epilogue-advanced/)**
 
-#### **[Context Engineering](./ch9/context-engineering/)**
+This folder contains an extended, production-grade implementation of the agentic supervisor described in Chapter 8.
+
 - **Three Agent Architectures**: Progressive implementations from learning (V1 monolithic) to production-ready (V3 with checkpointing)
 - **State Management Patterns**: Understanding how architectural decisions impact token usage and cost (16-50% reduction)
 - **Monolithic vs Supervisor Patterns**: Comparing design approaches with automated token measurement tools
