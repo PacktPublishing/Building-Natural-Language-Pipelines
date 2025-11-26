@@ -20,7 +20,7 @@ Author: Laura Funderburk
   - [Chapter 7: Production deployment strategies](#chapter-7-production-deployment-strategies)
   - [Chapter 8: Hands-on projects](#chapter-8-hands-on-projects)
   - Chapter 9: Future trends and beyond (no required code exercises)
-  - [Optional: Advanced multi-agent architecture for production]
+  - [Optional: Advanced multi-agent architecture for production](#optional---advanced)
 
 
 ## What You'll Learn to Build
