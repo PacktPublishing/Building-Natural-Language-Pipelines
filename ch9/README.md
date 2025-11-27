@@ -129,7 +129,7 @@ Opens at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`
    - **OpenAI** (default): `gpt-4o-mini` - Set `OPENAI_API_KEY` in `.env`
    - **Ollama** (local): Requires local installation:
    
-**Note**: Other LLMs can be configured in [`shared/config.py`](./context-engineering/shared/config.py), but they must support thinking, tool calling (function calling) to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
+**Note**: Other LLMs can be configured in [`shared/config.py`](./context-engineering/shared/config.py), but they must support thinking, tool calling (function calling) as well as structured output to work with the agent architecture. Adding a model that doesn't support these capabilities may result in unexpected behavior or errors from the agent.
 
 To initialize a different model, you can select the model for each of the versions under the `nodes.py` files.
 For example, for [yelp-navigator-v3/app/nodes.py](./context-engineering/yelp-navigator-v3/app/nodes.py) you can specify the model name (either supported by Ollama or OpenAI):
