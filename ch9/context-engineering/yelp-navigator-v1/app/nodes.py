@@ -13,7 +13,7 @@ from shared.summary_utils import generate_summary
 # Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
 # Initialize the language model
-llm = get_llm()
+llm = get_llm("gpt-oss:20b")  #change to your preferred model
 
 
 def clarification_node(state: AgentState) -> AgentState:

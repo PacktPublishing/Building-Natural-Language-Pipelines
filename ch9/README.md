@@ -141,13 +141,15 @@ llm = get_llm("gpt-oss:20b")
 
 **PLEASE NOTE LOCAL MODELS MAY BE SLOWER THAN OPENAI - BE PATIENT WITH YOUR LOCAL AGENT**
 
-Tested agentic system on V1, V2, V3
+Tested agentic system on V1, V2, V3.
 
-|Model | Size | Context Window| Tool | Reasoning | Information |
-| - | - | - | - | -| - | 
-| gpt-oss:20b | 14GB | 128K | Yes | Yes| https://ollama.com/library/gpt-oss
-| deepseek-r1:latest | 5.2GB | 128K | Yes | Yes| https://ollama.com/library/deepseek-r1 
-| qwen3:latest| 5.2GB | 40K | Yes | Yes |  https://ollama.com/library/qwen3
+**Full agentic funcionality in V3 using open source models. Mixed results V1 and V2.**
+
+|Model | Size | Context Window| Tool | Reasoning | Information | Functional on V1| Functional on V2| Functional on V3|
+| - | - | - | - | -| - | - | - | - | 
+| gpt-oss:20b | 14GB | 128K | Yes | Yes| https://ollama.com/library/gpt-oss | 
+| deepseek-r1:latest | 5.2GB | 128K | Yes | Yes| https://ollama.com/library/deepseek-r1 | 
+| qwen3:latest| 5.2GB | 40K | Yes | Yes |  https://ollama.com/library/qwen3 | 
    
 ## Measure Token Efficiency
 
