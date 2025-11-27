@@ -148,6 +148,7 @@ Tested agentic system on V1, V2, V3
 | gpt-oss:20b | 14GB | 128K | Yes | Yes| https://ollama.com/library/gpt-oss
 | deepseek-r1:latest | 5.2GB | 128K | Yes | Yes| https://ollama.com/library/deepseek-r1 
 | qwen3:latest| 5.2GB | 40K | Yes | Yes |  https://ollama.com/library/qwen3
+| magistral:latest | 14GB | Yes | Yes | https://ollama.com/library/magistral 
    
 ## Measure Token Efficiency
 
