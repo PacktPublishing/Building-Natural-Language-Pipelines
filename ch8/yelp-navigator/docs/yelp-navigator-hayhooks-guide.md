@@ -114,24 +114,6 @@ This will:
 
 **Output**: Aggregated documents per business with sentiment distribution and highlighted reviews
 
-### Pipeline 4: Business Report Summarizer
-**Purpose**: Generate comprehensive, AI-powered business reports from any combination of pipeline outputs.
-
-**Components**:
-- `FlexibleInputParser`: Consolidates data from Pipelines 1, 2, and/or 3
-- `BusinessReportGenerator`: Uses OpenAI to generate professional business reports with:
-  - Business overview
-  - Offerings & services (if Pipeline 2 data available)
-  - Customer feedback highlights (if Pipeline 3 data available)
-  - Recommendation summary
-
-**Input**: Flexible - accepts any combination of:
-- `pipeline1_output`: Basic business information
-- `pipeline2_output`: Website content and details (optional)
-- `pipeline3_output`: Review analysis and sentiment (optional)
-
-**Output**: Structured business reports with adaptive depth based on available inputs
-
 **Report Sections**:
 1. **Business Overview**: Location, pricing, establishment type
 2. **Offerings & Services**: Key products/services (requires Pipeline 2)
@@ -207,15 +189,6 @@ If YAML serialization fails:
                    ▼                                  ▼
 ```
 
-### Pipeline 4 Report Levels
-
-Pipeline 4 generates reports with different levels of detail based on available inputs:
-
-- **Level 1 (Basic)**: Pipeline 1 only → Business overview with basic info
-- **Level 2 (Enhanced)**: Pipelines 1+2 → Adds website content and offerings
-- **Level 3 (Complete)**: Pipelines 1+2+3 → Full report with customer feedback and sentiment analysis
-
----
 
 ## Usage Examples
 
