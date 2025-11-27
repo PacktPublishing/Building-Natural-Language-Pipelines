@@ -17,7 +17,7 @@ def get_llm(
     
     Tested and supported models:
     - OpenAI: gpt-4o-mini (default)
-    - Ollama: gpt-oss:latest, deepseek-r1:latest, qwen3:latest
+    - Ollama: gpt-oss:latest, deepseek-r1:latest, qwen3:latest, magistral:latest
     
     Args:
         model: Model name (defaults to OPENAI_MODEL env var or gpt-4o-mini)
@@ -36,10 +36,10 @@ def get_llm(
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     
     # Tested Ollama models with tool calling support
-    OLLAMA_MODELS = {"gpt-oss:latest", "deepseek-r1:latest", "qwen3:latest", "magistral:latest"}
+    OLLAMA_MODELS = {"gpt-oss:latest", "deepseek-r1:latest", "qwen3:latest"}
     
     # Determine provider based on model name
-    is_ollama = model in OLLAMA_MODELS or "gpt-oss" in model.lower() or "deepseek" in model.lower() or "qwen" in model.lower() or "magistral" in model.lower()
+    is_ollama = model in OLLAMA_MODELS or "gpt-oss" in model.lower() or "deepseek" in model.lower() or "qwen" in model.lower() in model.lower()
     
     if is_ollama:
         try:
