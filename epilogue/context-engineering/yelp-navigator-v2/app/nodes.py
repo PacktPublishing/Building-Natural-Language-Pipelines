@@ -193,11 +193,7 @@ def sentiment_tool_node(state: AgentState):
         add_metadata=False
     )
     
-    return Command(goto="supervisor", update=update)from typing import Literal
-from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
-from langchain_core.runnables import RunnableConfig
-from langgraph.types import Command
-from langgraph.graph import END
+    return Command(goto="supervisor", update=update)
 
 from .state import AgentState, ClarificationDecision, SupervisorDecision
 from .configuration import Configuration
