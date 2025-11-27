@@ -77,8 +77,8 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     conf = Configuration.from_runnable_config(config)
     
     try:
-        # Define the structured output model
-        clarifier_model = llm.with_structured_output(ClarificationDecision)
+        # Define the structured output model with method="json_mode" for better Ollama compatibility
+        clarifier_model = llm.with_structured_output(ClarificationDecision, method="json_mode")
         
         # Create context from history
         messages = state["messages"]

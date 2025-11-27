@@ -111,8 +111,8 @@ def make_supervisor_decision(
     
     context = prompt_generator(**prompt_kwargs)
     
-    # Create supervisor model with structured output
-    supervisor_model = llm.with_structured_output(supervisor_decision_model)
+    # Create supervisor model with structured output using json_mode for better Ollama compatibility
+    supervisor_model = llm.with_structured_output(supervisor_decision_model, method="json_mode")
     
     try:
         # Build messages based on compatibility mode
