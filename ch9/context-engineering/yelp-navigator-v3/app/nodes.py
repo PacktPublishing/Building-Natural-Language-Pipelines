@@ -22,7 +22,7 @@ from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
 # Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
-llm = get_llm("magistral:latest")
+llm = get_llm("qwen3:latest")
 
 
 def input_guardrails_node(state: AgentState, config: RunnableConfig) -> Command[Literal["clarify"]]:
@@ -77,8 +77,8 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
     conf = Configuration.from_runnable_config(config)
     
     try:
-        # Define the structured output model with method="json_mode" for better Ollama compatibility
-        clarifier_model = llm.with_structured_output(ClarificationDecision, method="json_mode")
+        # Define the structured output model
+        clarifier_model = llm.with_structured_output(ClarificationDecision)
         
         # Create context from history
         messages = state["messages"]
