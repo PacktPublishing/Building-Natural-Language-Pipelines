@@ -1,0 +1,782 @@
+[
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v1",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 96.07117223739624,
+    "nodes_called": [
+      "search",
+      "summary",
+      "clarification",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v1",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 109.50752520561218,
+    "nodes_called": [
+      "details",
+      "supervisor_approval",
+      "sentiment",
+      "clarification",
+      "search",
+      "summary"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v1",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 120.01673722267151,
+    "nodes_called": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [
+      {
+        "node": "timeout",
+        "error": "Test exceeded 2 minute timeout",
+        "error_type": "TimeoutException"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": true,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v2",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 20.920459985733032,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v2",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 16.129350185394287,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v2",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 14.331277847290039,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v3",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 25.35199999809265,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v3",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 34.860904932022095,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v3",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 24.335177898406982,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v1",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 85.92252326011658,
+    "nodes_called": [
+      "search",
+      "summary",
+      "clarification",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v1",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 107.72904586791992,
+    "nodes_called": [
+      "details",
+      "supervisor_approval",
+      "sentiment",
+      "clarification",
+      "search",
+      "summary"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v1",
+    "model": "deepseek-r1:latest",
+    "success": false,
+    "total_time": 120.01591277122498,
+    "nodes_called": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [
+      {
+        "node": "timeout",
+        "error": "Test exceeded 2 minute timeout",
+        "error_type": "TimeoutException"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": true,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v2",
+    "model": "deepseek-r1:latest",
+    "success": false,
+    "total_time": 12.15302300453186,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v2",
+    "model": "deepseek-r1:latest",
+    "success": false,
+    "total_time": 14.661579847335815,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v2",
+    "model": "deepseek-r1:latest",
+    "success": false,
+    "total_time": 11.040560007095337,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v3",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 26.473214149475098,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v3",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 35.362598180770874,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v3",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 24.421761989593506,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v1",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 88.54213786125183,
+    "nodes_called": [
+      "search",
+      "summary",
+      "clarification",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v1",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 111.74094796180725,
+    "nodes_called": [
+      "details",
+      "supervisor_approval",
+      "sentiment",
+      "clarification",
+      "search",
+      "summary"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v1",
+    "model": "qwen3:latest",
+    "success": false,
+    "total_time": 120.01561188697815,
+    "nodes_called": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [
+      {
+        "node": "timeout",
+        "error": "Test exceeded 2 minute timeout",
+        "error_type": "TimeoutException"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": true,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v2",
+    "model": "qwen3:latest",
+    "success": false,
+    "total_time": 16.069554328918457,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v2",
+    "model": "qwen3:latest",
+    "success": false,
+    "total_time": 14.998832941055298,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v2",
+    "model": "qwen3:latest",
+    "success": false,
+    "total_time": 13.736743211746216,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v3",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 26.415739059448242,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v3",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 34.866487979888916,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v3",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 24.444488048553467,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "clarify",
+      "supervisor"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  }
+]
