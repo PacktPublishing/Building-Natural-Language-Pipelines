@@ -9,7 +9,7 @@ load_dotenv(find_dotenv(), override=False)
 
 def get_llm(
     model: str = None, 
-    temperature: float = 0,
+    temperature: float = None,
     max_retries: int = 2,
     timeout: int = 120
 ) -> Union[ChatOpenAI, ChatOllama]:
@@ -21,7 +21,7 @@ def get_llm(
     
     Args:
         model: Model name (defaults to OPENAI_MODEL env var or gpt-4o-mini)
-        temperature: Temperature for generation (default: 0)
+        temperature: Temperature for generation (default: 1.0, can be overridden with TEST_TEMPERATURE env var)
         max_retries: Maximum number of retries on failure (default: 2)
         timeout: Request timeout in seconds (default: 60)
         
@@ -34,6 +34,10 @@ def get_llm(
     """
     if model is None:
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    
+    # Allow temperature override via environment variable for testing
+    if temperature is None:
+        temperature = float(os.getenv("TEST_TEMPERATURE", "1.0"))
     
     # Tested Ollama models with tool calling support
     OLLAMA_MODELS = {"gpt-oss:latest", "deepseek-r1:latest", "qwen3:latest"}

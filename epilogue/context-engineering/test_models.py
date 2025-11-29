@@ -72,7 +72,7 @@ class NodeTracker:
 def import_version_graph(version: str, model_name: str):
     """
     Dynamically import and configure the graph for a specific version.
-    Sets TEST_MODEL environment variable before importing.
+    Sets TEST_MODEL and TEST_TEMPERATURE environment variables before importing.
     """
     import os
     import sys
@@ -84,8 +84,9 @@ def import_version_graph(version: str, model_name: str):
         if str(shared_path.parent) not in sys.path:
             sys.path.insert(0, str(shared_path.parent))
         
-        # Set the TEST_MODEL environment variable BEFORE any imports
+        # Set the TEST_MODEL and TEST_TEMPERATURE environment variables BEFORE any imports
         os.environ["TEST_MODEL"] = model_name
+        os.environ["TEST_TEMPERATURE"] = "1.0"  # Experiment with temperature 1.0
         
         # Add version directory to sys.path temporarily
         version_dir = Path(__file__).parent / f"yelp-navigator-{version}"
@@ -160,6 +161,7 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
         "final_state_keys": [],
         "timed_out": False,
         "timeout_duration": 120,  # 2 minutes in seconds
+        "last_two_messages": [],  # Track the last two messages
     }
     
     try:
@@ -217,6 +219,27 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
             if "messages" in final_state and final_state["messages"]:
                 last_message = final_state["messages"][-1]
                 result["final_response"] = getattr(last_message, "content", str(last_message))
+                
+                # Track last two messages
+                messages = final_state["messages"]
+                if len(messages) >= 2:
+                    result["last_two_messages"] = [
+                        {
+                            "type": type(messages[-2]).__name__,
+                            "content": getattr(messages[-2], "content", str(messages[-2]))
+                        },
+                        {
+                            "type": type(messages[-1]).__name__,
+                            "content": getattr(messages[-1], "content", str(messages[-1]))
+                        }
+                    ]
+                elif len(messages) == 1:
+                    result["last_two_messages"] = [
+                        {
+                            "type": type(messages[-1]).__name__,
+                            "content": getattr(messages[-1], "content", str(messages[-1]))
+                        }
+                    ]
             elif "final_response" in final_state:
                 result["final_response"] = final_state["final_response"]
         
