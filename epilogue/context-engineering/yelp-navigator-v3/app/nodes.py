@@ -1,4 +1,5 @@
 """V3 Nodes with enhanced error handling and retry support."""
+import os
 import time
 from typing import Literal, Union
 from datetime import datetime
@@ -18,12 +19,12 @@ from shared.summary_utils import generate_summary
 from shared.chat_utils import handle_general_chat
 from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 
-# Initialize the language model (it defaults to gpt-4o-mini, pass model name)
+# Initialize the language model
+# Uses TEST_MODEL environment variable if set (for testing), otherwise defaults to gpt-4o-mini
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
 # Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
-llm = get_llm("qwen3:latest")
-
+llm = get_llm(os.getenv("TEST_MODEL", "gpt-oss:20b"))
 
 def input_guardrails_node(state: AgentState, config: RunnableConfig) -> Command[Literal["clarify"]]:
     """

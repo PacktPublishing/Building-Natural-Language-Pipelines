@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Any
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 
@@ -8,12 +9,12 @@ from shared.config import get_llm
 from shared.tool_execution import execute_tool_with_tracking
 from shared.summary_utils import generate_summary
 
-# Initialize the language model (it defaults to gpt-4o-mini, pass model name)
+# Initialize the language model
+# Uses TEST_MODEL environment variable if set (for testing), otherwise defaults to gpt-4o-mini
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
 # Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
-# Initialize the language model
-llm = get_llm("gpt-oss:20b")  #change to your preferred model
+llm = get_llm(os.getenv("TEST_MODEL", "gpt-oss:20b"))
 
 
 def clarification_node(state: AgentState) -> AgentState:
