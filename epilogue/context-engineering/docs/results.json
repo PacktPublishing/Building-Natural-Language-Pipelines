@@ -1,0 +1,790 @@
+[
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v1",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 103.06237411499023,
+    "nodes_called": [
+      "search",
+      "summary",
+      "clarification",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v1",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 114.12526273727417,
+    "nodes_called": [
+      "details",
+      "summary",
+      "clarification",
+      "supervisor_approval",
+      "sentiment",
+      "search"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Approval limit reached. Accepting current summary."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v1",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 120.04249882698059,
+    "nodes_called": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [
+      {
+        "node": "timeout",
+        "error": "Test exceeded 2 minute timeout",
+        "error_type": "TimeoutException"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": true,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v2",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 48.356565952301025,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v2",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 46.4388952255249,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v2",
+    "model": "gpt-oss:20b",
+    "success": false,
+    "total_time": 45.9492871761322,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v3",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 15.603711128234863,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v3",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 14.62368106842041,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v3",
+    "model": "gpt-oss:20b",
+    "success": true,
+    "total_time": 15.229404926300049,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v1",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 106.32931518554688,
+    "nodes_called": [
+      "search",
+      "summary",
+      "clarification",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Summary approved! All requirements met."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v1",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 80.20844578742981,
+    "nodes_called": [
+      "details",
+      "summary",
+      "clarification",
+      "supervisor_approval",
+      "sentiment",
+      "search"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Summary approved! All requirements met."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v1",
+    "model": "deepseek-r1:latest",
+    "success": false,
+    "total_time": 120.02217388153076,
+    "nodes_called": [
+      "clarification",
+      "search",
+      "details"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details"
+    ],
+    "errors": [
+      {
+        "node": "timeout",
+        "error": "Test exceeded 2 minute timeout",
+        "error_type": "TimeoutException"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": true,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v2",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 165.39588284492493,
+    "nodes_called": [
+      "search_tool",
+      "summary",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "summary"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "Okay, here is a summary of the best pizza places in Chicago based on search results:\n\nFinding great pizza in Chicago is definitely a top priority! Based on the search results, here are some of the top-rated and highly recommended spots to consider:\n\n**Top Recommendations:**\n\n1.  **Uno Chicago Grill:** Boasting a perfect 5.0-star rating from over 2,000 reviews, Uno is a deep-dish institution. Known for its classic deep-dish pizza, especially the popular \"Deep Dish Supreme,\" and a welcoming atmosphere, it's consistently loved by locals and visitors alike.\n2.  **Lou Mallozzi:** With a stellar 4.5-star rating and over 1,000 reviews, Lou Mallozzi is another deep-dish legend. Famous for its thin-crust Originals and a retro, bustling dining room, it offers a quintessential Chicago deep-dish experience.\n3.  **Giordano's Pizza:** Also rated 4.5 stars with over 1,500 reviews, Giordano's is a long-standing favorite known for its thin-crust Originals, particularly the \"Original Deep Dish.\" It's often considered a Chicago landmark for its pizza.\n\n**Other Notable Chicago Pizza Places:**\n\n4.  **Tony's Chicago Pizza:** This place has a strong following with a 4.4-star rating from over 1,000 reviews. Known for its authentic Chicago-style deep-dish pizza and a lively, casual atmosphere, it's a solid choice for a classic slice.\n5.  **Pizzeria Uno:** Part of the same chain as Uno Chicago Grill, Pizzeria Uno offers similar deep-dish pizza in a slightly different setting. It has a 4.4-star rating from over 1,000 reviews and is another reliable option for deep-dish pizza fans.\n\nThese recommendations cover some of the most highly-rated deep-dish pizza spots in Chicago. Enjoy exploring the city's fantastic pizza scene!"
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v2",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 178.16606616973877,
+    "nodes_called": [
+      "search_tool",
+      "summary",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "summary"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "Okay, here is a summary of the best pizza places in Chicago based on reviews and ratings:\n\n**Finding Great Pizza in Chicago: Top Recommendations**\n\nLooking for the best pizza in Chicago? You've come to the right place! Based on reviews and ratings, here's a look at some of the top contenders. We've focused on places with strong ratings and plenty of reviews to ensure you're getting reliable recommendations.\n\n**Top Picks & Quick Overview**\n\nIf you're looking for the absolute best experiences, consider starting with these top-rated options:\n\n1.  **Tony's Chicago Pizza** (4.8 stars, 1,000+ reviews): Known for its classic Chicago deep-dish pizza, Tony's offers a delicious blend of cheese, toppings, and sauce baked deep into the crust. It's a popular spot for a satisfying meal.\n2.  **Deep Dish Den** (4.7 stars, 500+ reviews): As the name suggests, this place specializes in authentic deep-dish pizza. Expect a hearty, cheesy experience that's a Chicago institution.\n3.  **Tony's Pizzeria** (4.6 stars, 800+ reviews): Another fantastic option, Tony's Pizzeria is famous for its thin-crust pizza and long-standing reputation. It's a solid choice for traditional Chicago-style pizza.\n\n**Top 5 Pizza Recommendations in Chicago**\n\nHere's a more comprehensive list of highly-rated pizzerias in Chicago, including key details:\n\n1.  **Tony's Chicago Pizza**\n    *   **Rating:** 4.8 stars (1,00'thousands of reviews)\n    *   **Price:** $$ (Moderate)\n    *   **Phone:** +1-773-278-XXXX\n    *   **Website:** Website: https://tonyschicagopizza.com/\n    *   **Unique Feature:** A go-to for authentic deep-dish pizza with a bustling, fun atmosphere. Known for generous portions and consistent quality.\n\n2.  **Deep Dish Den**\n    *   **Rating:** 4.7 stars (500+ reviews)\n    *   **Price:** $$ (Moderate)\n    *   **Phone:** +1-773-XXXX-XXXX\n    *   **Website:** Website: https://deepdishden.com/\n    *   **Unique Feature:** Dedicated to deep-dish perfection. Offers creative deep-dish creations alongside classics, perfect for a hearty Chicago meal.\n\n3.  **Tony's Pizzeria**\n    *   **Rating:** 4.6 stars (800+ reviews)\n    *   **Price:** $$ (Moderate)\n    *   **Phone:** +1-773-XXXX-XXXX\n    *   **Website:** Website: https://tonspizzeria.com/\n    *   **Unique Feature:** A long-running favorite known for its thin-crust pizza and classic Chicago flavor. Offers a neighborhood feel and reliable service.\n\n4.  **Joe's Pizza**\n    *   **Rating:** 4.5 stars (1,200+ reviews)\n    *   **Price:** $$ (Moderate)\n    *   **Phone:** +1-773-XXXX-XXXX\n    *   **Website:** Website: https://joespizza.com/\n    *   **Unique Feature:** Famous for its thin-crust pizza, often considered one of the best in the city. Known for its simple menu, fast service, and a long history in the Loop.\n\n5.  **Lombardi's Pizza**\n    *   **Rating:** 4.5 stars (600+ reviews)\n    *   **Price:** $$$ (Higher end)\n    *   **Phone:** +1-773-XXXX-XXXX\n    *   **Website:** Website: https://lombardis.com/\n    *   **Unique Feature:** A historic Chicago landmark offering classic Italian-style pizza. While known for its deep-dish, it also serves thin-crust and has a rich heritage.\n\nThese are just a few of the excellent options available. Whether you prefer deep-dish, thin-crust, or a classic Chicago slice, these highly-rated spots should give you a great starting point for your Chicago pizza adventure!"
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v2",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 183.7249150276184,
+    "nodes_called": [
+      "search_tool",
+      "summary",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "summary"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "Okay, here is a detailed summary of the best pizza places found in Chicago, along with their website information, based on the search results:\n\n***\n\n**Finding Chicago's Best Pizzerias: Top Picks & Website Info**\n\nLooking for the ultimate Chicago pizza experience? You've come to the right place! We've compiled a list of standout pizzerias in the Windy City, focusing on those with strong ratings and positive reviews. This list includes detailed information, including phone numbers and websites, to help you plan your next delicious outing.\n\nIf you're seeking the absolute top-rated experiences, here are a couple of exceptional spots known for their superb pizza and overall quality:\n\n1.  **Original Joe's Pizza**\n    *   **Rating:** 4.8 stars (over 1,000 reviews)\n    *   **Price Range:** $\n    *   **Phone:** +1-773-278-1111\n    *   **Website:** Website: https://www.originaljoes.com/\n    *   **Unique Feature:** Famous for its thin-crust deep-dish pizza, often considered the original. It's a Chicago institution with a loyal following, known for its classic recipes and bustling, authentic atmosphere.\n\n2.  **Gino's East**\n    *   **Rating:** 4.7 stars (over 10,00't reviews)\n    *   **Price Range:** $$\n    *   **Phone:** +1-773-278-1600\n    *   **Website:** Website: https://www.ginos-east.com/\n    *   **Unique Feature:** Another deep-dish legend, Gino's East is renowned for its thin crust and creative toppings. It has a retro vibe and is consistently praised for its generous portions and high-quality ingredients.\n\nHere is a more comprehensive list of highly recommended Chicago pizza places, balancing great ratings, review counts, and unique offerings:\n\n1.  **Joe's Pizza**\n    *   **Rating:** 4.5 stars (over 10,000 reviews)\n    *   **Price Range:** $$\n    *   **Phone:** +1-773-278-1111\n    *   **Website:** Website: https://www.joes-pizza.com/\n    *   **Unique Feature:** A very popular deep-dish chain with multiple locations. Known for its reliable thin crust, classic deep-dish, and a welcoming, casual atmosphere. A solid choice for Chicago-style pizza.\n\n2.  **Lombardi's Pizza**\n    *   **Rating:** 4.5 stars (over 1,000 reviews)\n    *   **Price Range:** $$$\n    *   **Phone:** +1-773-278-1600\n    *   **Website:** Website: https://www.lombardis.com/\n    *   **Unique Feature:** A historic deep-dish pioneer in Chicago since 1926. Offers a more upscale experience while staying true to deep-dish roots. Known for its thin crust and classic recipes in a slightly more refined setting.\n\n3.  **Pizzeria Uno Chicago Deep Dish Pizza**\n    *   **Rating:** 4.5 stars (over 10,000 reviews)\n    *   **Price Range:** $$\n    *   **Phone:** +1-773-278-1600\n    *   **Website:** Website: https://www.pizzeriauno.com/\n    *   **Unique Feature:** Part of the\u957f\u671f-running Dominos Pizza chain, Pizzeria Uno is a deep-dish institution. It offers a wide variety of deep-dish styles and toppings, plus regular thin crust options. It's a great place to explore different deep-dish variations.\n\n4.  **Pequod's Pizza**\n    *   **Rating:** 4.5 stars (over 1,000 reviews)\n    *   **Price Range:** $$\n    *   **Phone:** +1-773-278-1600\n    *   **Website:** Website: https://www.pequods.com/\n    *   **Unique Feature:** Another long-standing Chicago favorite, known for its deep-dish pizza with a focus on quality ingredients. Offers a classic deep-dish experience with a reputation for good value.\n\n5.  **Frank's Pizza**\n    *   **Rating:** 4.5 stars (over 1,000 reviews)\n    *   **Price Range:** $$\n    *   **Phone:** +1-773-278-1600\n    *   **Website:** Website: https://www.franks-pizza.com/\n    *   **Unique Feature:** A well-regarded deep-dish spot known for its flavorful sauces and creative deep-dish creations. Offers a solid alternative to the deep-dish giants, focusing on quality and taste.\n\n***\n\nThis list provides a great starting point for exploring the fantastic pizza scene in Chicago. Whether you prefer deep-dish legends or thin crust classics, these recommendations offer a blend of authenticity, quality, and great Chicago flavor. Use the provided websites and phone numbers to plan your visit!"
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v3",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 89.91041874885559,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v3",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 43.40013909339905,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v3",
+    "model": "deepseek-r1:latest",
+    "success": true,
+    "total_time": 36.650391817092896,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v1",
+    "model": "qwen3:latest",
+    "success": false,
+    "total_time": 120.01376700401306,
+    "nodes_called": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [
+      {
+        "node": "timeout",
+        "error": "Test exceeded 2 minute timeout",
+        "error_type": "TimeoutException"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": true,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v1",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 92.72481203079224,
+    "nodes_called": [
+      "details",
+      "summary",
+      "clarification",
+      "supervisor_approval",
+      "sentiment",
+      "search"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "sentiment",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Summary approved! All requirements met."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v1",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 84.4667661190033,
+    "nodes_called": [
+      "details",
+      "summary",
+      "clarification",
+      "supervisor_approval",
+      "search"
+    ],
+    "node_sequence": [
+      "clarification",
+      "search",
+      "details",
+      "summary",
+      "supervisor_approval"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "APPROVED: Supervisor: Summary approved! All requirements met."
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v2",
+    "model": "qwen3:latest",
+    "success": false,
+    "total_time": 111.51774096488953,
+    "nodes_called": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool"
+    ],
+    "errors": [
+      {
+        "node": "graph_execution",
+        "error": "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+        "error_type": "GraphRecursionError"
+      }
+    ],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v2",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 185.14381313323975,
+    "nodes_called": [
+      "search_tool",
+      "summary",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "summary"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "**Summary of Best Pizza Places in Chicago, Illinois**  \n\n**Top Picks Based on Ratings & Reviews**  \n1. **Pizzeria Uno Chicago Style**  \n   - **Rating:** 4.5 stars (1,200+ reviews)  \n   - **Price Range:** $10\u2013$25  \n   - **Phone:** +1-312-922-1111  \n   - **Website:** [www.pizzeriauno.com](https://www.pizzeriauno.com)  \n   - **Unique Feature:** A Chicago icon since 1982, known for its hand-tossed thin crust and original deep-dish pizza. A must-try for locals and tourists alike.  \n\n2. **Giordano\u2019s Pizzeria**  \n   - **Rating:** 4.6 stars (800+ reviews)  \n   - **Price Range:** $10\u2013$25  \n   - **Phone:** +1-773-281-1111  \n   - **Website:** [www.giordanos.com](https://www.giordanos.com)  \n   - **Unique Feature:** Famous for its \"Chicago Deep Dish\" with a buttery crust and gooey cheese. The original location in Lakeview is a historic spot for pizza lovers.  \n\n3. **Lucali Pizza**  \n   - **Rating:** 4.7 stars (600+ reviews)  \n   - **Price Range:** $15\u2013$30  \n   - **Phone:** +1-773-281-1111  \n   - **Website:** [www.lucalipizza.com](https://www.lucalipizza.com)  \n   - **Unique Feature:** A modern take on Neapolitan pizza with wood-fired ovens and seasonal toppings. The cozy, intimate atmosphere makes it a favorite for date nights.  \n\n**Top 5 Recommendations**  \n1. **Pizzeria Uno Chicago Style**  \n   - **Rating:** 4.5 stars (1,200+ reviews)  \n   - **Price Range:** $10\u2013$25  \n   - **Phone:** +1-312-922-1111  \n   - **Website:** [www.pizzeriauno.com](https://www.pizzeriauno.com)  \n   - **Unique Feature:** A Chicago icon since 1982, known for its hand-tossed thin crust and original deep-dish pizza. A must-try for locals and tourists alike.  \n\n2. **Giordano\u2019s Pizzeria**  \n   - **Rating:** 4.6 stars (800+ reviews)  \n   - **Price Range:** $10\u2013$25  \n   - **Phone:** +1-773-281-1111  \n   - **Website:** [www.giordanos.com](https://www.giordanos.com)  \n   - **Unique Feature:** Famous for its \"Chicago Deep Dish\" with a buttery crust and gooey cheese. The original location in Lakeview is a historic spot for pizza lovers.  \n\n3. **Lucali Pizza**  \n   - **Rating:** 4.7 stars (600+ reviews)  \n   - **Price Range:** $15\u2013$30  \n   - **Phone:** +1-773-281-1111  \n   - **Website:** [www.lucalipizza.com](https://www.lucalipizza.com)  \n   - **Unique Feature:** A modern take on Neapolitan pizza with wood-fired ovens and seasonal toppings. The cozy, intimate atmosphere makes it a favorite for date nights.  \n\n4. **Bocce Pizza**  \n   - **Rating:** 4.4 stars (500+ reviews)  \n   - **Price Range:** $12\u2013$25  \n   - **Phone:** +1-773-327-1111  \n   - **Website:** [www.boccepizza.com](https://www.boccepizza.com)  \n   - **Unique Feature:** A family-owned spot with a casual vibe and creative toppings like truffle oil and house-made mozzarella. Great for a quick, flavorful bite.  \n\n5. **Frank\u2019s Pizza**  \n   - **Rating:** 4.5 stars (400+ reviews)  \n   - **Price Range:** $10\u2013$20  \n   - **Phone:** +1-773-281-1111  \n   - **Website:** [www.franks-pizza.com](https://www.franks-pizza.com)  \n   - **Unique Feature:** A neighborhood favorite with a focus on classic Chicago-style pizza. The friendly service and affordable prices make it a go-to for regulars.  \n\n**Final Note:** Whether you\u2019re craving deep-dish, thin crust, or a modern twist, Chicago\u2019s pizza scene has something for everyone. Use the phone numbers and websites to book a table or order delivery today! \ud83c\udf55"
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v2",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 178.50136280059814,
+    "nodes_called": [
+      "search_tool",
+      "summary",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "search_tool",
+      "supervisor",
+      "summary"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "**Best Pizza Places in Chicago, Illinois**  \n\nChicago is a pizza paradise, and these top-rated spots offer everything from classic deep-dish to innovative twists. Here\u2019s a curated list of the best pizza places in the city, ranked by a balance of quality (rating) and customer validation (review count):  \n\n---\n\n**1. Giordano\u2019s Pizzeria**  \nRating: \u2b50 4.5 (1,200+ reviews) | Price: $15\u2013$25  \nPhone: +1-773-281-1111 | Website: [www.giordanos.com](https://www.giordanos.com)  \nA Chicago icon since 1968, Giordano\u2019s is famous for its hand-tossed, thin-crust deep-dish pizza, baked in a proprietary oven. The Original Deep Dish is a must-try, and the cozy, retro atmosphere feels like a slice of history.  \n\n**2. RPM Italian**  \nRating: \u2b50 4.7 (2,500+ reviews) | Price: $20\u2013$35  \nPhone: +1-773-327-2277 | Website: [www.rpmchicago.com](https://www.rpmchicago.com)  \nThis modern Italian eatery blends traditional pizza-making with creative flair. Their signature \u201cRPM\u201d pizza features house-made mozzarella and a perfect balance of crispy and chewy crust. The sleek, wine-bar vibe and seasonal menu make it a favorite for foodies.  \n\n**3. Pizzeria Uno**  \nRating: \u2b50 4.4 (1,800+ reviews) | Price: $12\u2013$22  \nPhone: +1-773-281-1111 | Website: [www.pizzeriauno.com](https://www.pizzeriauno.com)  \nA pioneer of Chicago-style deep-dish, Uno\u2019s has been serving up its legendary \u201cChicago Deep Dish\u201d since 1954. The thick, buttery crust and layers of cheese, tomato, and toppings are a classic. The retro decor and family-friendly vibe make it a timeless favorite.  \n\n---\n\n**Top 5 Pizza Places in Chicago**  \n\n**4. Lou Malnati\u2019s Pizzeria**  \nRating: \u2b50 4.6 (1,500+ reviews) | Price: $18\u2013$28  \nPhone: +1-773-281-1111 | Website: [www.loumalnatis.com](https://www.loumalnatis.com)  \nKnown for its crispy, foldable deep-dish pizza, Lou Malnati\u2019s has been a Chicago staple since 1960. The \u201cOriginal\u201d and \u201cChicago Style\u201d pies are crowd-pleasers, and the bustling, neighborhood feel adds to the experience.  \n\n**5. Pequod\u2019s Pizza**  \nRating: \u2b50 4.5 (1,000+ reviews) | Price: $12\u2013$20  \nPhone: +1-773-281-1111 | Website: [www.pequods.com](https://www.pequods.com)  \nA family-owned gem, Pequod\u2019s offers a mix of traditional and modern pizzas, including the \u201cPequod\u2019s Special\u201d with house-made mozzarella and a tangy tomato sauce. The casual, welcoming atmosphere and generous portions make it a local favorite.  \n\n---\n\n**Final Tips**  \nFor a classic deep-dish experience, head to Giordano\u2019s or Uno\u2019s. If you\u2019re craving creativity, RPM Italian is a standout. For a more casual bite, Pequod\u2019s and Lou Malnati\u2019s deliver exceptional value. Always check websites or call ahead for hours, reservations, or special deals! \ud83c\udf55"
+  },
+  {
+    "query": "best pizza places in Chicago",
+    "version": "v3",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 20.17756700515747,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and what reviewers said",
+    "version": "v3",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 34.32086801528931,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  },
+  {
+    "query": "best pizza places in Chicago and website information",
+    "version": "v3",
+    "model": "qwen3:latest",
+    "success": true,
+    "total_time": 23.874311923980713,
+    "nodes_called": [
+      "search_tool",
+      "input_guardrails",
+      "supervisor",
+      "clarify"
+    ],
+    "node_sequence": [
+      "input_guardrails",
+      "clarify",
+      "supervisor",
+      "search_tool",
+      "supervisor"
+    ],
+    "errors": [],
+    "error_recovery": false,
+    "final_state_keys": [],
+    "timed_out": false,
+    "timeout_duration": 120,
+    "final_response": "I apologize, but I'm unable to complete your request due to service unavailability. The Yelp API service is currently unavailable or has rate limits in effect. Please try again later."
+  }
+]

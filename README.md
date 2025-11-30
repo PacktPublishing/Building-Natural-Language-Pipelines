@@ -1,4 +1,5 @@
-# Building RAG and Agentic Applications with LangChain/LangGraph 1.0 and Haystack 2.0
+# Building Natural Language Pipelines
+## Production-grade LLM pipelines, tool contracts, and context engineering
 
 <a href="https://www.packtpub.com/en-us/product/building-natural-language-pipelines-9781835467008"><img src="https://content.packt.com/_/image/xxlarge/B21806/cover_image_large.jpg" alt="<Book Name>" height="256px" align="right"></a>
 
