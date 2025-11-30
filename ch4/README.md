@@ -59,6 +59,10 @@ ollama pull nomic-embed-text
 | Indexing Pipeline | [indexing_pipeline.ipynb](./jupyter-notebooks/indexing_pipeline.ipynb) | Learn to build a pipeline for processing and indexing different document types |
 | Semantic Search Pipeline | [semantic_search_pipeline.ipynb](./jupyter-notebooks/semantic_search_pipeline.ipynb) | Implement advanced semantic search capabilities using hybrid retrieval |
 | Hybrid Pipeline | [hybrid_pipeline.ipynb](./jupyter-notebooks/hybrid_pipeline.ipynb) | Combine multiple retrieval methods for improved search accuracy |
+| Routing Pipeline | [routing_pipeline.ipynb](./jupyter-notebooks/routing_pipeline.ipynb) | Comprehensive guide to routing strategies in Haystack |
+| ConditionalRouter | [conditional_router.ipynb](./jupyter-notebooks/routers/conditional_router.ipynb) | Build flexible routing logic with keyword-based and query classification |
+| TextLanguageRouter | [text_language_router.ipynb](./jupyter-notebooks/routers/text_language_router.ipynb) | Implement multilingual pipelines with automatic language detection |
+| MetadataRouter | [metadata_router.ipynb](./jupyter-notebooks/routers/metadata_router.ipynb) | Route documents based on metadata fields for advanced filtering |
 | Supercomponents and advanced agentic RAG | [supercomponents_and_agentic_rag.ipynb](./jupyter-notebooks/supercomponents_and_agentic_rag.ipynb) | Create reusable pipeline components for complex workflows |
 
 Images for pipeline visualizations are in `jupyter-notebooks/images/`.
