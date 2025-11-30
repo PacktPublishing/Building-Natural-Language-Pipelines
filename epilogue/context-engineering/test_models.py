@@ -86,7 +86,7 @@ def import_version_graph(version: str, model_name: str):
         
         # Set the TEST_MODEL and TEST_TEMPERATURE environment variables BEFORE any imports
         os.environ["TEST_MODEL"] = model_name
-        os.environ["TEST_TEMPERATURE"] = "1.0"  # Experiment with temperature 1.0
+        os.environ["TEST_TEMPERATURE"] = "1.0"  # Experiment with temperature 0.0
         
         # Add version directory to sys.path temporarily
         version_dir = Path(__file__).parent / f"yelp-navigator-{version}"
@@ -162,6 +162,7 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
         "timed_out": False,
         "timeout_duration": 120,  # 2 minutes in seconds
         "last_two_messages": [],  # Track the last two messages
+        "node_outputs": [],  # Track what each node said/output at each step
     }
     
     try:
@@ -180,6 +181,7 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
         
         # Stream the graph execution
         node_sequence = []
+        node_outputs = []
         final_state = None
         
         for event in graph.stream(initial_state, stream_mode="updates"):
@@ -192,14 +194,36 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
                     # Store the latest state data
                     final_state = node_data
                     
-                    # Check for errors in the node data
+                    # Capture what the node said/output
+                    node_output = {
+                        "node": node_name,
+                        "timestamp": time.time() - start_time,
+                    }
+                    
+                    # Extract messages if available
                     if isinstance(node_data, dict):
+                        if "messages" in node_data and node_data["messages"]:
+                            # Get the last message from this node's output
+                            last_msg = node_data["messages"][-1]
+                            node_output["message_type"] = type(last_msg).__name__
+                            node_output["content"] = getattr(last_msg, "content", str(last_msg))[:500]  # Limit length
+                        
+                        # Also capture any other relevant fields
+                        if "next_action" in node_data:
+                            node_output["next_action"] = node_data["next_action"]
+                        if "tool_calls" in node_data:
+                            node_output["tool_calls"] = str(node_data["tool_calls"])[:200]
+                        
+                        # Check for errors in the node data
                         if node_data.get("errors") or node_data.get("error"):
+                            node_output["error"] = str(node_data.get("errors") or node_data.get("error"))[:200]
                             tracker.errors.append({
                                 "node": node_name,
                                 "error": node_data.get("errors") or node_data.get("error"),
                                 "timestamp": time.time()
                             })
+                    
+                    node_outputs.append(node_output)
         
         end_time = time.time()
         
@@ -210,6 +234,7 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
         result["total_time"] = end_time - start_time
         result["nodes_called"] = list(set(node_sequence))  # Unique nodes
         result["node_sequence"] = node_sequence  # Full sequence
+        result["node_outputs"] = node_outputs  # What each node said
         result["errors"] = tracker.errors
         result["error_recovery"] = len(tracker.errors) > 0  # Had errors but completed
         
@@ -412,223 +437,6 @@ def generate_report():
     print("\n" + "=" * 80)
     
     return json_file
-
-
-def generate_report_old():
-    """Original report generation (kept for reference but not used)."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    report_file = f"model_test_report_{timestamp}.md"
-    
-    with open(report_file, 'w') as f:
-        f.write("# Model Performance Test Report\n\n")
-        f.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-        f.write(f"**Total Tests:** {len(test_results)}\n\n")
-        
-        # Overview table
-        f.write("## Executive Summary\n\n")
-        f.write("| Model | Version | Success Rate | Avg Time | Total Errors |\n")
-        f.write("|-------|---------|--------------|----------|-------------|\n")
-        
-        # Calculate metrics per model/version combo
-        for model_info in MODELS_TO_TEST:
-            model_name = model_info["name"]
-            for version in VERSIONS:
-                # Filter results
-                filtered = [r for r in test_results 
-                           if r["model"] == model_name and r["version"] == version]
-                
-                if not filtered:
-                    continue
-                
-                success_rate = sum(1 for r in filtered if r["success"]) / len(filtered) * 100
-                avg_time = sum(r["total_time"] for r in filtered) / len(filtered)
-                total_errors = sum(len(r["errors"]) for r in filtered)
-                
-                f.write(f"| {model_name} | {version} | {success_rate:.1f}% | {avg_time:.2f}s | {total_errors} |\n")
-        
-        # Detailed results by model
-        f.write("\n## Detailed Results by Model\n\n")
-        
-        for model_info in MODELS_TO_TEST:
-            model_name = model_info["name"]
-            f.write(f"### {model_name}\n\n")
-            f.write(f"**Specs:** {model_info['size']} model, {model_info['context']} context window\n\n")
-            
-            for version in VERSIONS:
-                f.write(f"#### Version {version}\n\n")
-                
-                # Filter results for this combo
-                filtered = [r for r in test_results 
-                           if r["model"] == model_name and r["version"] == version]
-                
-                if not filtered:
-                    f.write("*No tests run for this version*\n\n")
-                    continue
-                
-                for query in TEST_QUERIES:
-                    query_results = [r for r in filtered if r["query"] == query]
-                    
-                    if not query_results:
-                        continue
-                    
-                    result = query_results[0]
-                    
-                    f.write(f"**Query:** `{query}`\n\n")
-                    f.write(f"- **Status:** {'✅ Success' if result['success'] else '❌ Failed'}\n")
-                    f.write(f"- **Time:** {result['total_time']:.2f}s\n")
-                    f.write(f"- **Nodes Called:** {', '.join(result['nodes_called'])}\n")
-                    f.write(f"- **Execution Path:** {' → '.join(result['node_sequence'])}\n")
-                    
-                    if result['errors']:
-                        f.write(f"- **Errors:** {len(result['errors'])}\n")
-                        for i, err in enumerate(result['errors'], 1):
-                            f.write(f"  {i}. `{err.get('node', 'unknown')}`: {str(err.get('error', 'unknown'))[:100]}\n")
-                    
-                    f.write("\n")
-        
-        # Node execution patterns
-        f.write("\n## Node Execution Patterns\n\n")
-        f.write("Analysis of which nodes were called for each query type:\n\n")
-        
-        for query in TEST_QUERIES:
-            f.write(f"### Query: `{query}`\n\n")
-            f.write("| Model | Version | Nodes Called |\n")
-            f.write("|-------|---------|-------------|\n")
-            
-            for model_info in MODELS_TO_TEST:
-                model_name = model_info["name"]
-                for version in VERSIONS:
-                    query_results = [r for r in test_results 
-                                   if r["query"] == query and r["model"] == model_name and r["version"] == version]
-                    
-                    if query_results:
-                        result = query_results[0]
-                        nodes = ' → '.join(result['node_sequence'])
-                        f.write(f"| {model_name} | {version} | {nodes} |\n")
-            
-            f.write("\n")
-        
-        # Performance comparison
-        f.write("\n## Performance Comparison\n\n")
-        f.write("### Average Execution Time by Version\n\n")
-        
-        # Build dynamic header based on versions tested
-        versions_tested = sorted(set(r["version"] for r in test_results))
-        if not versions_tested:
-            f.write("*No test results available*\n\n")
-        else:
-            header = "| Model | " + " | ".join(versions_tested) + " |\n"
-            separator = "|-------|" + "|".join(["----"] * len(versions_tested)) + "|\n"
-            f.write(header)
-            f.write(separator)
-            
-            for model_info in MODELS_TO_TEST:
-                model_name = model_info["name"]
-                times = []
-                
-                for version in versions_tested:
-                    filtered = [r for r in test_results 
-                               if r["model"] == model_name and r["version"] == version]
-                    
-                    if filtered:
-                        avg_time = sum(r["total_time"] for r in filtered) / len(filtered)
-                        times.append(f"{avg_time:.2f}s")
-                    else:
-                        times.append("N/A")
-                
-                row = f"| {model_name} | " + " | ".join(times) + " |\n"
-                f.write(row)
-        
-        # Error analysis
-        f.write("\n## Error Analysis\n\n")
-        
-        total_errors = sum(len(r["errors"]) for r in test_results)
-        f.write(f"**Total Errors Encountered:** {total_errors}\n\n")
-        
-        if total_errors > 0:
-            f.write("### Error Breakdown\n\n")
-            
-            # Collect all errors
-            all_errors = []
-            for result in test_results:
-                for err in result["errors"]:
-                    all_errors.append({
-                        "model": result["model"],
-                        "version": result["version"],
-                        "query": result["query"],
-                        "node": err.get("node", "unknown"),
-                        "error": str(err.get("error", "unknown"))
-                    })
-            
-            # Group by error type
-            error_types = {}
-            for err in all_errors:
-                error_msg = err["error"][:100]
-                if error_msg not in error_types:
-                    error_types[error_msg] = []
-                error_types[error_msg].append(err)
-            
-            for error_msg, occurrences in error_types.items():
-                f.write(f"**Error:** `{error_msg}`\n")
-                f.write(f"- Occurrences: {len(occurrences)}\n")
-                f.write(f"- Models affected: {', '.join(set(e['model'] for e in occurrences))}\n")
-                f.write(f"- Versions affected: {', '.join(set(e['version'] for e in occurrences))}\n\n")
-        else:
-            f.write("*No errors encountered during testing* ✅\n\n")
-        
-        # Recommendations
-        f.write("\n## Recommendations\n\n")
-        
-        # Find best performing model
-        model_scores = {}
-        for model_info in MODELS_TO_TEST:
-            model_name = model_info["name"]
-            filtered = [r for r in test_results if r["model"] == model_name]
-            
-            if filtered:
-                success_rate = sum(1 for r in filtered if r["success"]) / len(filtered)
-                avg_time = sum(r["total_time"] for r in filtered) / len(filtered)
-                error_count = sum(len(r["errors"]) for r in filtered)
-                
-                # Score: success rate - time penalty - error penalty
-                score = (success_rate * 100) - (avg_time * 2) - (error_count * 5)
-                model_scores[model_name] = score
-        
-        if model_scores:
-            best_model = max(model_scores, key=model_scores.get)
-            f.write(f"### Best Overall Model: **{best_model}**\n\n")
-            
-            f.write("Based on:\n")
-            f.write("- Success rate\n")
-            f.write("- Average execution time\n")
-            f.write("- Error frequency\n\n")
-        else:
-            f.write("### Best Overall Model: **N/A**\n\n")
-            f.write("*No successful tests to evaluate*\n\n")
-        
-        # Version-specific recommendations
-        f.write("### Version-Specific Performance\n\n")
-        for version in VERSIONS:
-            filtered = [r for r in test_results if r["version"] == version]
-            
-            if filtered:
-                avg_time = sum(r["total_time"] for r in filtered) / len(filtered)
-                success_rate = sum(1 for r in filtered if r["success"]) / len(filtered) * 100
-                
-                f.write(f"**{version.upper()}:**\n")
-                f.write(f"- Average time: {avg_time:.2f}s\n")
-                f.write(f"- Success rate: {success_rate:.1f}%\n\n")
-    
-    print(f"\n📄 Report generated: {report_file}")
-    
-    # Also save raw JSON data
-    json_file = f"model_test_data_{timestamp}.json"
-    with open(json_file, 'w') as f:
-        json.dump(test_results, f, indent=2)
-    
-    print(f"📊 Raw data saved: {json_file}")
-    
-    return report_file
 
 
 def main():
