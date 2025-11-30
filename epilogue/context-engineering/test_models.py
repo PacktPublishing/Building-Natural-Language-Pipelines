@@ -98,7 +98,7 @@ def import_version_graph(version: str, model_name: str):
         
         try:
             # Clear any cached imports for app modules from previous version
-            modules_to_clear = [k for k in list(sys.modules.keys()) if k.startswith('app')]
+            modules_to_clear = [k for k in list(sys.modules.keys()) if k.startswith('app') or k.startswith('shared')]
             for mod in modules_to_clear:
                 del sys.modules[mod]
             
