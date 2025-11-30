@@ -253,3 +253,31 @@ Run the guardrails test suite:
 cd context-engineering/yelp-navigator-v3
 uv run python test_guardrails.py
 ```
+
+---
+
+## Stress Test
+
+The [`stress_test_architectures.py`](./context-engineering/stress_test_architectures.py) script systematically evaluates different LLM models across all three Yelp Navigator versions (V1, V2, V3).
+
+**What it tests:**
+- **Node execution patterns** - Which nodes were called and in what sequence
+- **Execution time** - Performance across different architectures and models
+- **Error handling** - How each version recovers from failures
+- **Model compatibility** - Which models work with which architectures
+
+**What it doesn't test:**
+- Response quality evaluation (to save API credits)
+
+**Run the stress test:**
+```bash
+cd context-engineering/
+uv run python stress_test_architectures.py
+```
+
+The script tests all combinations of:
+- 3 models (GPT-OSS, DeepSeek-R1, Qwen3)
+- 3 versions (V1, V2, V3)
+- 3 query types (simple search, with reviews, with website info)
+
+Results are saved as JSON with detailed metrics including node sequences, timing, errors, and recovery patterns. Each test has a 2-minute timeout to prevent hanging on problematic model/version combinations.
