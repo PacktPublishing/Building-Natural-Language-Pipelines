@@ -19,7 +19,7 @@ from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 # Initialize the language model
 # Uses TEST_MODEL environment variable if set (for testing), otherwise defaults to gpt-4o-mini
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
-# Ensure you have pulled the appropriate model running if using Ollama
+# Ensure you have pulled and are running the appropriate model if using Ollama
 # For more details, see shared/config.py
 llm = get_llm(os.getenv("TEST_MODEL"))
 
