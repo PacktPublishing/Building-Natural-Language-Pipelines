@@ -14,7 +14,6 @@ Does NOT evaluate final response quality (to save API credits).
 
 import json
 import time
-import sys
 import signal
 from pathlib import Path
 from datetime import datetime
