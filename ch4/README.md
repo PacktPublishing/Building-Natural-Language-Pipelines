@@ -54,15 +54,39 @@ ollama pull nomic-embed-text
 
 ## Contents
 
+**Get started learning about routers within pipelines**
+
+| Notebook | Link | Description |
+|---|---|---|
+| ConditionalRouter | [conditional_router.ipynb](./jupyter-notebooks/routers/conditional_router.ipynb) | Build flexible routing logic with keyword-based and query classification |
+| TextLanguageRouter | [text_language_router.ipynb](./jupyter-notebooks/routers/text_language_router.ipynb) | Implement multilingual pipelines with automatic language detection |
+| MetadataRouter | [metadata_router.ipynb](./jupyter-notebooks/routers/metadata_router.ipynb) | Route documents based on metadata fields for advanced filtering |
+
+
+**Apply routers within indexing, naive and hybrid RAG**
+
 | Notebook | Link | Description |
 |---|---|---|
 | Indexing Pipeline | [indexing_pipeline.ipynb](./jupyter-notebooks/indexing_pipeline.ipynb) | Learn to build a pipeline for processing and indexing different document types |
 | Semantic Search Pipeline | [semantic_search_pipeline.ipynb](./jupyter-notebooks/semantic_search_pipeline.ipynb) | Implement advanced semantic search capabilities using hybrid retrieval |
 | Hybrid Pipeline | [hybrid_pipeline.ipynb](./jupyter-notebooks/hybrid_pipeline.ipynb) | Combine multiple retrieval methods for improved search accuracy |
-| ConditionalRouter | [conditional_router.ipynb](./jupyter-notebooks/routers/conditional_router.ipynb) | Build flexible routing logic with keyword-based and query classification |
-| TextLanguageRouter | [text_language_router.ipynb](./jupyter-notebooks/routers/text_language_router.ipynb) | Implement multilingual pipelines with automatic language detection |
-| MetadataRouter | [metadata_router.ipynb](./jupyter-notebooks/routers/metadata_router.ipynb) | Route documents based on metadata fields for advanced filtering |
-| Supercomponents and advanced agentic RAG | [supercomponents_and_agentic_rag.ipynb](./jupyter-notebooks/supercomponents_and_agentic_rag.ipynb) | Create reusable pipeline components for complex workflows |
+
+**Multimodal RAG**
+
+| Notebook | Link | Description |
+|---|---|---|
+| Image Embeddings with CLIP | [1_image_embeddings_with_clip.ipynb](./jupyter-notebooks/multimodal/1_image_embeddings_with_clip.ipynb) | Introduction to CLIP for image-text embeddings and similarity search |
+| Multimodal Indexing with CLIP | [2_multimodal_indexing_clip.ipynb](./jupyter-notebooks/multimodal/2_multimodal_indexing_clip.ipynb) | Build indexing pipelines using CLIP embeddings (Approach 1) |
+| Multimodal Indexing with LLM | [3_multimodal_indexing_llm.ipynb](./jupyter-notebooks/multimodal/3_multimodal_indexing_llm.ipynb) | Build indexing pipelines using LLM content extraction (Approach 2) |
+| Multimodal RAG with Vision LLM | [4_multimodal_rag_vision_llm.ipynb](./jupyter-notebooks/multimodal/4_multimodal_rag_vision_llm.ipynb) | Complete RAG pipeline with vision LLM for image understanding |
+| Audio Transcription with Whisper | [5_audio_transcription_whisper.ipynb](./jupyter-notebooks/multimodal/5_audio_transcription_whisper.ipynb) | Add audio transcription capabilities to multimodal RAG pipelines |
+
+**Pipelines as supercomponents and Async pipelines**
+
+| Notebook | Link | Description |
+|---|---|---|
+| Async Hybrid Pipeline | [async_hybrid_pipeline.ipynb](./jupyter-notebooks/async_hybrid_pipeline.ipynb) | Build asynchronous pipelines for improved performance |
+| Supercomponents and Agentic RAG | [supercomponents_and_agentic_rag.ipynb](./jupyter-notebooks/supercomponents_and_agentic_rag.ipynb) | Create reusable pipeline components for complex workflows |
 
 Images for pipeline visualizations are in `jupyter-notebooks/images/`.
 
