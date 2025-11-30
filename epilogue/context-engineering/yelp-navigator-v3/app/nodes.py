@@ -24,8 +24,7 @@ from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
 # Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
-llm = get_llm(os.getenv("TEST_MODEL"))
-
+llm = get_llm(os.getenv("TEST_MODEL", "gpt-oss:20b"))
 
 def input_guardrails_node(state: AgentState, config: RunnableConfig) -> Command[Literal["clarify"]]:
     """

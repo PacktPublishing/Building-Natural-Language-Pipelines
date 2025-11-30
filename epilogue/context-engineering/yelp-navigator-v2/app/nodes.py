@@ -21,7 +21,7 @@ from shared.supervisor_utils import make_supervisor_decision, get_node_mapping
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
 # Ensure you have pulled and are running the appropriate model if using Ollama
 # For more details, see shared/config.py
-llm = get_llm(os.getenv("TEST_MODEL"))
+llm = get_llm(os.getenv("TEST_MODEL", "gpt-oss:20b"))
 
 def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Literal["supervisor", "general_chat", END]]:
     """
