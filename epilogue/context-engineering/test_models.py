@@ -85,7 +85,7 @@ def import_version_graph(version: str, model_name: str):
         
         # Set the TEST_MODEL and TEST_TEMPERATURE environment variables BEFORE any imports
         os.environ["TEST_MODEL"] = model_name
-        os.environ["TEST_TEMPERATURE"] = "1.0"  # Experiment with temperature 0.0
+        os.environ["TEST_TEMPERATURE"] = "0.0"  # Experiment with temperature 0.0
         
         # Add version directory to sys.path temporarily
         version_dir = Path(__file__).parent / f"yelp-navigator-{version}"
