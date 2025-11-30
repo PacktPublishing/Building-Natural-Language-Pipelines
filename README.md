@@ -51,7 +51,7 @@ The full, practical use of LangGraph for multi-agent orchestration appears later
 </details>
 
 <details>
-<summary><strong>Chapter 4: RAG pipelines: indexing and retrieval</strong></summary>
+<summary><strong>Chapter 4: RAG pipelines: indexing and retrieval for text-based and multimodal pipelines (image and audio)</strong></summary>
 
 | | | 
 |-|-|
@@ -143,7 +143,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 - **Naive RAG**: Semantic search using sentence transformers and embedding models
 - **Hybrid RAG**: Combining keyword (BM25) and semantic (vector) search strategies
 - **Reranking**: Advanced retrieval techniques using ranker models
-- **Pipelines as tools for an Agent**: Package advanced RAG as a tool for an autonomous Agent
+- **Multimodal Pipelines**: Processing and analyzing images alongside text data
 
 ### **[Chapter 5: Haystack pipeline development with custom components](./ch5/)**
 **Extensibility & Testing**
