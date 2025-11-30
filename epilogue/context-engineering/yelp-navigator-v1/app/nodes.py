@@ -14,7 +14,7 @@ from shared.summary_utils import generate_summary
 # For example, to use an Ollama model, call get_llm("deepseek-r1:latest")
 # Ensure you have the appropriate model running if using Ollama
 # For more details, see shared/config.py
-llm = get_llm(os.getenv("TEST_MODEL"))
+llm = get_llm(os.getenv("TEST_MODEL", "gpt-oss:20b"))
 
 
 def clarification_node(state: AgentState) -> AgentState:
