@@ -18,7 +18,7 @@ import sys
 import signal
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any
 from langchain_core.messages import HumanMessage
 
 # Test Configuration
