@@ -23,7 +23,7 @@ def get_llm(
         model: Model name (defaults to OPENAI_MODEL env var or gpt-4o-mini)
         temperature: Temperature for generation (default: 0, can be overridden with TEST_TEMPERATURE env var)
         max_retries: Maximum number of retries on failure (default: 2)
-        timeout: Request timeout in seconds (default: 60)
+        timeout: Request timeout in seconds (default: 120)
         
     Returns:
         Configured LLM instance (ChatOpenAI or ChatOllama)
