@@ -90,7 +90,7 @@ def import_version_graph(version: str, model_name: str):
         # Add version directory to sys.path temporarily
         version_dir = Path(__file__).parent / f"yelp-navigator-{version}"
         if not version_dir.exists():
-            print(f"❌ Version directory not found: {version_dir}")
+            print(f"Error: Version directory not found: {version_dir}")
             return None
         
         # Add to path
@@ -107,7 +107,7 @@ def import_version_graph(version: str, model_name: str):
             
             # Get the graph based on version
             if version == "v1":
-                graph = graph_module.build_workflow_graph().compile()
+                graph = graph_module.graph
             elif version == "v2":
                 graph = graph_module.graph
             elif version == "v3":
@@ -123,7 +123,7 @@ def import_version_graph(version: str, model_name: str):
                 sys.path.remove(str(version_dir))
         
     except Exception as e:
-        print(f"❌ Error importing {version} graph: {e}")
+        print(f"Error importing {version} graph: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -304,7 +304,7 @@ def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
 def run_all_tests():
     """Run all combinations of models, versions, and queries."""
     print("=" * 80)
-    print("🧪 Starting Systematic Model Testing")
+    print("Starting Systematic Model Testing")
     print("=" * 80)
     print(f"\nModels: {len(MODELS_TO_TEST)}")
     print(f"Versions: {len(VERSIONS)}")
@@ -317,17 +317,17 @@ def run_all_tests():
     for model_info in MODELS_TO_TEST:
         model_name = model_info["name"]
         print(f"\n{'='*80}")
-        print(f"📊 Testing Model: {model_name} ({model_info['size']}, {model_info['context']} context)")
+        print(f"Testing Model: {model_name} ({model_info['size']}, {model_info['context']} context)")
         print(f"{'='*80}")
         
         for version in VERSIONS:
-            print(f"\n  🔧 Version: {version}")
+            print(f"\n  Version: {version}")
             
             # Import the graph with the current model
             graph = import_version_graph(version, model_name)
             
             if graph is None:
-                print(f"    ⚠️  Skipping {version} - failed to load graph")
+                print(f"    WARNING: Skipping {version} - failed to load graph")
                 continue
             
             for query in TEST_QUERIES:
@@ -339,19 +339,19 @@ def run_all_tests():
                 
                 # Display immediate feedback
                 if result.get("timed_out"):
-                    status = "⏱️"
+                    status = "[TIMEOUT]"
                     time_str = f"{result['total_time']:.2f}s (TIMEOUT)"
                 else:
-                    status = "✅" if result["success"] else "❌"
+                    status = "[OK]" if result["success"] else "[FAIL]"
                     time_str = f"{result['total_time']:.2f}s"
                 
-                nodes_str = " → ".join(result["node_sequence"])
+                nodes_str = " -> ".join(result["node_sequence"])
                 
                 print(f"    {status} Time: {time_str}")
                 print(f"       Nodes: {nodes_str}")
                 
                 if result["errors"]:
-                    print(f"       ⚠️  Errors: {len(result['errors'])}")
+                    print(f"       Errors: {len(result['errors'])}")
                     for err in result["errors"][:2]:  # Show first 2 errors
                         print(f"          - {err.get('node', 'unknown')}: {str(err.get('error', 'unknown'))[:60]}")
                 
@@ -362,7 +362,7 @@ def run_all_tests():
                 time.sleep(0.5)
     
     print(f"\n{'='*80}")
-    print("✅ Testing Complete!")
+    print("Testing Complete!")
     print(f"{'='*80}\n")
 
 
@@ -375,11 +375,11 @@ def generate_report():
     with open(json_file, 'w') as f:
         json.dump(test_results, f, indent=2)
     
-    print(f"\n📊 Raw data saved: {json_file}")
+    print(f"\nRaw data saved: {json_file}")
     
     # Print summary to console instead of Markdown file
     print("\n" + "=" * 80)
-    print("📊 TEST SUMMARY")
+    print("TEST SUMMARY")
     print("=" * 80)
     
     # Print executive summary table
@@ -416,11 +416,11 @@ def generate_report():
                 
                 if query_results:
                     result = query_results[0]
-                    nodes = ' → '.join(result['node_sequence']) if result['node_sequence'] else "(none)"
+                    nodes = ' -> '.join(result['node_sequence']) if result['node_sequence'] else "(none)"
                     if result.get('timed_out'):
-                        status = "⏱️ TIMEOUT"
+                        status = "[TIMEOUT]"
                     else:
-                        status = "✅" if result['success'] else "❌"
+                        status = "[OK]" if result['success'] else "[FAIL]"
                     print(f"  {status} [{model_name}] [{version}]: {nodes}")
     
     # Print error summary if any
@@ -448,7 +448,7 @@ def main():
         json_file = generate_report()
         
         print("\n" + "="*80)
-        print("🎉 Testing Complete!")
+        print("Testing Complete!")
         print("="*80)
         print(f"\nJSON data available in: {json_file}")
         print("\nQuick Summary:")
@@ -470,12 +470,12 @@ def main():
             print(f"  No tests completed successfully")
         
     except KeyboardInterrupt:
-        print("\n\n⚠️  Testing interrupted by user")
+        print("\n\nWARNING: Testing interrupted by user")
         if test_results:
             print("Generating partial report...")
             generate_report()
     except Exception as e:
-        print(f"\n❌ Error during testing: {e}")
+        print(f"\nError during testing: {e}")
         import traceback
         traceback.print_exc()
         
