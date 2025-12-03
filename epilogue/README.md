@@ -260,6 +260,8 @@ uv run python test_guardrails.py
 
 The [`stress_test_architectures.py`](./context-engineering/stress_test_architectures.py) script systematically evaluates different LLM models across all three Yelp Navigator versions (V1, V2, V3).
 
+The test is focused on what the agentic system does when the Hayhooks microservices the Yelp Navigator are down.
+
 **What it tests:**
 - **Node execution patterns** - Which nodes were called and in what sequence
 - **Execution time** - Performance across different architectures and models
