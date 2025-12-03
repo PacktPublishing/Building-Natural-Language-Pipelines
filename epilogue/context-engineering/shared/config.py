@@ -68,7 +68,8 @@ def get_llm(
         
         try:
             return ChatOpenAI(
-                model=model,
+                model_name=model,  # Use model_name parameter for clarity
+                model=model,        # Also set model parameter for compatibility
                 temperature=temperature,
                 openai_api_key=openai_api_key,
                 max_tokens=None,
