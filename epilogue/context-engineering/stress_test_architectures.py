@@ -18,8 +18,10 @@ Architecture:
 """
 
 import json
+import os
 import subprocess
 import sys
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -42,7 +44,7 @@ TEST_QUERIES = [
 VERSIONS = ["v1", "v2", "v3"]
 
 # Execution configuration
-MAX_WORKERS = 5  # Number of parallel test executions
+MAX_WORKERS = 1  # WARNING: High values may consume the timeout budget quickly
 TEST_TIMEOUT = 120  # Timeout in seconds (2 minutes)
 TEST_TEMPERATURE = "0.0"  # Temperature setting for models
 
@@ -59,6 +61,7 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
     - No singleton pollution between versions
     - Cross-platform timeout handling
     - Ability to run tests in parallel
+    - Progress tracking for timeout recovery
     
     Args:
         model: Model name to test
@@ -80,16 +83,20 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
             "timed_out": False
         }
     
-    cmd = [
-        sys.executable,
-        str(worker_script),
-        "--model", model,
-        "--version", version,
-        "--query", query,
-        "--temperature", TEST_TEMPERATURE
-    ]
+    # Create a temporary file for progress tracking
+    progress_fd, progress_file = tempfile.mkstemp(suffix=".json", prefix="test_progress_")
+    os.close(progress_fd)  # Close the file descriptor, worker will write to path
     
     try:
+        cmd = [
+            sys.executable,
+            str(worker_script),
+            "--model", model,
+            "--version", version,
+            "--query", query,
+            "--temperature", TEST_TEMPERATURE,
+            "--progress-file", progress_file
+        ]
         # Run with timeout - handles this safely across platforms
         result = subprocess.run(
             cmd,
@@ -146,7 +153,8 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
         return json_data
 
     except subprocess.TimeoutExpired:
-        return {
+        # Try to recover partial results from progress file
+        partial_result = {
             "success": False,
             "error": f"Test exceeded {TEST_TIMEOUT}s timeout",
             "model": model,
@@ -156,8 +164,58 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
             "timeout_duration": TEST_TIMEOUT,
             "nodes_called": [],
             "node_sequence": [],
+            "node_outputs": [],
+            "current_node": None,
+            "current_node_start_time": None,
+            "timeout_info": "No progress file recovered",
             "errors": [{"node": "timeout", "error": "TimeoutExpired", "error_type": "TimeoutExpired"}]
         }
+        
+        # Attempt to read progress file
+        try:
+            if os.path.exists(progress_file):
+                with open(progress_file, 'r') as f:
+                    saved_progress = json.load(f)
+                    # Merge saved progress into result
+                    partial_result["nodes_called"] = saved_progress.get("nodes_called", [])
+                    partial_result["node_sequence"] = saved_progress.get("node_sequence", [])
+                    partial_result["node_outputs"] = saved_progress.get("node_outputs", [])
+                    partial_result["total_time"] = saved_progress.get("total_time", TEST_TIMEOUT)
+                    
+                    # Critical: capture what node was running when timeout occurred
+                    current_node = saved_progress.get("current_node")
+                    current_node_start = saved_progress.get("current_node_start_time")
+                    
+                    if current_node:
+                        partial_result["current_node"] = current_node
+                        partial_result["current_node_start_time"] = current_node_start
+                        elapsed_in_node = TEST_TIMEOUT - (current_node_start or 0)
+                        partial_result["timeout_info"] = f"Timed out while executing '{current_node}' (running for {elapsed_in_node:.1f}s)"
+                        # Add timeout error with context
+                        partial_result["errors"] = [{
+                            "node": current_node,
+                            "error": f"TimeoutExpired after {elapsed_in_node:.1f}s in this node",
+                            "error_type": "TimeoutExpired"
+                        }]
+                    else:
+                        partial_result["timeout_info"] = "Timed out between nodes or during initialization"
+                    
+                    if saved_progress.get("errors"):
+                        partial_result["errors"].extend(saved_progress["errors"])
+                    partial_result["node_outputs"] = saved_progress.get("node_outputs", [])
+                    partial_result["total_time"] = saved_progress.get("total_time", TEST_TIMEOUT)
+                    if saved_progress.get("errors"):
+                        partial_result["errors"].extend(saved_progress["errors"])
+        except Exception as e:
+            partial_result["progress_recovery_error"] = str(e)
+        finally:
+            # Clean up progress file
+            try:
+                os.unlink(progress_file)
+            except Exception:
+                pass
+        
+        return partial_result
     
     except Exception as e:
         return {
@@ -169,6 +227,13 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
             "timed_out": False,
             "error_type": type(e).__name__
         }
+    finally:
+        # Always clean up progress file
+        try:
+            if os.path.exists(progress_file):
+                os.unlink(progress_file)
+        except Exception:
+            pass
 
 
 def run_all_tests():
@@ -239,8 +304,15 @@ def run_all_tests():
                 
                 nodes_str = " -> ".join(result.get("node_sequence", []))
                 
+                # Add current_node indicator for timeouts
+                if result.get("current_node"):
+                    nodes_str += f" -> [{result['current_node']}] TIMEOUT HERE"
+                
                 print(f"[{completed_count}/{total_tests}] {status} {model_name} | {version} | {query[:40]}...")
                 print(f"  Time: {time_str} | Nodes: {nodes_str}")
+                
+                if result.get("timeout_info"):
+                    print(f"  {result['timeout_info']}")
                 
                 if result.get("errors"):
                     print(f"  Errors: {len(result['errors'])}")
@@ -416,9 +488,6 @@ Examples:
   # Test with custom query
   python stress_test_architectures.py --only-query "best pizza in Chicago"
   
-  # Increase parallelism
-  python stress_test_architectures.py --max-workers 10
-  
   # Reduce timeout for faster testing
   python stress_test_architectures.py --timeout 60
         """
@@ -441,13 +510,6 @@ Examples:
         "--only-query",
         type=str,
         help="Test only the specified query (exact match)"
-    )
-    
-    parser.add_argument(
-        "--max-workers",
-        type=int,
-        default=MAX_WORKERS,
-        help=f"Number of parallel test executions (default: {MAX_WORKERS})"
     )
     
     parser.add_argument(
@@ -475,7 +537,7 @@ Examples:
 
 def main():
     """Main execution function with CLI argument support."""
-    global MAX_WORKERS, TEST_TIMEOUT, TEST_TEMPERATURE, MODELS_TO_TEST, VERSIONS, TEST_QUERIES
+    global TEST_TIMEOUT, TEST_TEMPERATURE, MODELS_TO_TEST, VERSIONS, TEST_QUERIES
     
     # Parse arguments
     args = parse_arguments()
@@ -497,7 +559,6 @@ def main():
         return
     
     # Apply CLI overrides
-    MAX_WORKERS = args.max_workers
     TEST_TIMEOUT = args.timeout
     TEST_TEMPERATURE = args.temperature
     

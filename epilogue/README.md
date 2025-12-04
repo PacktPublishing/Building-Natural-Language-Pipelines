@@ -309,9 +309,6 @@ uv run python stress_test_architectures.py --only-query "best pizza places in Ch
 
 **Customize execution parameters:**
 ```bash
-# Increase parallelism for faster execution
-uv run python stress_test_architectures.py --max-workers 10
-
 # Reduce timeout for quicker results
 uv run python stress_test_architectures.py --timeout 60
 

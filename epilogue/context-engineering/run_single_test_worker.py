@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Dict, Any
@@ -63,7 +64,7 @@ class NodeTracker:
                 })
 
 
-def run_single_test(version: str, model: str, query: str, temperature: str = "0.0") -> Dict[str, Any]:
+def run_single_test(version: str, model: str, query: str, temperature: str = "0.0", progress_file: str = None) -> Dict[str, Any]:
     """
     Run a single test in isolation.
     
@@ -72,6 +73,7 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
         model: Model name to test
         query: Test query string
         temperature: Temperature setting for the model
+        progress_file: Optional path to file for writing incremental progress
     
     Returns:
         Dictionary with test results
@@ -89,10 +91,21 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
         "final_state_keys": [],
         "last_two_messages": [],
         "node_outputs": [],
+        "current_node": None,  # Track which node is currently executing
+        "current_node_start_time": None,
     }
     
     tracker = NodeTracker()
     start_time = time.time()
+    
+    def save_progress():
+        """Save current progress to file for timeout recovery."""
+        if progress_file:
+            try:
+                with open(progress_file, 'w') as f:
+                    json.dump(result, f)
+            except Exception:
+                pass  # Don't fail the test if we can't write progress
     
     try:
         # Set environment variables for this process
@@ -126,6 +139,11 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
             # Track which node executed
             for node_name, node_data in event.items():
                 if node_name != "__start__" and node_name != "__end__":
+                    # Mark this node as currently executing BEFORE processing
+                    result["current_node"] = node_name
+                    result["current_node_start_time"] = time.time() - start_time
+                    save_progress()  # Save immediately so timeout knows what's running
+                    
                     node_sequence.append(node_name)
                     tracker.track_event({"node": node_name})
                     
@@ -137,6 +155,11 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
                         "node": node_name,
                         "timestamp": time.time() - start_time,
                     }
+                    
+                    # Update result immediately for timeout recovery
+                    result["nodes_called"] = list(set(node_sequence))
+                    result["node_sequence"] = node_sequence
+                    result["total_time"] = time.time() - start_time
                     
                     # Robust type checking for node_data
                     # LangGraph can return dict, Command objects, or other state update types
@@ -168,6 +191,14 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
                         node_output["data_repr"] = str(node_data)[:500]
                     
                     node_outputs.append(node_output)
+                    result["node_outputs"] = node_outputs
+                    
+                    # Clear current_node since this node has completed
+                    result["current_node"] = None
+                    result["current_node_start_time"] = None
+                    
+                    # Save progress after each node completes
+                    save_progress()
         
         end_time = time.time()
         
@@ -230,6 +261,7 @@ def main():
     parser.add_argument("--model", required=True, help="Model name to test")
     parser.add_argument("--query", required=True, help="Test query string")
     parser.add_argument("--temperature", default="0.0", help="Temperature setting")
+    parser.add_argument("--progress-file", help="File path for writing incremental progress")
     
     args = parser.parse_args()
     
@@ -238,11 +270,11 @@ def main():
         version=args.version,
         model=args.model,
         query=args.query,
-        temperature=args.temperature
+        temperature=args.temperature,
+        progress_file=args.progress_file
     )
     
     # Output JSON to stdout for the parent process to read
-    print("___JSON_RESULT_START___") 
     print(json.dumps(result))
 
 
