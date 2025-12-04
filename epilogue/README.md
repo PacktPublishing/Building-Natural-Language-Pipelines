@@ -258,7 +258,7 @@ uv run python test_guardrails.py
 
 ## Stress Test
 
-The [`stress_test_architectures.py`](./context-engineering/stress_test_architectures.py) script systematically evaluates different LLM models across all three Yelp Navigator versions (V1, V2, V3).
+The [`stress_test_architectures.py`](./context-engineering/stress_test_architectures.py) script systematically evaluates different LLM models across all three Yelp Navigator versions (V1, V2, V3) using a  subprocess-based architecture.
 
 The test is focused on what the agentic system does when the Hayhooks microservices the Yelp Navigator are down.
 
@@ -271,15 +271,77 @@ The test is focused on what the agentic system does when the Hayhooks microservi
 **What it doesn't test:**
 - Response quality evaluation (to save API credits)
 
-**Run the stress test:**
+### Architecture Features
+
+- **Process isolation** - Each test runs in a separate subprocess for clean import state
+- **Concurrent execution** - Runs 5 tests in parallel by default (configurable)
+- **Cross-platform** - No signal handling, works on Windows/macOS/Linux
+- **Timeout handling** - 2-minute timeout per test (configurable)
+- **Pandas reporting** - Exports summary statistics to CSV with aggregated metrics
+
+### Running the Stress Test
+
+**Run all tests (27 total: 3 models × 3 versions × 3 queries):**
 ```bash
 cd context-engineering/
 uv run python stress_test_architectures.py
 ```
 
-The script tests all combinations of:
-- 3 models (GPT-OSS, DeepSeek-R1, Qwen3)
-- 3 versions (V1, V2, V3)
-- 3 query types (simple search, with reviews, with website info)
+**List available options:**
+```bash
+uv run python stress_test_architectures.py --list-options
+```
 
-Results are saved as JSON with detailed metrics including node sequences, timing, errors, and recovery patterns. Each test has a 2-minute timeout to prevent hanging on problematic model/version combinations.
+**Test a specific model:**
+```bash
+uv run python stress_test_architectures.py --only-model "gpt-oss:20b"
+```
+
+**Test a specific version:**
+```bash
+uv run python stress_test_architectures.py --only-version v3
+```
+
+**Test a specific query:**
+```bash
+uv run python stress_test_architectures.py --only-query "best pizza places in Chicago"
+```
+
+**Customize execution parameters:**
+```bash
+# Increase parallelism for faster execution
+uv run python stress_test_architectures.py --max-workers 10
+
+# Reduce timeout for quicker results
+uv run python stress_test_architectures.py --timeout 60
+
+# Combine filters
+uv run python stress_test_architectures.py --only-model "deepseek-r1:latest" --only-version v2
+```
+
+### Output Files
+
+The script generates two output files with timestamps:
+
+1. **`model_test_data_YYYYMMDD_HHMMSS.json`** - Raw test data with detailed metrics:
+   - Node sequences and execution order
+   - Timing information per test
+   - Error details and stack traces
+   - Final state and messages
+
+2. **`model_test_summary_YYYYMMDD_HHMMSS.csv`** (requires pandas) - Aggregated statistics:
+   - Success rates by model and version
+   - Average execution times
+   - Error counts and timeout frequencies
+   - Test counts per configuration
+
+### Default Test Matrix
+
+- **Models**: GPT-OSS (14GB), DeepSeek-R1 (5.2GB), Qwen3 (5.2GB)
+- **Versions**: V1, V2, V3
+- **Queries**:
+  - "best pizza places in Chicago"
+  - "best pizza places in Chicago and what reviewers said"
+  - "best pizza places in Chicago and website information"
+
+Each test has a 2-minute timeout to prevent hanging on problematic model/version combinations. With 5 parallel workers, the full test suite typically completes in 10-15 minutes.

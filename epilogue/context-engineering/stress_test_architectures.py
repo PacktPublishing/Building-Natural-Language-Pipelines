@@ -10,15 +10,21 @@ Tests focus on:
 - Model performance characteristics
 
 Does NOT evaluate final response quality (to save API credits).
+
+Architecture:
+- Uses subprocess-based execution for process isolation
+- Supports concurrent test execution via ThreadPoolExecutor
+- Cross-platform compatible (no signal handling)
 """
 
 import json
+import subprocess
+import sys
 import time
-import signal
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any
-from langchain_core.messages import HumanMessage
+from typing import Dict, Any, List
 
 # Test Configuration
 MODELS_TO_TEST = [
@@ -35,430 +41,523 @@ TEST_QUERIES = [
 
 VERSIONS = ["v1", "v2", "v3"]
 
+# Execution configuration
+MAX_WORKERS = 5  # Number of parallel test executions
+TEST_TIMEOUT = 120  # Timeout in seconds (2 minutes)
+TEST_TEMPERATURE = "0.0"  # Temperature setting for models
+
 # Results storage
 test_results = []
 
 
-class NodeTracker:
-    """Track which nodes are executed during graph traversal."""
+def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
+    """
+    Spawns a pristine subprocess for one test case.
     
-    def __init__(self):
-        self.nodes_called = []
-        self.node_timings = {}
-        self.errors = []
-        
-    def track_event(self, event: Dict[str, Any]):
-        """Process a streaming event from the graph."""
-        if 'node' in event:
-            node_name = event['node']
-            
-            # Track node execution
-            if node_name not in self.nodes_called:
-                self.nodes_called.append(node_name)
-                self.node_timings[node_name] = 0
-            
-        # Track errors in metadata
-        if 'metadata' in event:
-            metadata = event['metadata']
-            if isinstance(metadata, dict) and metadata.get('error'):
-                self.errors.append({
-                    'node': event.get('node', 'unknown'),
-                    'error': metadata.get('error'),
-                    'timestamp': time.time()
-                })
-
-
-def import_version_graph(version: str, model_name: str):
+    This approach ensures:
+    - Clean import state for each test
+    - No singleton pollution between versions
+    - Cross-platform timeout handling
+    - Ability to run tests in parallel
+    
+    Args:
+        model: Model name to test
+        version: Graph version (v1, v2, v3)
+        query: Test query string
+    
+    Returns:
+        Dictionary with test results or error information
     """
-    Dynamically import and configure the graph for a specific version.
-    Sets TEST_MODEL and TEST_TEMPERATURE environment variables before importing.
-    """
-    import os
-    import sys
-    import importlib
+    worker_script = Path(__file__).parent / "run_single_test_worker.py"
+    
+    if not worker_script.exists():
+        return {
+            "success": False,
+            "error": f"Worker script not found: {worker_script}",
+            "model": model,
+            "version": version,
+            "query": query,
+            "timed_out": False
+        }
+    
+    cmd = [
+        sys.executable,
+        str(worker_script),
+        "--model", model,
+        "--version", version,
+        "--query", query,
+        "--temperature", TEST_TEMPERATURE
+    ]
     
     try:
-        # Ensure shared module is in path (only need this once)
-        shared_path = Path(__file__).parent / "shared"
-        if str(shared_path.parent) not in sys.path:
-            sys.path.insert(0, str(shared_path.parent))
+        # Run with timeout - handles this safely across platforms
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=TEST_TIMEOUT
+        )
         
-        # Set the TEST_MODEL and TEST_TEMPERATURE environment variables BEFORE any imports
-        os.environ["TEST_MODEL"] = model_name
-        os.environ["TEST_TEMPERATURE"] = "0.0"  # Experiment with temperature 0.0
+        stdout = result.stdout
+        worker_logs = ""
+        json_data = {}
         
-        # Add version directory to sys.path temporarily
-        version_dir = Path(__file__).parent / f"yelp-navigator-{version}"
-        if not version_dir.exists():
-            print(f"Error: Version directory not found: {version_dir}")
-            return None
-        
-        # Add to path
-        sys.path.insert(0, str(version_dir))
+        if result.returncode != 0:
+            return {
+                "success": False,
+                "error": result.stderr or "Process failed with non-zero exit code",
+                "model": model,
+                "version": version,
+                "query": query,
+                "timed_out": False,
+                "returncode": result.returncode
+            }
         
         try:
-            # Clear any cached imports for app modules from previous version
-            modules_to_clear = [k for k in list(sys.modules.keys()) if k.startswith('app') or k.startswith('shared')]
-            for mod in modules_to_clear:
-                del sys.modules[mod]
-            
-            # Import the graph module - this will use relative imports correctly
-            import app.graph as graph_module
-            
-            # Get the graph based on version
-            if version == "v1":
-                graph = graph_module.graph
-            elif version == "v2":
-                graph = graph_module.graph
-            elif version == "v3":
-                graph = graph_module.graph
+            stdout = result.stdout
+            # Split by marker and take the last part
+            if "___JSON_RESULT_START___" in stdout:
+                parts = stdout.split("___JSON_RESULT_START___")
+                worker_logs = parts[0].strip()  
+                json_str = parts[-1].strip()
             else:
-                raise ValueError(f"Unknown version: {version}")
-            
-            return graph
-            
-        finally:
-            # Always remove from sys.path when done
-            if str(version_dir) in sys.path:
-                sys.path.remove(str(version_dir))
-        
-    except Exception as e:
-        print(f"Error importing {version} graph: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+                # Fallback: Try to find the last line (risky but better than nothing)
+                lines = stdout.strip().split('\n')
+                json_str = lines[-1] if lines else "{}"
+                worker_logs = "\n".join(lines[:-1])
 
+            json_data = json.loads(json_str)
 
-class TimeoutException(Exception):
-    """Custom exception for timeout."""
-    pass
-
-def timeout_handler(signum, frame):
-    """Signal handler for timeout."""
-    raise TimeoutException("Test exceeded 2 minute timeout")
-
-def run_test(graph, query: str, version: str, model: str) -> Dict[str, Any]:
-    """
-    Run a single test query through the graph.
-    Times out after 2 minutes.
+        except json.JSONDecodeError as e:
+            return {
+                "success": False,
+                "error": f"Failed to parse worker output: {e}",
+                "model": model,
+                "version": version,
+                "query": query,
+                "timed_out": True,
+                "timeout_duration": TEST_TIMEOUT,
+                "nodes_called": [],
+                "node_sequence": [],
+                "errors": [{"node": "timeout", "error": "TimeoutExpired", "error_type": "TimeoutExpired"}]
+            }
     
-    Returns metrics about execution without evaluating response quality.
-    """
-    tracker = NodeTracker()
-    start_time = time.time()
-    
-    result = {
-        "query": query,
-        "version": version,
-        "model": model,
-        "success": False,
-        "total_time": 0,
-        "nodes_called": [],
-        "node_sequence": [],
-        "errors": [],
-        "error_recovery": False,
-        "final_state_keys": [],
-        "timed_out": False,
-        "timeout_duration": 120,  # 2 minutes in seconds
-        "last_two_messages": [],  # Track the last two messages
-        "node_outputs": [],  # Track what each node said/output at each step
-    }
-    
-    try:
-        # Set up timeout (2 minutes)
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(120)  # 2 minutes
-        
-        # Prepare input
-        initial_state = {
-            "messages": [HumanMessage(content=query)]
+        json_data["worker_logs"] = worker_logs
+        return json_data
+
+    except subprocess.TimeoutExpired:
+        return {
+            "success": False,
+            "error": f"Test exceeded {TEST_TIMEOUT}s timeout",
+            "model": model,
+            "version": version,
+            "query": query,
+            "timed_out": True,
+            "timeout_duration": TEST_TIMEOUT,
+            "nodes_called": [],
+            "node_sequence": [],
+            "errors": [{"node": "timeout", "error": "TimeoutExpired", "error_type": "TimeoutExpired"}]
         }
-        
-        # For v1, also set user_query
-        if version == "v1":
-            initial_state["user_query"] = query
-        
-        # Stream the graph execution
-        node_sequence = []
-        node_outputs = []
-        final_state = None
-        
-        for event in graph.stream(initial_state, stream_mode="updates"):
-            # Track which node executed
-            for node_name, node_data in event.items():
-                if node_name != "__start__" and node_name != "__end__":
-                    node_sequence.append(node_name)
-                    tracker.track_event({"node": node_name})
-                    
-                    # Store the latest state data
-                    final_state = node_data
-                    
-                    # Capture what the node said/output
-                    node_output = {
-                        "node": node_name,
-                        "timestamp": time.time() - start_time,
-                    }
-                    
-                    # Extract messages if available
-                    if isinstance(node_data, dict):
-                        if "messages" in node_data and node_data["messages"]:
-                            # Get the last message from this node's output
-                            last_msg = node_data["messages"][-1]
-                            node_output["message_type"] = type(last_msg).__name__
-                            node_output["content"] = getattr(last_msg, "content", str(last_msg))[:500]  # Limit length
-                        
-                        # Also capture any other relevant fields
-                        if "next_action" in node_data:
-                            node_output["next_action"] = node_data["next_action"]
-                        if "tool_calls" in node_data:
-                            node_output["tool_calls"] = str(node_data["tool_calls"])[:200]
-                        
-                        # Check for errors in the node data
-                        if node_data.get("errors") or node_data.get("error"):
-                            node_output["error"] = str(node_data.get("errors") or node_data.get("error"))[:200]
-                            tracker.errors.append({
-                                "node": node_name,
-                                "error": node_data.get("errors") or node_data.get("error"),
-                                "timestamp": time.time()
-                            })
-                    
-                    node_outputs.append(node_output)
-        
-        end_time = time.time()
-        
-        # Cancel the alarm
-        signal.alarm(0)
-        
-        result["success"] = True
-        result["total_time"] = end_time - start_time
-        result["nodes_called"] = list(set(node_sequence))  # Unique nodes
-        result["node_sequence"] = node_sequence  # Full sequence
-        result["node_outputs"] = node_outputs  # What each node said
-        result["errors"] = tracker.errors
-        result["error_recovery"] = len(tracker.errors) > 0  # Had errors but completed
-        
-        # Extract final response from state
-        if final_state and isinstance(final_state, dict):
-            # Try to get the last message or final_response
-            if "messages" in final_state and final_state["messages"]:
-                last_message = final_state["messages"][-1]
-                result["final_response"] = getattr(last_message, "content", str(last_message))
-                
-                # Track last two messages
-                messages = final_state["messages"]
-                if len(messages) >= 2:
-                    result["last_two_messages"] = [
-                        {
-                            "type": type(messages[-2]).__name__,
-                            "content": getattr(messages[-2], "content", str(messages[-2]))
-                        },
-                        {
-                            "type": type(messages[-1]).__name__,
-                            "content": getattr(messages[-1], "content", str(messages[-1]))
-                        }
-                    ]
-                elif len(messages) == 1:
-                    result["last_two_messages"] = [
-                        {
-                            "type": type(messages[-1]).__name__,
-                            "content": getattr(messages[-1], "content", str(messages[-1]))
-                        }
-                    ]
-            elif "final_response" in final_state:
-                result["final_response"] = final_state["final_response"]
-        
-    except TimeoutException as e:
-        # Test timed out
-        signal.alarm(0)  # Cancel the alarm
-        end_time = time.time()
-        result["success"] = False
-        result["timed_out"] = True
-        result["total_time"] = end_time - start_time
-        result["nodes_called"] = tracker.nodes_called
-        result["node_sequence"] = tracker.nodes_called
-        result["errors"] = tracker.errors + [{
-            "node": "timeout",
-            "error": str(e),
-            "error_type": "TimeoutException"
-        }]
-        
-    except KeyboardInterrupt:
-        signal.alarm(0)  # Cancel the alarm
-        raise
-    except Exception as e:
-        signal.alarm(0)  # Cancel the alarm
-        end_time = time.time()
-        result["success"] = False
-        result["total_time"] = end_time - start_time
-        result["nodes_called"] = tracker.nodes_called
-        result["node_sequence"] = tracker.nodes_called
-        result["errors"] = tracker.errors + [{
-            "node": "graph_execution",
-            "error": str(e),
-            "error_type": type(e).__name__
-        }]
     
-    return result
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Unexpected error: {str(e)}",
+            "model": model,
+            "version": version,
+            "query": query,
+            "timed_out": False,
+            "error_type": type(e).__name__
+        }
 
 
 def run_all_tests():
-    """Run all combinations of models, versions, and queries."""
+    """
+    Run all combinations of models, versions, and queries.
+    
+    Uses ThreadPoolExecutor to run tests concurrently, dramatically
+    reducing execution time for I/O-bound LLM testing.
+    """
     print("=" * 80)
     print("Starting Systematic Model Testing")
     print("=" * 80)
     print(f"\nModels: {len(MODELS_TO_TEST)}")
     print(f"Versions: {len(VERSIONS)}")
     print(f"Queries: {len(TEST_QUERIES)}")
-    print(f"Total tests: {len(MODELS_TO_TEST) * len(VERSIONS) * len(TEST_QUERIES)}\n")
-    
-    test_count = 0
     total_tests = len(MODELS_TO_TEST) * len(VERSIONS) * len(TEST_QUERIES)
+    print(f"Total tests: {total_tests}")
+    print(f"Max concurrent workers: {MAX_WORKERS}")
+    print(f"Timeout per test: {TEST_TIMEOUT}s\n")
     
+    # Build list of all test tasks
+    tasks = []
     for model_info in MODELS_TO_TEST:
-        model_name = model_info["name"]
-        print(f"\n{'='*80}")
-        print(f"Testing Model: {model_name} ({model_info['size']}, {model_info['context']} context)")
-        print(f"{'='*80}")
-        
         for version in VERSIONS:
-            print(f"\n  Version: {version}")
-            
-            # Import the graph with the current model
-            graph = import_version_graph(version, model_name)
-            
-            if graph is None:
-                print(f"    WARNING: Skipping {version} - failed to load graph")
-                continue
-            
             for query in TEST_QUERIES:
-                test_count += 1
-                print(f"\n    [{test_count}/{total_tests}] Query: '{query[:50]}...'")
-                
-                # Run the test
-                result = run_test(graph, query, version, model_name)
+                tasks.append({
+                    "model": model_info["name"],
+                    "model_info": model_info,
+                    "version": version,
+                    "query": query
+                })
+    
+    # Run tests concurrently
+    completed_count = 0
+    start_time = time.time()
+    
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        # Submit all tasks
+        future_to_task = {
+            executor.submit(
+                run_test_in_process,
+                task["model"],
+                task["version"],
+                task["query"]
+            ): task
+            for task in tasks
+        }
+        
+        # Process results as they complete
+        for future in as_completed(future_to_task):
+            task = future_to_task[future]
+            completed_count += 1
+            
+            try:
+                result = future.result()
                 
                 # Display immediate feedback
+                model_name = task["model"]
+                version = task["version"]
+                query = task["query"]
+                
                 if result.get("timed_out"):
                     status = "[TIMEOUT]"
-                    time_str = f"{result['total_time']:.2f}s (TIMEOUT)"
+                    time_str = f"{result.get('total_time', TEST_TIMEOUT):.2f}s"
                 else:
-                    status = "[OK]" if result["success"] else "[FAIL]"
-                    time_str = f"{result['total_time']:.2f}s"
+                    status = "[OK]" if result.get("success") else "[FAIL]"
+                    time_str = f"{result.get('total_time', 0):.2f}s"
                 
-                nodes_str = " -> ".join(result["node_sequence"])
+                nodes_str = " -> ".join(result.get("node_sequence", []))
                 
-                print(f"    {status} Time: {time_str}")
-                print(f"       Nodes: {nodes_str}")
+                print(f"[{completed_count}/{total_tests}] {status} {model_name} | {version} | {query[:40]}...")
+                print(f"  Time: {time_str} | Nodes: {nodes_str}")
                 
-                if result["errors"]:
-                    print(f"       Errors: {len(result['errors'])}")
+                if result.get("errors"):
+                    print(f"  Errors: {len(result['errors'])}")
                     for err in result["errors"][:2]:  # Show first 2 errors
-                        print(f"          - {err.get('node', 'unknown')}: {str(err.get('error', 'unknown'))[:60]}")
+                        print(f"    - {err.get('node', 'unknown')}: {str(err.get('error', 'unknown'))[:60]}")
                 
                 # Store result
                 test_results.append(result)
                 
-                # Small delay to avoid overwhelming the system
-                time.sleep(0.5)
+            except Exception as e:
+                print(f"[{completed_count}/{total_tests}] [ERROR] Failed to process result: {e}")
+                # Store error result
+                test_results.append({
+                    "success": False,
+                    "error": str(e),
+                    "model": task["model"],
+                    "version": task["version"],
+                    "query": task["query"]
+                })
     
+    elapsed_time = time.time() - start_time
     print(f"\n{'='*80}")
     print("Testing Complete!")
+    print(f"Total time: {elapsed_time:.2f}s ({elapsed_time/60:.1f} minutes)")
+    print(f"Average time per test: {elapsed_time/total_tests:.2f}s")
     print(f"{'='*80}\n")
 
 
 def generate_report():
-    """Generate a comprehensive report from test results."""
+    """
+    Generate a comprehensive report from test results using pandas.
+    
+    Exports data to multiple formats:
+    - JSON (raw data)
+    - CSV (summary statistics)
+    - Console output (markdown tables)
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Only save JSON data, skip Markdown report
+    # Save raw JSON data
     json_file = f"model_test_data_{timestamp}.json"
     with open(json_file, 'w') as f:
         json.dump(test_results, f, indent=2)
     
     print(f"\nRaw data saved: {json_file}")
     
-    # Print summary to console instead of Markdown file
-    print("\n" + "=" * 80)
-    print("TEST SUMMARY")
-    print("=" * 80)
-    
-    # Print executive summary table
-    print("\n## Executive Summary\n")
-    print("| Model | Version | Success Rate | Avg Time | Total Errors | Timeouts |")
-    print("|-------|---------|--------------|----------|--------------|----------|")
-    
-    for model_info in MODELS_TO_TEST:
-        model_name = model_info["name"]
-        for version in VERSIONS:
-            filtered = [r for r in test_results 
-                       if r["model"] == model_name and r["version"] == version]
+    # Use pandas for analysis if available
+    try:
+        import pandas as pd
+        
+        # Convert results to DataFrame
+        df = pd.DataFrame(test_results)
+        
+        # Ensure required columns exist
+        if 'total_time' not in df.columns:
+            df['total_time'] = 0
+        if 'timed_out' not in df.columns:
+            df['timed_out'] = False
+        
+        # Calculate error counts
+        df['error_count'] = df['errors'].apply(lambda x: len(x) if isinstance(x, list) else 0)
+        
+        # Print summary to console
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY (via Pandas)")
+        print("=" * 80)
+        
+        # Executive Summary
+        print("\n## Executive Summary\n")
+        summary = df.groupby(['model', 'version']).agg({
+            'success': ['mean', 'count'],
+            'total_time': 'mean',
+            'error_count': 'sum',
+            'timed_out': 'sum'
+        }).round(2)
+        
+        # Flatten column names
+        summary.columns = ['success_rate', 'test_count', 'avg_time', 'total_errors', 'timeouts']
+        summary['success_rate'] = (summary['success_rate'] * 100).round(1)
+        
+        # Display as markdown table
+        print(summary.to_markdown())
+        
+        # Save summary to CSV
+        csv_file = f"model_test_summary_{timestamp}.csv"
+        summary.to_csv(csv_file)
+        print(f"\nSummary statistics saved: {csv_file}")
+        
+        # Node Execution Patterns
+        print("\n## Node Execution Patterns\n")
+        for query in TEST_QUERIES:
+            print(f"\n### Query: '{query}'\n")
+            query_df = df[df['query'] == query]
             
-            if not filtered:
-                continue
+            for _, row in query_df.iterrows():
+                nodes = ' -> '.join(row.get('node_sequence', [])) if row.get('node_sequence') else "(none)"
+                if row.get('timed_out'):
+                    status = "[TIMEOUT]"
+                else:
+                    status = "[OK]" if row.get('success') else "[FAIL]"
+                print(f"  {status} [{row['model']}] [{row['version']}]: {nodes}")
+        
+        # Error Summary
+        total_errors = df['error_count'].sum()
+        if total_errors > 0:
+            print(f"\n## Errors: {int(total_errors)} total\n")
+            error_df = df[df['error_count'] > 0]
             
-            success_rate = sum(1 for r in filtered if r["success"]) / len(filtered) * 100
-            avg_time = sum(r["total_time"] for r in filtered) / len(filtered)
-            total_errors = sum(len(r["errors"]) for r in filtered)
-            timeouts = sum(1 for r in filtered if r.get("timed_out", False))
-            
-            timeout_str = f"{timeouts}" if timeouts > 0 else "0"
-            print(f"| {model_name} | {version} | {success_rate:.1f}% | {avg_time:.2f}s | {total_errors} | {timeout_str} |")
+            for _, row in error_df.iterrows():
+                print(f"  [{row['model']}] [{row['version']}] {row['query'][:50]}...")
+                for err in row['errors']:
+                    print(f"    - {err.get('node', 'unknown')}: {str(err.get('error', 'unknown'))[:80]}")
+        
+        print("\n" + "=" * 80)
+        
+        return json_file, csv_file
     
-    # Print node execution summary
-    print("\n## Node Execution Patterns\n")
-    for query in TEST_QUERIES:
-        print(f"\n### Query: '{query}'\n")
+    except ImportError:
+        # Fallback to manual reporting if pandas not available
+        print("\nNote: Install pandas for enhanced reporting (pip install pandas)")
+        print("\n" + "=" * 80)
+        print("TEST SUMMARY")
+        print("=" * 80)
+        
+        # Manual summary table
+        print("\n## Executive Summary\n")
+        print("| Model | Version | Success Rate | Avg Time | Total Errors | Timeouts |")
+        print("|-------|---------|--------------|----------|--------------|----------|")
+        
         for model_info in MODELS_TO_TEST:
             model_name = model_info["name"]
             for version in VERSIONS:
-                query_results = [r for r in test_results 
-                               if r["query"] == query and r["model"] == model_name and r["version"] == version]
+                filtered = [r for r in test_results 
+                           if r.get("model") == model_name and r.get("version") == version]
                 
-                if query_results:
-                    result = query_results[0]
-                    nodes = ' -> '.join(result['node_sequence']) if result['node_sequence'] else "(none)"
-                    if result.get('timed_out'):
-                        status = "[TIMEOUT]"
-                    else:
-                        status = "[OK]" if result['success'] else "[FAIL]"
-                    print(f"  {status} [{model_name}] [{version}]: {nodes}")
+                if not filtered:
+                    continue
+                
+                success_rate = sum(1 for r in filtered if r.get("success")) / len(filtered) * 100
+                avg_time = sum(r.get("total_time", 0) for r in filtered) / len(filtered)
+                total_errors = sum(len(r.get("errors", [])) for r in filtered)
+                timeouts = sum(1 for r in filtered if r.get("timed_out", False))
+                
+                print(f"| {model_name} | {version} | {success_rate:.1f}% | {avg_time:.2f}s | {total_errors} | {timeouts} |")
+        
+        print("\n" + "=" * 80)
+        
+        return json_file
+
+
+def parse_arguments():
+    """
+    Parse command-line arguments for fine-grained test control.
     
-    # Print error summary if any
-    total_errors = sum(len(r["errors"]) for r in test_results)
-    if total_errors > 0:
-        print(f"\n## Errors: {total_errors} total\n")
-        for result in test_results:
-            if result["errors"]:
-                print(f"  [{result['model']}] [{result['version']}] {result['query'][:50]}...")
-                for err in result["errors"]:
-                    print(f"    - {err.get('node', 'unknown')}: {str(err.get('error', 'unknown'))[:80]}")
+    Allows users to run specific test subsets without editing code.
+    """
+    import argparse
     
-    print("\n" + "=" * 80)
+    parser = argparse.ArgumentParser(
+        description="Systematic testing for LLM models across LangGraph versions",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Run all tests
+  python stress_test_architectures.py
+  
+  # Test only specific model
+  python stress_test_architectures.py --only-model "gpt-oss:20b"
+  
+  # Test specific version
+  python stress_test_architectures.py --only-version v2
+  
+  # Test with custom query
+  python stress_test_architectures.py --only-query "best pizza in Chicago"
+  
+  # Increase parallelism
+  python stress_test_architectures.py --max-workers 10
+  
+  # Reduce timeout for faster testing
+  python stress_test_architectures.py --timeout 60
+        """
+    )
     
-    return json_file
+    parser.add_argument(
+        "--only-model",
+        type=str,
+        help="Test only the specified model (e.g., 'gpt-oss:20b')"
+    )
+    
+    parser.add_argument(
+        "--only-version",
+        type=str,
+        choices=["v1", "v2", "v3"],
+        help="Test only the specified version"
+    )
+    
+    parser.add_argument(
+        "--only-query",
+        type=str,
+        help="Test only the specified query (exact match)"
+    )
+    
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=MAX_WORKERS,
+        help=f"Number of parallel test executions (default: {MAX_WORKERS})"
+    )
+    
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=TEST_TIMEOUT,
+        help=f"Timeout per test in seconds (default: {TEST_TIMEOUT})"
+    )
+    
+    parser.add_argument(
+        "--temperature",
+        type=str,
+        default=TEST_TEMPERATURE,
+        help=f"Temperature setting for models (default: {TEST_TEMPERATURE})"
+    )
+    
+    parser.add_argument(
+        "--list-options",
+        action="store_true",
+        help="List all available models, versions, and queries"
+    )
+    
+    return parser.parse_args()
 
 
 def main():
-    """Main execution function."""
+    """Main execution function with CLI argument support."""
+    global MAX_WORKERS, TEST_TIMEOUT, TEST_TEMPERATURE, MODELS_TO_TEST, VERSIONS, TEST_QUERIES
+    
+    # Parse arguments
+    args = parse_arguments()
+    
+    # Handle --list-options
+    if args.list_options:
+        print("Available Models:")
+        for model in MODELS_TO_TEST:
+            print(f"  - {model['name']} ({model['size']}, {model['context']} context)")
+        
+        print("\nAvailable Versions:")
+        for version in VERSIONS:
+            print(f"  - {version}")
+        
+        print("\nAvailable Queries:")
+        for query in TEST_QUERIES:
+            print(f"  - {query}")
+        
+        return
+    
+    # Apply CLI overrides
+    MAX_WORKERS = args.max_workers
+    TEST_TIMEOUT = args.timeout
+    TEST_TEMPERATURE = args.temperature
+    
+    # Filter test configuration based on arguments
+    models_to_test = MODELS_TO_TEST
+    versions_to_test = VERSIONS
+    queries_to_test = TEST_QUERIES
+    
+    if args.only_model:
+        models_to_test = [m for m in MODELS_TO_TEST if m["name"] == args.only_model]
+        if not models_to_test:
+            print(f"Error: Model '{args.only_model}' not found.")
+            print("Use --list-options to see available models.")
+            return
+    
+    if args.only_version:
+        versions_to_test = [args.only_version]
+    
+    if args.only_query:
+        queries_to_test = [q for q in TEST_QUERIES if q == args.only_query]
+        if not queries_to_test:
+            print(f"Error: Query '{args.only_query}' not found.")
+            print("Use --list-options to see available queries.")
+            return
+    
+    # Update global lists for run_all_tests()
+    original_models = MODELS_TO_TEST
+    original_versions = VERSIONS
+    original_queries = TEST_QUERIES
+    
+    MODELS_TO_TEST = models_to_test
+    VERSIONS = versions_to_test
+    TEST_QUERIES = queries_to_test
+    
     try:
-        # Run all tests
+        # Run filtered tests
         run_all_tests()
         
         # Generate report
-        json_file = generate_report()
+        report_files = generate_report()
         
         print("\n" + "="*80)
         print("Testing Complete!")
         print("="*80)
-        print(f"\nJSON data available in: {json_file}")
+        
+        if isinstance(report_files, tuple):
+            json_file, csv_file = report_files
+            print(f"\nJSON data: {json_file}")
+            print(f"CSV summary: {csv_file}")
+        else:
+            print(f"\nJSON data: {report_files}")
+        
         print("\nQuick Summary:")
         
         # Print quick stats
         total_tests = len(test_results)
-        successful = sum(1 for r in test_results if r["success"])
+        successful = sum(1 for r in test_results if r.get("success"))
         failed = total_tests - successful
         timeouts = sum(1 for r in test_results if r.get("timed_out", False))
-        avg_time = sum(r["total_time"] for r in test_results) / total_tests if test_results else 0
+        avg_time = sum(r.get("total_time", 0) for r in test_results) / total_tests if test_results else 0
         
         print(f"  Total Tests: {total_tests}")
         if total_tests > 0:
@@ -482,6 +581,11 @@ def main():
         if test_results:
             print("\nGenerating partial report from completed tests...")
             generate_report()
+    finally:
+        # Restore original values
+        MODELS_TO_TEST = original_models
+        VERSIONS = original_versions
+        TEST_QUERIES = original_queries
 
 
 if __name__ == "__main__":
