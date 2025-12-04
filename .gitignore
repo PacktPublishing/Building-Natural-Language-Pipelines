@@ -193,6 +193,7 @@ ch6/jupyter-notebooks/wandb/*
 ch6/adding-observability/wandb/*
 ch6/adding-evaluation/wandb/*
 .pdf
+*.csv
 *.txt
 ch8/named-entity-recognition/ner_results/*.csv
 .langgraph_api
