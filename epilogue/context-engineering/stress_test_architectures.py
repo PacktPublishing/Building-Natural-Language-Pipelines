@@ -548,7 +548,7 @@ Examples:
 
 def main():
     """Main execution function with CLI argument support."""
-    global TEST_TIMEOUT, TEST_TEMPERATURE, MODELS_TO_TEST, VERSIONS, TEST_QUERIES
+    global MAX_WORKERS, TEST_TIMEOUT, TEST_TEMPERATURE, MODELS_TO_TEST, VERSIONS, TEST_QUERIES
     
     # Parse arguments
     args = parse_arguments()
@@ -570,6 +570,7 @@ def main():
         return
     
     # Apply CLI overrides
+    MAX_WORKERS = args.max_workers
     TEST_TIMEOUT = args.timeout
     TEST_TEMPERATURE = args.temperature
     
