@@ -105,7 +105,6 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
             timeout=TEST_TIMEOUT
         )
         
-        stdout = result.stdout
         worker_logs = ""
         json_data = {}
         
