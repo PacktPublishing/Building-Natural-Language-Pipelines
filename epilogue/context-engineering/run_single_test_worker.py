@@ -82,6 +82,7 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
         "query": query,
         "version": version,
         "model": model,
+        "temperature": temperature,
         "success": False,
         "total_time": 0,
         "nodes_called": [],

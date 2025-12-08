@@ -252,7 +252,8 @@ def run_all_tests():
     total_tests = len(MODELS_TO_TEST) * len(VERSIONS) * len(TEST_QUERIES)
     print(f"Total tests: {total_tests}")
     print(f"Max concurrent workers: {MAX_WORKERS}")
-    print(f"Timeout per test: {TEST_TIMEOUT}s\n")
+    print(f"Timeout per test: {TEST_TIMEOUT}s")
+    print(f"Temperature: {TEST_TEMPERATURE}\n")
     
     # Build list of all test tasks
     tasks = []
