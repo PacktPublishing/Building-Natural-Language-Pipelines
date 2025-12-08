@@ -26,7 +26,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 # Test Configuration
 MODELS_TO_TEST = [
