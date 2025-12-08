@@ -27,12 +27,17 @@ from haystack.utils import Secret
 load_dotenv(".env")
 
 # Helper function to create fresh generator and embedder instances
-def create_llm_components():
+def create_llm_components(embedder_model="text-embedding-3-small"):
     """Create fresh instances of generator and embedder.
     
     Each component in the pipeline requires its own generator and embedder instances
     to avoid conflicts during parallel execution. This function creates new instances
     with the same configuration.
+    
+    Args:
+        embedder_model (str): The embedding model to use. Options:
+            - "text-embedding-3-small" (default)
+            - "text-embedding-3-large"
     
     Returns:
         tuple: (generator, embedder) - Fresh instances of OpenAI generator and embedder
@@ -43,7 +48,7 @@ def create_llm_components():
         api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
     )
     embedder = OpenAITextEmbedder(
-        model="text-embedding-3-small",
+        model=embedder_model,
         api_key=Secret.from_token(os.getenv("OPENAI_API_KEY"))
     )
     
@@ -77,6 +82,10 @@ class SDGGenerator:
     """
     
     def __init__(self, 
+                 kg_generator_instance,
+                 kg_embedder_instance,
+                 test_generator_instance,
+                 test_embedder_instance,
                  provided_query_distribution, 
                  provided_test_size, 
                  sd_file_name):
@@ -84,6 +93,10 @@ class SDGGenerator:
         Initialize the Synthetic Data Generator SuperComponent.
         
         Args:
+            kg_generator_instance: Generator instance for knowledge graph generation
+            kg_embedder_instance: Embedder instance for knowledge graph generation
+            test_generator_instance: Generator instance for synthetic test generation
+            test_embedder_instance: Embedder instance for synthetic test generation
             provided_query_distribution (list[tuple]): Distribution of query types for synthetic test generation.
                 Format: [(query_type, probability), ...]
                 Example: [("single_hop", 0.3), ("multi_hop_specific", 0.3), ("multi_hop_abstract", 0.4)]
@@ -94,6 +107,10 @@ class SDGGenerator:
             API keys for LLM providers (OpenAI, Ollama, etc.) should be configured through
             environment variables or passed directly to the create_llm_components() function.
         """
+        self.kg_generator_instance = kg_generator_instance
+        self.kg_embedder_instance = kg_embedder_instance
+        self.test_generator_instance = test_generator_instance
+        self.test_embedder_instance = test_embedder_instance
         self.query_distribution = provided_query_distribution
         self.test_size = provided_test_size
         self.sd_file_name = sd_file_name
@@ -141,19 +158,17 @@ class SDGGenerator:
         # Note: Each component receives its own generator and embedder instances to avoid
         # conflicts during pipeline execution. Sharing instances can cause state issues.
         
-        # Create dedicated instances for knowledge graph generation
-        kg_gen, kg_embed = create_llm_components()
+        # Use the generator and embedder instances provided during initialization
         kg_generator = KnowledgeGraphGenerator(
-            generator=kg_gen,
-            embedder=kg_embed,
+            generator=self.kg_generator_instance,
+            embedder=self.kg_embedder_instance,
             apply_transforms=True
         )
 
-        # Create separate instances for synthetic test generation
-        test_gen, test_embed = create_llm_components()
+        # Use the separate test generator and embedder instances
         test_generator = SyntheticTestGenerator(
-            generator=test_gen,
-            embedder=test_embed,
+            generator=self.test_generator_instance,
+            embedder=self.test_embedder_instance,
             test_size=self.test_size,
             query_distribution=self.query_distribution,
         )
@@ -213,22 +228,19 @@ if __name__ == "__main__":
     This example demonstrates how to:
     1. Configure query distribution for different test types
     2. Combine multiple data sources (URLs and PDF files)
-    3. Generate a synthetic test dataset
+    3. Generate synthetic test datasets with both small and large embedding models
     
     The generator creates separate LLM instances for each component internally,
     ensuring stable execution without conflicts between components.
     """
 
-    # Define sources: separate URLs and files
-    pdf_file = Path("./data_for_indexing/howpeopleuseai.pdf")
+    files = [Path("./data_for_indexing/howpeopleuseai.pdf")]
     
-    # URLs for web content (will be fetched and converted to documents)
+    # URLs for web content
     urls = [
             "https://www.bbc.com/news/articles/c2l799gxjjpo",
             "https://www.brookings.edu/articles/how-artificial-intelligence-is-transforming-the-world/"
     ]
-    # Files for local content (PDFs will be converted to documents)
-    files = [pdf_file]
 
     # Define query distribution:
     # - 30% single-hop questions (simple, direct questions)
@@ -239,23 +251,80 @@ if __name__ == "__main__":
                     ("multi_hop_specific", 0.3), 
                     ("multi_hop_abstract", 0.4)
                 ]
-    file_name = "data_for_eval/synthetic_tests_advanced_branching_10.csv"
     
-    # Create SDGGenerator with refactored architecture
-    # Each internal component (KG generator, test generator) receives its own LLM instances
-    sdg_generator = SDGGenerator(
+    # ========== EXPERIMENT 1: Small Embedding Model ==========
+    print("\n" + "="*70)
+    print("🔬 EXPERIMENT 1: Generating Synthetic Data with Small Embedding Model")
+    print("="*70)
+    
+    file_name_small = "data_for_eval/synthetic_tests_small_embedding_10.csv"
+    
+    # Create separate LLM instances for each component with small embedder
+    kg_gen_small, kg_embed_small = create_llm_components(embedder_model="text-embedding-3-small")
+    test_gen_small, test_embed_small = create_llm_components(embedder_model="text-embedding-3-small")
+    
+    print(f"📋 Configuration:")
+    print(f"   • Embedder: text-embedding-3-small")
+    print(f"   • Generator: gpt-4o-mini")
+    print(f"   • Test size: 10 samples")
+    print(f"   • Output: {file_name_small}")
+    
+    # Create SDGGenerator for small embeddings
+    sdg_generator_small = SDGGenerator(
+        kg_generator_instance=kg_gen_small,
+        kg_embedder_instance=kg_embed_small,
+        test_generator_instance=test_gen_small,
+        test_embedder_instance=test_embed_small,
         provided_query_distribution=query_dist,
         provided_test_size=10,
-        sd_file_name=file_name
+        sd_file_name=file_name_small
     )
 
     # Run pipeline with both input types
-    # The pipeline will:
-    # 1. Fetch and convert all documents
-    # 2. Generate a knowledge graph
-    # 3. Create synthetic test cases
-    # 4. Save results to the specified CSV file
-    result = sdg_generator.run(urls=urls, sources=files)
+    result_small = sdg_generator_small.run(urls=urls, sources=files)
     
-    print(f"\n✅ Synthetic dataset generated successfully!")
-    print(f"📁 Saved to: {result.get('saved_path', file_name)}")
+    print(f"\n✅ Small embedding synthetic dataset generated successfully!")
+    print(f"📁 Saved to: {result_small.get('saved_path', file_name_small)}")
+    
+    # ========== EXPERIMENT 2: Large Embedding Model ==========
+    print("\n" + "="*70)
+    print("🔬 EXPERIMENT 2: Generating Synthetic Data with Large Embedding Model")
+    print("="*70)
+    
+    file_name_large = "data_for_eval/synthetic_tests_large_embedding_10.csv"
+    
+    # Create separate LLM instances for each component with large embedder
+    kg_gen_large, kg_embed_large = create_llm_components(embedder_model="text-embedding-3-large")
+    test_gen_large, test_embed_large = create_llm_components(embedder_model="text-embedding-3-large")
+    
+    print(f"📋 Configuration:")
+    print(f"   • Embedder: text-embedding-3-large")
+    print(f"   • Generator: gpt-4o-mini")
+    print(f"   • Test size: 10 samples")
+    print(f"   • Output: {file_name_large}")
+    
+    # Create SDGGenerator for large embeddings
+    sdg_generator_large = SDGGenerator(
+        kg_generator_instance=kg_gen_large,
+        kg_embedder_instance=kg_embed_large,
+        test_generator_instance=test_gen_large,
+        test_embedder_instance=test_embed_large,
+        provided_query_distribution=query_dist,
+        provided_test_size=10,
+        sd_file_name=file_name_large
+    )
+
+    # Run pipeline with both input types
+    result_large = sdg_generator_large.run(urls=urls, sources=files)
+    
+    print(f"\n✅ Large embedding synthetic dataset generated successfully!")
+    print(f"📁 Saved to: {result_large.get('saved_path', file_name_large)}")
+    
+    # ========== SUMMARY ==========
+    print("\n" + "="*70)
+    print("🎉 BOTH EXPERIMENTS COMPLETED SUCCESSFULLY!")
+    print("="*70)
+    print(f"📊 Small Embedding Dataset: {result_small.get('saved_path', file_name_small)}")
+    print(f"📊 Large Embedding Dataset: {result_large.get('saved_path', file_name_large)}")
+    print("\n✨ You can now use these datasets to evaluate your RAG system!")
+    print("="*70)

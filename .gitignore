@@ -202,3 +202,4 @@ ch8/named-entity-recognition/ner_results/*.csv
 ch9/context-engineering/yelp-navigator-v3/memory.sqlite
 !epilogue/context-engineering/docs/results-temperature-1_fine-grain.json
 !epilogue/context-engineering/docs/results-temperature-0_fine-grain.json
+!ch6/jupyter-notebooks/data_for_eval/*

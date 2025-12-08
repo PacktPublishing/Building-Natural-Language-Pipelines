@@ -25,6 +25,7 @@ MODELS_TO_TEST = [
     {"name": "gpt-oss:20b", "size": "14GB", "context": "128K"},
     {"name": "deepseek-r1:latest", "size": "5.2GB", "context": "128K"},
     {"name": "qwen3:latest", "size": "5.2GB", "context": "40K"},
+    {"name": "gpt-4o-mini", "size": "cloud", "context": "128K"},
 ]
 
 TEST_QUERIES = [
@@ -34,6 +35,11 @@ TEST_QUERIES = [
 ]
 
 VERSIONS = ["v1", "v2", "v3"]
+
+# Execution configuration
+MAX_WORKERS = 1  # WARNING: High values may consume the timeout budget quickly if using Ollama
+TEST_TIMEOUT = 120  # Timeout in seconds (2 minutes)
+TEST_TEMPERATURE = "0.0"  # Temperature setting for models
 
 # Results storage
 test_results = []
