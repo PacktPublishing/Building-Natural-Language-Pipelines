@@ -89,7 +89,6 @@ def run_single_test(version: str, model: str, query: str, temperature: str = "0.
         "node_sequence": [],
         "errors": [],
         "error_recovery": False,
-        "final_state_keys": [],
         "last_two_messages": [],
         "node_outputs": [],
         "current_node": None,  # Track which node is currently executing
