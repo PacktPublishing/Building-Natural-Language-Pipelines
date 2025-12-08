@@ -33,6 +33,7 @@ MODELS_TO_TEST = [
     {"name": "gpt-oss:20b", "size": "14GB", "context": "128K"},
     {"name": "deepseek-r1:latest", "size": "5.2GB", "context": "128K"},
     {"name": "qwen3:latest", "size": "5.2GB", "context": "40K"},
+    {"name": "gpt-4o-mini", "size": "cloud", "context": "128K"}
 ]
 
 TEST_QUERIES = [
@@ -231,20 +232,30 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
             pass
 
 
-def run_all_tests():
+def run_all_tests(models=None, versions=None, queries=None):
     """
     Run all combinations of models, versions, and queries.
+    
+    Args:
+        models: List of model dicts to test. If None, uses MODELS_TO_TEST.
+        versions: List of version strings to test. If None, uses VERSIONS.
+        queries: List of query strings to test. If None, uses TEST_QUERIES.
     
     Uses ThreadPoolExecutor to run tests concurrently, dramatically
     reducing execution time for I/O-bound LLM testing.
     """
+    # Use provided parameters or fall back to global defaults
+    models_to_test = models if models is not None else MODELS_TO_TEST
+    versions_to_test = versions if versions is not None else VERSIONS
+    queries_to_test = queries if queries is not None else TEST_QUERIES
+    
     print("=" * 80)
     print("Starting Systematic Model Testing")
     print("=" * 80)
-    print(f"\nModels: {len(MODELS_TO_TEST)}")
-    print(f"Versions: {len(VERSIONS)}")
-    print(f"Queries: {len(TEST_QUERIES)}")
-    total_tests = len(MODELS_TO_TEST) * len(VERSIONS) * len(TEST_QUERIES)
+    print(f"\nModels: {len(models_to_test)}")
+    print(f"Versions: {len(versions_to_test)}")
+    print(f"Queries: {len(queries_to_test)}")
+    total_tests = len(models_to_test) * len(versions_to_test) * len(queries_to_test)
     print(f"Total tests: {total_tests}")
     print(f"Max concurrent workers: {MAX_WORKERS}")
     print(f"Timeout per test: {TEST_TIMEOUT}s")
@@ -252,9 +263,9 @@ def run_all_tests():
     
     # Build list of all test tasks
     tasks = []
-    for model_info in MODELS_TO_TEST:
-        for version in VERSIONS:
-            for query in TEST_QUERIES:
+    for model_info in models_to_test:
+        for version in versions_to_test:
+            for query in queries_to_test:
                 tasks.append({
                     "model": model_info["name"],
                     "model_info": model_info,
@@ -543,7 +554,7 @@ Examples:
 
 def main():
     """Main execution function with CLI argument support."""
-    global MAX_WORKERS, TEST_TIMEOUT, TEST_TEMPERATURE, MODELS_TO_TEST, VERSIONS, TEST_QUERIES
+    global MAX_WORKERS, TEST_TIMEOUT, TEST_TEMPERATURE
     
     # Parse arguments
     args = parse_arguments()
@@ -591,18 +602,9 @@ def main():
             print("Use --list-options to see available queries.")
             return
     
-    # Update global lists for run_all_tests()
-    original_models = MODELS_TO_TEST
-    original_versions = VERSIONS
-    original_queries = TEST_QUERIES
-    
-    MODELS_TO_TEST = models_to_test
-    VERSIONS = versions_to_test
-    TEST_QUERIES = queries_to_test
-    
     try:
-        # Run filtered tests
-        run_all_tests()
+        # Run filtered tests by passing parameters
+        run_all_tests(models=models_to_test, versions=versions_to_test, queries=queries_to_test)
         
         # Generate report
         report_files = generate_report()
@@ -649,11 +651,6 @@ def main():
         if test_results:
             print("\nGenerating partial report from completed tests...")
             generate_report()
-    finally:
-        # Restore original values
-        MODELS_TO_TEST = original_models
-        VERSIONS = original_versions
-        TEST_QUERIES = original_queries
 
 
 if __name__ == "__main__":
