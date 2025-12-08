@@ -307,6 +307,11 @@ uv run python stress_test_architectures.py --only-version v3
 uv run python stress_test_architectures.py --only-query "best pizza places in Chicago"
 ```
 
+**Increase workers: WARNING, increasing workers for models called using Ollama may result in delays and "timeouts", recommended usage for cloud-based models**
+```bash
+uv run python stress_test_architectures.py --only-model "gpt-4o-mini" --max-workers 5
+```
+
 **Customize execution parameters:**
 ```bash
 # Reduce timeout for quicker results
