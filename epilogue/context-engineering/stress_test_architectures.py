@@ -202,8 +202,6 @@ def run_test_in_process(model: str, version: str, query: str) -> Dict[str, Any]:
                     
                     if saved_progress.get("errors"):
                         partial_result["errors"].extend(saved_progress["errors"])
-                    partial_result["node_outputs"] = saved_progress.get("node_outputs", [])
-                    partial_result["total_time"] = saved_progress.get("total_time", TEST_TIMEOUT)
         except Exception as e:
             partial_result["progress_recovery_error"] = str(e)
         finally:
