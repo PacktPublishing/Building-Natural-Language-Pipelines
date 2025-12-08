@@ -533,6 +533,13 @@ Examples:
         help="List all available models, versions, and queries"
     )
     
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=MAX_WORKERS,
+        help=f"Number of parallel test executions (default: {MAX_WORKERS})"
+    )
+    
     return parser.parse_args()
 
 
