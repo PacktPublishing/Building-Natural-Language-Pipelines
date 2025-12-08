@@ -274,6 +274,7 @@ def main():
     )
     
     # Output JSON to stdout for the parent process to read
+    print("___JSON_RESULT_START___")
     print(json.dumps(result))
 
 
