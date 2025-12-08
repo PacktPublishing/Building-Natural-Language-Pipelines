@@ -491,6 +491,9 @@ Examples:
   
   # Reduce timeout for faster testing
   python stress_test_architectures.py --timeout 60
+  
+  # Increase parallelism
+  python stress_test_architectures.py --max-workers 10
         """
     )
     
