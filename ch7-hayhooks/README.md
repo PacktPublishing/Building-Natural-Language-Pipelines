@@ -3,6 +3,11 @@
  
 In this chapter you will learn about how to deploy multiple Haystack pipelines as REST API services that can interact with one another using Hayhooks, providing production-ready endpoints for document indexing and intelligent question answering. This is Part II in chapter 7, covering an advanced case where you will learn to deploy an indexing and advanced retrieval pipelines that can dynamically upload a PDF and web urls and answer questions about the uploaded material. In [Part I](../ch7/README.md) we learn about a simpler case where we deploy a Haystack pipeline as a REST API using FastAPI and dockerize the application.
 
+## 🔒 Security
+
+This deployment includes nginx reverse proxy with authentication. Your Hayhooks endpoints are secured and not accessible to the world.
+
+See [SECURITY.md](SECURITY.md) for complete security setup and configuration details.
 
 ## Quick Start
 
@@ -29,14 +34,39 @@ HAYHOOKS_PIPELINES_DIR=./pipelines
 HAYHOOKS_SHOW_TRACEBACKS=true
 ```
 
-2. **Run Hayhooks**:
+2. **Setup Authentication** (Required for production):
+```bash
+# Generate credentials for API access
+./scripts/generate_password.sh
+```
 
-**Option A: Local Development (without Docker)**
+3. **Run Hayhooks**:
+
+**Option A: Local Development (without security)**
 ```bash
 uv run hayhooks run
 ```
 
-**Option B: Using Docker (Recommended)**
+**Option B: Using Docker Compose with nginx Security (Recommended)**
+
+```bash
+# Start both Hayhooks and nginx with authentication
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f
+
+# Test the secured API
+./scripts/test_secured_api.sh
+
+# Access protected endpoints with authentication
+curl -u username:password http://localhost:8080/status
+
+# Stop services
+docker-compose down
+```
+
+**Option C: Using Docker (Single Container, No Security)**
 
 1. **Build the Docker image**:
 ```bash
@@ -60,7 +90,7 @@ docker logs -f hayhooks-rag
 
 4. **Test the API**:
 ```bash
-# Verify the server is running
+# Verify the server is running (unsecured)
 curl http://localhost:1416/status
 ```
 

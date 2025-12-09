@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  hayhooks:
+    build: .
+    container_name: hayhooks-backend
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - HAYHOOKS_HOST=0.0.0.0
+      - HAYHOOKS_PORT=1416
+    volumes:
+      - ./qdrant_storage:/app/qdrant_storage
+    # Don't expose port directly - only accessible via nginx
+    expose:
+      - "1416"
+    networks:
+      - hayhooks-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1416/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: hayhooks-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+    networks:
+      - hayhooks-network
+    depends_on:
+      - hayhooks
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  hayhooks-network:
+    driver: bridge

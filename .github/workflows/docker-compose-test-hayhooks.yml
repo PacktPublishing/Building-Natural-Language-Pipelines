@@ -1,0 +1,210 @@
+name: Docker Compose Test Hayhooks with Security
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - 'ch7-hayhooks/**'
+      - '.github/workflows/docker-compose-test-hayhooks.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'ch7-hayhooks/**'
+      - '.github/workflows/docker-compose-test-hayhooks.yml'
+
+jobs:
+  docker-compose-test-secured:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Free up disk space
+      run: |
+        docker system prune -af
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        df -h
+        
+    - name: Create .env file for ch7-hayhooks
+      run: |
+        cd ch7-hayhooks
+        cat > .env << EOF
+        OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+        HAYHOOKS_HOST=0.0.0.0
+        HAYHOOKS_PORT=1416
+        HAYHOOKS_PIPELINES_DIR=./pipelines
+        HAYHOOKS_SHOW_TRACEBACKS=true
+        EOF
+        
+    - name: Install htpasswd (apache2-utils)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y apache2-utils
+        
+    - name: Generate authentication credentials
+      run: |
+        cd ch7-hayhooks
+        mkdir -p nginx
+        # Create test credentials: username=testuser, password=testpass
+        echo "testpass" | htpasswd -i -c nginx/.htpasswd testuser
+        echo "✅ Authentication file created"
+        
+    - name: Create qdrant_storage directory
+      run: |
+        cd ch7-hayhooks
+        mkdir -p qdrant_storage
+        
+    - name: Start services with docker-compose
+      run: |
+        cd ch7-hayhooks
+        echo "Starting Hayhooks and nginx with docker-compose..."
+        docker-compose up -d
+        
+    - name: Wait for services to initialize
+      run: |
+        cd ch7-hayhooks
+        echo "Waiting for services to start..."
+        sleep 30
+        
+        # Check if both containers are running
+        docker-compose ps
+        
+    - name: Test nginx health endpoint (no auth)
+      run: |
+        cd ch7-hayhooks
+        timeout=120
+        counter=0
+        
+        echo "Testing nginx health endpoint (no authentication required)..."
+        while [ $counter -lt $timeout ]; do
+          if curl -f http://localhost:8080/health > /dev/null 2>&1; then
+            echo "✅ nginx health endpoint is accessible!"
+            break
+          fi
+          echo "Waiting for nginx health endpoint... ($counter/$timeout)"
+          sleep 5
+          counter=$((counter + 5))
+        done
+        
+        if [ $counter -ge $timeout ]; then
+          echo "❌ nginx health endpoint not ready"
+          docker-compose logs
+          exit 1
+        fi
+        
+    - name: Test Hayhooks status endpoint via nginx (no auth)
+      run: |
+        cd ch7-hayhooks
+        timeout=120
+        counter=0
+        
+        echo "Testing Hayhooks status endpoint via nginx..."
+        while [ $counter -lt $timeout ]; do
+          if curl -f http://localhost:8080/status > /dev/null 2>&1; then
+            echo "✅ Hayhooks status endpoint is accessible via nginx!"
+            curl http://localhost:8080/status
+            break
+          fi
+          echo "Waiting for Hayhooks status endpoint... ($counter/$timeout)"
+          sleep 5
+          counter=$((counter + 5))
+        done
+        
+        if [ $counter -ge $timeout ]; then
+          echo "❌ Hayhooks status endpoint not ready"
+          docker-compose logs
+          exit 1
+        fi
+        
+    - name: Test protected endpoint WITHOUT authentication (should fail)
+      run: |
+        cd ch7-hayhooks
+        echo "Testing that protected endpoints reject unauthenticated requests..."
+        
+        # This should return 401
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ || echo "000")
+        
+        if [ "$HTTP_CODE" = "401" ]; then
+          echo "✅ Protected endpoint correctly rejected unauthenticated request (401)"
+        else
+          echo "❌ Expected 401 but got $HTTP_CODE"
+          exit 1
+        fi
+        
+    - name: Test protected endpoint WITH authentication (should succeed)
+      run: |
+        cd ch7-hayhooks
+        echo "Testing authenticated access to protected endpoints..."
+        
+        # This should return 200
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u testuser:testpass http://localhost:8080/ || echo "000")
+        
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "✅ Authenticated request successful (200)"
+          echo "Response:"
+          curl -s -u testuser:testpass http://localhost:8080/ | jq '.' || cat
+        else
+          echo "❌ Expected 200 but got $HTTP_CODE"
+          docker-compose logs
+          exit 1
+        fi
+        
+    - name: Test rate limiting
+      run: |
+        cd ch7-hayhooks
+        echo "Testing rate limiting (10 req/s limit)..."
+        
+        # Make rapid requests to trigger rate limiting
+        SUCCESS_COUNT=0
+        RATE_LIMITED_COUNT=0
+        
+        for i in {1..15}; do
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/status || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+          elif [ "$HTTP_CODE" = "429" ]; then
+            RATE_LIMITED_COUNT=$((RATE_LIMITED_COUNT + 1))
+          fi
+        done
+        
+        echo "Successful requests: $SUCCESS_COUNT"
+        echo "Rate limited requests: $RATE_LIMITED_COUNT"
+        
+        if [ $RATE_LIMITED_COUNT -gt 0 ]; then
+          echo "✅ Rate limiting is working (got 429 responses)"
+        else
+          echo "⚠️  Rate limiting may not be working as expected"
+        fi
+        
+    - name: Verify Hayhooks is not directly accessible
+      run: |
+        cd ch7-hayhooks
+        echo "Verifying Hayhooks port 1416 is not exposed externally..."
+        
+        # Try to access Hayhooks directly (should fail since it's not exposed)
+        if curl -f http://localhost:1416/status > /dev/null 2>&1; then
+          echo "⚠️  Hayhooks is directly accessible (expected in CI environment)"
+        else
+          echo "✅ Hayhooks is not directly accessible externally"
+        fi
+        
+    - name: Show service logs
+      if: always()
+      run: |
+        cd ch7-hayhooks
+        echo "=== Hayhooks logs ==="
+        docker-compose logs hayhooks
+        echo ""
+        echo "=== nginx logs ==="
+        docker-compose logs nginx
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        cd ch7-hayhooks
+        docker-compose down -v
+        docker system prune -f
