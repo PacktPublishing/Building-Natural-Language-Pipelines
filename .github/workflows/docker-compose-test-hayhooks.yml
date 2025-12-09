@@ -120,35 +120,35 @@ jobs:
           exit 1
         fi
         
-    - name: Test protected endpoint WITHOUT authentication (should fail)
+    - name: Test pipeline endpoint WITHOUT authentication (should fail)
       run: |
         cd ch7-hayhooks
-        echo "Testing that protected endpoints reject unauthenticated requests..."
+        echo "Testing that pipeline endpoints reject unauthenticated requests..."
         
-        # This should return 401
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ || echo "000")
+        # Try to access indexing pipeline without auth - should return 401
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/indexing || echo "000")
         
         if [ "$HTTP_CODE" = "401" ]; then
-          echo "SUCCESS: Protected endpoint correctly rejected unauthenticated request (401)"
+          echo "SUCCESS: Pipeline endpoint correctly rejected unauthenticated request (401)"
         else
           echo "FAILED: Expected 401 but got $HTTP_CODE"
           exit 1
         fi
         
-    - name: Test protected endpoint WITH authentication (should succeed)
+    - name: Test pipeline endpoint WITH authentication (should succeed)
       run: |
         cd ch7-hayhooks
-        echo "Testing authenticated access to protected endpoints..."
+        echo "Testing authenticated access to pipeline endpoints..."
         
-        # This should return 200
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u testuser:testpass http://localhost:8080/ || echo "000")
+        # Try to access indexing pipeline with auth - should return 200 (list of routes) or 405 (method not allowed)
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u testuser:testpass http://localhost:8080/indexing || echo "000")
         
-        if [ "$HTTP_CODE" = "200" ]; then
-          echo "SUCCESS: Authenticated request successful (200)"
-          echo "Response:"
-          curl -s -u testuser:testpass http://localhost:8080/ | jq '.' || cat
+        if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "405" ]; then
+          echo "SUCCESS: Authenticated request successful ($HTTP_CODE)"
+          echo "Response from indexing endpoint:"
+          curl -s -u testuser:testpass http://localhost:8080/indexing || echo "No response body"
         else
-          echo "FAILED: Expected 200 but got $HTTP_CODE"
+          echo "FAILED: Expected 200 or 405 but got $HTTP_CODE"
           docker compose logs
           exit 1
         fi
