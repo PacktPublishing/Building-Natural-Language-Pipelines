@@ -5,13 +5,11 @@ on:
     branches: [ "main" ]
     paths: 
       - 'ch7/**'
-      - 'ch7-hayhooks/**'
       - '.github/workflows/docker-test.yml'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'ch7/**'
-      - 'ch7-hayhooks/**'
       - '.github/workflows/docker-test.yml'
 
 jobs:
@@ -105,97 +103,4 @@ jobs:
       run: |
         docker stop test-ch7-api || true
         docker rm test-ch7-api || true
-        docker system prune -f
-
-  docker-test-ch7-hayhooks:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Free up disk space
-      run: |
-        docker system prune -af
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /opt/ghc
-        sudo rm -rf "/usr/local/share/boost"
-        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-        df -h
-        
-    - name: Create .env file for ch7-hayhooks
-      run: |
-        cd ch7-hayhooks
-        cat > .env << EOF
-        OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-        HAYHOOKS_HOST=0.0.0.0
-        HAYHOOKS_PORT=1416
-        HAYHOOKS_PIPELINES_DIR=./pipelines
-        HAYHOOKS_SHOW_TRACEBACKS=true
-        EOF
-        
-    - name: Build ch7-hayhooks Docker image
-      run: |
-        cd ch7-hayhooks
-        echo "Building ch7-hayhooks Docker image..."
-        docker build -t hayhooks-index-rag .
-        
-    - name: Test ch7-hayhooks Docker container
-      run: |
-        cd ch7-hayhooks
-        echo "Testing ch7-hayhooks Docker build and service startup..."
-        
-        # Create qdrant_storage directory if it doesn't exist
-        mkdir -p qdrant_storage
-        
-        # Run the container in detached mode
-        docker run -d \
-          --name test-hayhooks \
-          -p 1416:1416 \
-          -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-          -v $(pwd)/qdrant_storage:/app/qdrant_storage \
-          hayhooks-index-rag
-        
-        # Wait for container to initialize
-        echo "Waiting for container to initialize..."
-        sleep 20
-        
-        # Check if container is still running
-        if docker ps | grep -q "test-hayhooks"; then
-          echo "✅ ch7-hayhooks container started successfully!"
-          
-          # Test status endpoint
-          timeout=120
-          counter=0
-          while [ $counter -lt $timeout ]; do
-            if curl -f http://localhost:1416/status > /dev/null 2>&1; then
-              echo "✅ ch7-hayhooks status endpoint is accessible!"
-              break
-            fi
-            echo "Waiting for hayhooks status endpoint... ($counter/$timeout)"
-            sleep 5
-            counter=$((counter + 5))
-          done
-          
-          if [ $counter -ge $timeout ]; then
-            echo "⚠️  Hayhooks status endpoint not ready"
-            docker logs test-hayhooks
-          fi
-        else
-          echo "❌ ch7-hayhooks container failed to start"
-          docker logs test-hayhooks || true
-          exit 1
-        fi
-        
-    - name: Show ch7-hayhooks logs on failure
-      if: failure()
-      run: |
-        echo "=== ch7-hayhooks container logs ==="
-        docker logs test-hayhooks || true
-        
-    - name: Cleanup ch7-hayhooks
-      if: always()
-      run: |
-        docker stop test-hayhooks || true
-        docker rm test-hayhooks || true
         docker system prune -f
