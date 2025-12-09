@@ -21,9 +21,9 @@ class Settings(BaseSettings):
     # Optional API Keys
     tavily_api_key: Optional[str] = Field(default=None, env="TAVILY_API_KEY")
     
-    # Elasticsearch Configuration  
-    elasticsearch_host: str = Field(default="http://localhost:9200", env="ELASTICSEARCH_HOST")
-    elasticsearch_index: str = Field(default="documents", env="ELASTICSEARCH_INDEX")
+    # Qdrant Configuration  
+    qdrant_path: str = Field(default="./qdrant_storage", env="QDRANT_PATH")
+    qdrant_index: str = Field(default="documents", env="QDRANT_INDEX")
     
     # Model Configuration
     embedder_model: str = Field(default="text-embedding-3-small", env="EMBEDDER_MODEL")
@@ -54,35 +54,3 @@ settings = Settings()
 def get_settings() -> Settings:
     """Get the application settings."""
     return settings
-
-
-def is_elasticsearch_available(host: str = None) -> bool:
-    """Check if Elasticsearch is available."""
-    import requests
-    
-    host = host or settings.elasticsearch_host
-    try:
-        response = requests.get(f"{host}/_cat/health", timeout=5)
-        return response.status_code == 200
-    except Exception:
-        return False
-
-
-def wait_for_elasticsearch(host: str = None, max_retries: int = 30, delay: int = 2) -> bool:
-    """Wait for Elasticsearch to be available."""
-    import time
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    host = host or settings.elasticsearch_host
-    
-    for attempt in range(max_retries):
-        if is_elasticsearch_available(host):
-            logger.info(f"Elasticsearch is available at {host}")
-            return True
-        
-        logger.info(f"Waiting for Elasticsearch at {host}... (attempt {attempt + 1}/{max_retries})")
-        time.sleep(delay)
-    
-    logger.error(f"Elasticsearch not available at {host} after {max_retries} attempts")
-    return False

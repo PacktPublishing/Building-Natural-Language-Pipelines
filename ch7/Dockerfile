@@ -27,9 +27,15 @@ COPY src/ ./src/
 # Copy scripts
 COPY scripts/ ./scripts/
 
+# Copy data for indexing
+COPY data_for_indexing/ ./data_for_indexing/
+
 # Install dependencies using uv
 ENV UV_SYSTEM_PYTHON=1
 RUN uv sync --frozen --no-dev
+
+# Make scripts executable
+RUN chmod +x scripts/*.sh
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app
@@ -43,5 +49,15 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command (can be overridden)
-CMD ["uv", "run", "uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Create startup script that runs indexing then starts API
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "🔧 Running indexing pipeline..."\n\
+uv run python -m src.rag.indexing\n\
+echo "✅ Indexing complete!"\n\
+echo "🚀 Starting API server..."\n\
+exec uv run uvicorn src.app:app --host 0.0.0.0 --port 8000\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
+# Default command - run indexing then start API
+CMD ["/app/start.sh"]

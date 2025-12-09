@@ -14,13 +14,14 @@ load_dotenv(".env")
 from haystack import Pipeline, super_component
 from haystack.document_stores.types import DuplicatePolicy
 from haystack.components.writers import DocumentWriter
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
+from haystack_integrations.document_stores.qdrant import QdrantDocumentStore
 from haystack.utils import Secret
 from haystack.components.joiners import DocumentJoiner
 from haystack.dataclasses import Document
 
 # Import components for embedding
 from haystack.components.embedders import OpenAIDocumentEmbedder
+from haystack_integrations.components.embedders.fastembed import FastembedSparseDocumentEmbedder
 
 # Import components for data fetching and conversion
 from haystack.components.fetchers import LinkContentFetcher
@@ -45,7 +46,7 @@ class IndexingPipelineSuperComponent:
         Initialize the Indexing Pipeline SuperComponent.
         
         Args:
-            document_store: Elasticsearch document store
+            document_store: Qdrant document store
             embedder_model (str): OpenAI embedding model name. Defaults to "text-embedding-3-small".
             openai_api_key (Optional[str]): OpenAI API key. If None, will use environment variable.
         """
@@ -66,7 +67,8 @@ class IndexingPipelineSuperComponent:
 
         # Input converters for each file type
         pdf_converter = PyPDFToDocument()
-        html_converter = HTMLToDocument()  
+        html_converter = HTMLToDocument()  # For URL content
+        html_file_converter = HTMLToDocument()  # For HTML files
         link_fetcher = LinkContentFetcher()
 
         # Document cleaner to clean up text
@@ -81,11 +83,13 @@ class IndexingPipelineSuperComponent:
         
         
 
-        # Embedder:
+        # Embedders:
         doc_embedder = OpenAIDocumentEmbedder(
             api_key=Secret.from_token(self.openai_api_key), 
             model=self.embedder_model
         )
+        
+        sparse_doc_embedder = FastembedSparseDocumentEmbedder()
 
         # DocumentWriter:
         writer = DocumentWriter(document_store=document_store, policy=DuplicatePolicy.OVERWRITE)
@@ -95,29 +99,36 @@ class IndexingPipelineSuperComponent:
         # Add all components to the pipeline with unique names
         self.pipeline.add_component("link_fetcher", link_fetcher)
         self.pipeline.add_component("html_converter", html_converter)
+        self.pipeline.add_component("html_file_converter", html_file_converter)
         self.pipeline.add_component("file_type_router", file_router)
         self.pipeline.add_component("pdf_converter", pdf_converter)
         self.pipeline.add_component("doc_joiner", doc_joiner)
         self.pipeline.add_component("cleaner", cleaner)
         self.pipeline.add_component("doc_splitter", splitter)
         self.pipeline.add_component("doc_embedder", doc_embedder)
+        self.pipeline.add_component("sparse_doc_embedder", sparse_doc_embedder)
         self.pipeline.add_component("writer", writer)
 
         # --- 4. Connect the Pipeline Components ---
 
-        # Web data branch
+        # URL content branch
         self.pipeline.connect("link_fetcher.streams", "html_converter.sources")
         self.pipeline.connect("html_converter.documents", "doc_joiner.documents")
 
-        # PDF file branch
+        # File type routing branches
         self.pipeline.connect("file_type_router.application/pdf", "pdf_converter.sources")
         self.pipeline.connect("pdf_converter.documents", "doc_joiner.documents")
+        
+        # HTML files from file router go to separate HTML converter
+        self.pipeline.connect("file_type_router.text/html", "html_file_converter.sources")
+        self.pipeline.connect("html_file_converter.documents", "doc_joiner.documents")
 
         # Main processing path
         self.pipeline.connect("doc_joiner", "cleaner")
         self.pipeline.connect("cleaner", "doc_splitter")
         self.pipeline.connect("doc_splitter", "doc_embedder")
-        self.pipeline.connect("doc_embedder", "writer")
+        self.pipeline.connect("doc_embedder", "sparse_doc_embedder")
+        self.pipeline.connect("sparse_doc_embedder", "writer")
         
         # Separate input mappings for URLs and files
         self.input_mapping = {
@@ -125,8 +136,8 @@ class IndexingPipelineSuperComponent:
             "sources": ["file_type_router.sources"]
         }
 
-def run_indexing_pipeline(elasticsearch_host: str = None, 
-                         elasticsearch_index: str = None,
+def run_indexing_pipeline(qdrant_path: str = None, 
+                         qdrant_index: str = None,
                          openai_api_key: str = None,
                          embedder_model: str = "text-embedding-3-small",
                          urls: List[str] = None,
@@ -135,8 +146,8 @@ def run_indexing_pipeline(elasticsearch_host: str = None,
     Run the complete indexing pipeline.
     
     Args:
-        elasticsearch_host: Elasticsearch host URL
-        elasticsearch_index: Index name
+        qdrant_path: Qdrant storage path
+        qdrant_index: Index name
         openai_api_key: OpenAI API key
         embedder_model: OpenAI embedding model
         urls: URLs to index
@@ -146,8 +157,8 @@ def run_indexing_pipeline(elasticsearch_host: str = None,
         Dictionary with indexing results
     """
     # Get configuration from environment if not provided
-    elasticsearch_host = elasticsearch_host or os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')
-    elasticsearch_index = elasticsearch_index or os.getenv('ELASTICSEARCH_INDEX', 'documents')
+    qdrant_path = qdrant_path or os.getenv('QDRANT_PATH', './qdrant_storage')
+    qdrant_index = qdrant_index or os.getenv('QDRANT_INDEX', 'documents')
     openai_api_key = openai_api_key or os.getenv('OPENAI_API_KEY')
     urls = urls or []
     files = files or []
@@ -156,17 +167,20 @@ def run_indexing_pipeline(elasticsearch_host: str = None,
         raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
     
     logger.info(f"Starting indexing pipeline...")
-    logger.info(f"Elasticsearch host: {elasticsearch_host}")
-    logger.info(f"Elasticsearch index: {elasticsearch_index}")
+    logger.info(f"Qdrant path: {qdrant_path}")
+    logger.info(f"Qdrant index: {qdrant_index}")
     logger.info(f"URLs to index: {len(urls)}")
     logger.info(f"Files to index: {len(files)}")
 
     try:
-        # Initialize document store
-        logger.info("Initializing Elasticsearch document store...")
-        document_store = ElasticsearchDocumentStore(
-            hosts=elasticsearch_host,
-            index=elasticsearch_index
+        # Initialize document store with on-disk storage and sparse embeddings support
+        logger.info("Initializing Qdrant document store...")
+        document_store = QdrantDocumentStore(
+            path=qdrant_path,
+            index=qdrant_index,
+            embedding_dim=1536,  # text-embedding-3-small dimension
+            recreate_index=False,
+            use_sparse_embeddings=True  # Enable sparse embeddings for hybrid retrieval
         )
         
         # Create indexing pipeline
@@ -190,8 +204,8 @@ def run_indexing_pipeline(elasticsearch_host: str = None,
         return {
             "status": "success",
             "result": result,
-            "elasticsearch_host": elasticsearch_host,
-            "elasticsearch_index": elasticsearch_index,
+            "qdrant_path": qdrant_path,
+            "qdrant_index": qdrant_index,
             "urls_processed": len(urls),
             "files_processed": len(files)
         }

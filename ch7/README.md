@@ -22,51 +22,57 @@ cp .env.example .env
 # Edit .env and set OPENAI_API_KEY=your_actual_key
 ```
 
-3. **Create and start Elasticsearch**:
-```bash
-docker-compose up -d elasticsearch
-```
-
-```bash
-docker-compose up -d elasticsearch
-```
-
-4. **Run indexing**:
+3. **Run indexing**:
 ```bash
 ./scripts/run_indexing.sh
 ```
 
-5. **Start API**:
+4. **Start API**:
 ```bash
 ./scripts/run_api.sh
 ```
 
-6. **Test the API**:
+5. **Test the API**:
 ```bash
 uv run python tests/test_api.py
 ```
 
 ### Docker Deployment
 
-1. **Configure environment**:
+#### Build and Run (Single Container)
+
+1. **Build the Docker image**:
 ```bash
-cp .env.example .env
-# Edit .env and set OPENAI_API_KEY=your_actual_key
+docker build -t hybrid-rag-api .
 ```
 
-2. **Run full stack**:
+2. **Run the container**:
 ```bash
-docker-compose up -d
+docker run -d \
+  --name hybrid-rag \
+  -p 8000:8000 \
+  -e OPENAI_API_KEY=your_actual_key_here \
+  hybrid-rag-api
 ```
 
-3. **Test**:
+3. **Check logs**:
 ```bash
-# Wait for services to be ready
-uv run python tests/test_api.py wait
-
-# Run tests
-uv run python tests/test_api.py
+docker logs -f hybrid-rag
 ```
+
+4. **Test the API**:
+```bash
+# Once container shows "✅ Indexing complete!" and "🚀 Starting API server..."
+curl http://localhost:8000/health
+```
+
+5. **Stop the container**:
+```bash
+docker stop hybrid-rag
+docker rm hybrid-rag
+```
+
+**Note**: The Docker container automatically runs the indexing pipeline on startup before launching the API. This takes a few minutes depending on the size of your data.
 
 ## API Endpoints
 
@@ -86,8 +92,8 @@ Project structure can be found [here](./PROJECT_STRUCTURE.md)
 All configuration is handled via environment variables. See `.env.example` for all available options:
 
 - `OPENAI_API_KEY`: Your OpenAI API key (required)
-- `ELASTICSEARCH_HOST`: Elasticsearch connection URL
-- `ELASTICSEARCH_INDEX`: Index name for documents
+- `QDRANT_PATH`: Qdrant storage directory path
+- `QDRANT_INDEX`: Index name for documents
 - Model configurations (embedder, LLM, ranker models)
 - API settings (host, port, debug mode)
 
@@ -102,17 +108,13 @@ All configuration is handled via environment variables. See `.env.example` for a
 
 ### Common Issues
 
-1. **Elasticsearch not available**:
-   - Check if Elasticsearch is running: `curl http://localhost:9200/_cat/health`
-   - Start with: `docker run -d -p 9200:9200 -e discovery.type=single-node docker.elastic.co/elasticsearch/elasticsearch:8.11.1`
-
-2. **OpenAI API errors**:
+1. **OpenAI API errors**:
    - Verify your API key is set correctly in `.env`
    - Check your OpenAI account has credits
 
-3. **No documents found**:
+2. **No documents found**:
    - Run indexing first: `./scripts/run_indexing.sh`
-   - Check Elasticsearch index: `curl http://localhost:9200/documents/_count`
+   - Check if Qdrant storage directory exists: `ls -la ./qdrant_storage`
 
 4. **Import errors in development**:
    - Make sure you're running from the project root
@@ -122,7 +124,6 @@ All configuration is handled via environment variables. See `.env.example` for a
 
 - API logs: Check terminal output when running `./scripts/run_api.sh`
 - Docker logs: `docker-compose logs api`
-- Elasticsearch logs: `docker-compose logs elasticsearch`
 - Enable debug mode: Set `DEBUG=true` in `.env` 
 
 

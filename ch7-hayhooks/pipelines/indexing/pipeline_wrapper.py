@@ -16,6 +16,7 @@ class PipelineWrapper(BasePipelineWrapper):
         log.info("Setting up indexing pipeline...")
         
         pipeline_yaml = (Path(__file__).parent / "indexing.yml").read_text()
+        
         self.pipeline = Pipeline.loads(pipeline_yaml)
         log.info("Indexing pipeline setup complete")
     

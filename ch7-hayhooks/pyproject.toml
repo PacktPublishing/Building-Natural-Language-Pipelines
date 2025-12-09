@@ -17,7 +17,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "elasticsearch-haystack>=4.1.0",
+  "fastembed-haystack>=1.0.0",
   "hayhooks>=1.5.0",
   "haystack-ai>=2.19.0",
   "ipykernel>=7.0.1",
@@ -37,6 +37,7 @@ dependencies = [
   "python-docx>=1.2.0",
   "python-dotenv>=1.1.1",
   "python-pptx>=1.0.2",
+  "qdrant-haystack>=4.0.0",
   "ragas>=0.3.7",
   "ragas-haystack>=1.0.0",
   "rapidfuzz>=3.14.1",
@@ -49,6 +50,9 @@ dependencies = [
 [build-system]
 requires = ["setuptools>=43.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pipelines"]
 
 
 

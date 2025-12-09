@@ -22,10 +22,6 @@ Edit `.env` and add your OpenAI API key:
 # OpenAI API Configuration
 OPENAI_API_KEY=your_actual_openai_api_key_here
 
-# Elasticsearch Configuration
-ELASTICSEARCH_HOSTS=http://localhost:9200
-ELASTICSEARCH_INDEX=documents
-
 # Hayhooks Configuration
 HAYHOOKS_HOST=0.0.0.0
 HAYHOOKS_PORT=1416
@@ -33,65 +29,165 @@ HAYHOOKS_PIPELINES_DIR=./pipelines
 HAYHOOKS_SHOW_TRACEBACKS=true
 ```
 
-## ⚠️ Important: Elasticsearch Credentials
+2. **Run Hayhooks**:
 
-The indexing pipeline is configured to use Elasticsearch with API key authentication. The pipeline expects these environment variables:
-
-- `ELASTIC_API_KEY`: Your Elasticsearch API key (optional, `strict: false` in config)
-- `ELASTIC_API_KEY_ID`: Your Elasticsearch API key ID (optional, `strict: false` in config)
-
-**For local development with basic Elasticsearch (no security)**:
-The current configuration may throw error messages when testing indexing and retrieval using local Elasticsearch instance started via Docker Compose, which runs without authentication. The API key variables are marked as non-strict, so the pipeline will work without them for local development.
-
-**For production or Elasticsearch Cloud**:
-If you're using Elasticsearch Cloud or a secured Elasticsearch instance, add these to your `.env` file:
-
-```bash
-# Elasticsearch API Credentials (for production/cloud)
-ELASTIC_API_KEY=your_elasticsearch_api_key
-ELASTIC_API_KEY_ID=your_elasticsearch_api_key_id
-```
-
-You can generate API keys in Elasticsearch by following the [official documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-create-api-key.html).
-
-2. **Start Elasticsearch**
-
-```bash
-# Create and Start Elasticsearch using Docker Compose
-docker-compose up -d elasticsearch
-
-# Running
-docker-compose up -d elasticsearch
-
-# Verify Elasticsearch is running
-curl -X GET "localhost:9200/_cluster/health?pretty"
-```
-
-Expected response:
-
-```json
-{
-  "cluster_name" : "docker-cluster",
-  "status" : "green",
-  "timed_out" : false,
-  "number_of_nodes" : 1,
-  "number_of_data_nodes" : 1,
-  "active_primary_shards" : 0,
-  "active_shards" : 0,
-  "relocating_shards" : 0,
-  "initializing_shards" : 0,
-  "unassigned_shards" : 0,
-  "delayed_unassigned_shards" : 0,
-  "number_of_pending_tasks" : 0,
-  "number_of_in_flight_fetch" : 0,
-  "task_max_waiting_in_queue_millis" : 0,
-  "active_shards_percent_as_number" : 100.0
-}
-```
-
-3. **Run Hayhookst**:
+**Option A: Local Development (without Docker)**
 ```bash
 uv run hayhooks run
+```
+
+**Option B: Using Docker (Recommended)**
+
+1. **Build the Docker image**:
+```bash
+docker build -t hayhooks-index-rag .
+```
+
+2. **Run the container**:
+```bash
+docker run -d \
+  --name hayhooks-rag \
+  -p 1416:1416 \
+  -e OPENAI_API_KEY=your_actual_key_here \
+  -v $(pwd)/qdrant_storage:/app/qdrant_storage \
+  hayhooks-index-rag
+```
+
+3. **Check logs**:
+```bash
+docker logs -f hayhooks-rag
+```
+
+4. **Test the API**:
+```bash
+# Verify the server is running
+curl http://localhost:1416/status
+```
+
+5. **Stop the container**:
+```bash
+docker stop hayhooks-rag
+docker rm hayhooks-rag
+```
+
+## Docker Deployment Guide
+
+### Understanding the Docker Setup
+
+The Docker container packages all dependencies and pipelines for easy deployment:
+
+- **Port Mapping**: Container port `1416` maps to host `localhost:1416`
+- **Volume Mounting**: Local `qdrant_storage` directory persists vector data
+- **Environment Variables**: OpenAI API key passed securely via `-e` flag
+
+### Docker Commands Reference
+
+```bash
+# Build the image
+docker build -t hayhooks-index-rag .
+
+# Run container (basic)
+docker run -d \
+  --name hayhooks-rag \
+  -p 1416:1416 \
+  -e OPENAI_API_KEY=your_key \
+  -v $(pwd)/qdrant_storage:/app/qdrant_storage \
+  hayhooks-index-rag
+
+# View logs in real-time
+docker logs -f hayhooks-rag
+
+# View last 100 lines of logs
+docker logs --tail 100 hayhooks-rag
+
+# Check container status
+docker ps
+
+# Stop container
+docker stop hayhooks-rag
+
+# Start existing container
+docker start hayhooks-rag
+
+# Remove container
+docker rm hayhooks-rag
+
+# Access container shell for debugging
+docker exec -it hayhooks-rag /bin/bash
+
+# Rebuild image (after code changes)
+docker build --no-cache -t hayhooks-index-rag .
+```
+
+### Advanced Docker Configuration
+
+**Run with custom port:**
+```bash
+docker run -d \
+  --name hayhooks-rag \
+  -p 8000:1416 \
+  -e OPENAI_API_KEY=your_key \
+  -v $(pwd)/qdrant_storage:/app/qdrant_storage \
+  hayhooks-index-rag
+```
+
+**Run with additional environment variables:**
+```bash
+docker run -d \
+  --name hayhooks-rag \
+  -p 1416:1416 \
+  -e OPENAI_API_KEY=your_key \
+  -e QDRANT_API_KEY=your_qdrant_key \
+  -e QDRANT_HOST_URL=your_qdrant_url \
+  -v $(pwd)/qdrant_storage:/app/qdrant_storage \
+  hayhooks-index-rag
+```
+
+### Troubleshooting Docker Deployment
+
+**Issue**: Port already in use
+```bash
+# Find process using port 1416
+lsof -i :1416
+
+# Kill the process
+kill -9 <PID>
+
+# Or use a different port
+docker run -p 8080:1416 ...
+```
+
+**Issue**: Container exits immediately
+```bash
+# Check logs for errors
+docker logs hayhooks-rag
+
+# Common causes:
+# - Missing OPENAI_API_KEY
+# - Port conflict
+# - Invalid pipeline configuration
+```
+
+**Issue**: Changes not reflected after rebuild
+```bash
+# Stop and remove container
+docker stop hayhooks-rag && docker rm hayhooks-rag
+
+# Rebuild without cache
+docker build --no-cache -t hayhooks-index-rag .
+
+# Run new container
+docker run -d --name hayhooks-rag -p 1416:1416 \
+  -e OPENAI_API_KEY=your_key \
+  -v $(pwd)/qdrant_storage:/app/qdrant_storage \
+  hayhooks-index-rag
+```
+
+**Issue**: Permission denied on qdrant_storage
+```bash
+# Create directory with proper permissions
+mkdir -p qdrant_storage
+chmod 755 qdrant_storage
 ```
 
 ## API Endpoints
@@ -136,7 +232,7 @@ curl -X POST "http://localhost:1416/v1/chat/completions" \
 
 This project consists of two main pipelines:
 
-1. **Indexing Pipeline**: Processes documents (PDFs, web content) and stores them in Elasticsearch with embeddings
+1. **Indexing Pipeline**: Processes documents (PDFs, web content) and stores them with embeddings in Qdrant
 2. **Retrieval Pipeline**: Performs hybrid RAG (BM25 + embeddings) to answer questions based on indexed documents
 
 Both pipelines are exposed through Hayhooks as REST API endpoints, making them easy to integrate into web applications or other systems.
@@ -198,8 +294,8 @@ hayhooks-mcp/
 #### 1. Pipeline Loading Errors
 
 **Error**: `'dict' object has no attribute 'resolve_value'` in DocumentWriter
-- **Cause**: Missing Elasticsearch credentials or configuration issues
-- **Solution**: Ensure Elasticsearch is running and credentials are properly configured (see Elasticsearch Credentials section above)
+- **Cause**: Configuration issues with document store
+- **Solution**: Ensure document store is properly configured in pipeline YAML files
 
 **Error**: `ModuleNotFoundError: No module named 'nltk'` or similar import errors
 - **Cause**: Missing optional dependencies
@@ -208,12 +304,12 @@ hayhooks-mcp/
   uv add nltk>=3.9.1 lxml_html_clean pypdf>=6.1.3
   ```
 
-#### 2. Elasticsearch Connection Issues
+#### 2. Document Store Issues
 
-**Error**: Connection refused to localhost:9200
-- **Solution**: Start Elasticsearch with Docker Compose:
+**Error**: Connection or storage issues
+- **Solution**: Ensure Qdrant storage directory exists and has proper permissions:
   ```bash
-  docker-compose up -d elasticsearch
+  mkdir -p ./qdrant_storage
   ```
 
 #### 3. OpenAI API Issues
@@ -221,21 +317,6 @@ hayhooks-mcp/
 **Error**: Invalid API key or authentication errors
 - **Solution**: Verify your OpenAI API key is correctly set in `.env`
 
-### Verifying Setup
-
-Test your pipeline configuration:
-
-```bash
-# Test pipeline loading
-uv run python -c "
-from pathlib import Path
-from haystack import Pipeline
-pipeline_yaml = (Path('pipelines/indexing/indexing.yml')).read_text()
-pipeline = Pipeline.loads(pipeline_yaml)
-print('✓ Pipeline loaded successfully')
-print(f'Components: {list(pipeline.graph.nodes())}')
-"
-```
 
 ## Advanced Usage
 

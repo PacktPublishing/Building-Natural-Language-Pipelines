@@ -1,7 +1,8 @@
 """Hybrid RAG SuperComponent for document retrieval and generation."""
 
 # Import additional components for hybrid retrieval
-from haystack_integrations.components.retrievers.elasticsearch import ElasticsearchBM25Retriever, ElasticsearchEmbeddingRetriever
+from haystack_integrations.components.retrievers.qdrant import QdrantSparseEmbeddingRetriever, QdrantEmbeddingRetriever
+from haystack_integrations.components.embedders.fastembed import FastembedSparseTextEmbedder
 from haystack.components.joiners import DocumentJoiner
 from haystack.components.rankers import SentenceTransformersSimilarityRanker
 
@@ -12,8 +13,7 @@ from haystack.components.generators import OpenAIGenerator
 from haystack.utils import Secret
 from haystack import Pipeline, super_component
 
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
-from typing import Optional, Dict, Any
+from typing import Optional
 import os
 
 
@@ -30,7 +30,7 @@ class HybridRAGSuperComponent:
         Initialize the Hybrid RAG SuperComponent.
         
         Args:
-            document_store: Elasticsearch document store
+            document_store: Qdrant document store
             embedder_model (str): OpenAI embedding model name. Defaults to "text-embedding-3-small".
             llm_model (str): OpenAI LLM model name. Defaults to "gpt-4o-mini".
             top_k (int): Number of documents to retrieve. Defaults to 3.
@@ -58,13 +58,16 @@ class HybridRAGSuperComponent:
             api_key=Secret.from_token(self.openai_api_key), 
             model=self.embedder_model
         )
+        
+        # Sparse text embedder for BM25-like retrieval using FastEmbed
+        sparse_text_embedder = FastembedSparseTextEmbedder()
 
-        # Dense Retriever: Fetches documents from the Elasticsearch DocumentStore based on vector similarity.
-        embedding_retriever = ElasticsearchEmbeddingRetriever(document_store=document_store, top_k=self.top_k)
+        # Dense Retriever: Fetches documents from the Qdrant DocumentStore based on vector similarity.
+        embedding_retriever = QdrantEmbeddingRetriever(document_store=document_store, top_k=self.top_k)
 
-        # Sparse Retriever (BM25): For keyword-based search using Elasticsearch.
-        # Elasticsearch provides built-in BM25 scoring for text-based retrieval.
-        bm25_retriever = ElasticsearchBM25Retriever(document_store=document_store, top_k=self.top_k)
+        # Sparse Retriever (BM25): For keyword-based search using Qdrant sparse embeddings.
+        # Provides BM25-like scoring for text-based retrieval.
+        bm25_retriever = QdrantSparseEmbeddingRetriever(document_store=document_store, top_k=self.top_k)
 
         # DocumentJoiner: To merge the results from the two retrievers.
         # The default 'concatenate' mode works well here as the ranker will handle final ordering.
@@ -77,19 +80,19 @@ class HybridRAGSuperComponent:
         # PromptBuilder: Creates a prompt using the retrieved documents and the query.
         # The Jinja2 template iterates through the documents and adds their content to the prompt.
         prompt_template_for_pipeline = """
-                    Given the following information, answer the user's question.
-                    If the information is not available in the provided documents, say that you don't have enough information to answer.
+Given the following information, answer the user's question.
+If the information is not available in the provided documents, say that you don't have enough information to answer.
 
-                    Context:
-                    {% for doc in documents %}
-                        {{ doc.content }}
-                    {% endfor %}
+Context:
+{% for doc in documents %}
+    {{ doc.content }}
+{% endfor %}
 
-                    Question: {{question}}
-                    Answer:
-                    """
+Question: {{question}}
+Answer:
+"""
         prompt_builder_inst = PromptBuilder(template=prompt_template_for_pipeline,
-                                            required_variables="*")
+                                            required_variables=["documents", "question"])
         llm_generator_inst = OpenAIGenerator(
             api_key=Secret.from_token(self.openai_api_key), 
             model=self.llm_model
@@ -100,6 +103,7 @@ class HybridRAGSuperComponent:
 
         # Add all necessary components
         self.pipeline.add_component("text_embedder", text_embedder)
+        self.pipeline.add_component("sparse_text_embedder", sparse_text_embedder)
         self.pipeline.add_component("embedding_retriever", embedding_retriever) # Dense retriever
         self.pipeline.add_component("bm25_retriever", bm25_retriever) # Sparse retriever
         self.pipeline.add_component("document_joiner", document_joiner)
@@ -111,6 +115,9 @@ class HybridRAGSuperComponent:
 
         # The query is embedded for the dense retriever
         self.pipeline.connect("text_embedder.embedding", "embedding_retriever.query_embedding")
+        
+        # The sparse query embedding for BM25 retriever
+        self.pipeline.connect("sparse_text_embedder.sparse_embedding", "bm25_retriever.query_sparse_embedding")
 
         # The outputs of both retrievers are fed into the document joiner
         self.pipeline.connect("embedding_retriever.documents", "document_joiner.documents")
@@ -127,8 +134,8 @@ class HybridRAGSuperComponent:
 
         # --- 4. Define Input and Output Mappings ---
         self.input_mapping = {
-            "query": ["text_embedder.text", 
-                      "bm25_retriever.query",
+            "query": ["text_embedder.text",
+                      "sparse_text_embedder.text",
                       "ranker.query",
                       "prompt_builder.question"]
         }

@@ -3,27 +3,50 @@ components:
     init_parameters:
       document_store:
         init_parameters:
-          api_key:
-            env_vars:
-            - ELASTIC_API_KEY
-            strict: false
-            type: env_var
-          api_key_id:
-            env_vars:
-            - ELASTIC_API_KEY_ID
-            strict: false
-            type: env_var
-          custom_mapping: null
-          embedding_similarity_function: cosine
-          hosts: http://localhost:9200
-          index: small_embeddings
-        type: haystack_integrations.document_stores.elasticsearch.document_store.ElasticsearchDocumentStore
+          api_key: null
+          embedding_dim: 1536
+          force_disable_check_same_thread: false
+          grpc_port: 6334
+          hnsw_config: null
+          host: null
+          https: null
+          index: documents
+          location: null
+          metadata: &id001 {}
+          on_disk: false
+          on_disk_payload: null
+          optimizers_config: null
+          path: ./qdrant_storage
+          payload_fields_to_index: null
+          port: 6333
+          prefer_grpc: false
+          prefix: null
+          progress_bar: true
+          quantization_config: null
+          recreate_index: false
+          replication_factor: null
+          return_embedding: false
+          scroll_size: 10000
+          shard_number: null
+          similarity: cosine
+          sparse_idf: false
+          timeout: null
+          url: null
+          use_sparse_embeddings: true
+          wait_result_from_api: true
+          wal_config: null
+          write_batch_size: 100
+          write_consistency_factor: null
+        type: haystack_integrations.document_stores.qdrant.document_store.QdrantDocumentStore
       filter_policy: replace
-      filters: {}
-      fuzziness: AUTO
+      filters: null
+      group_by: null
+      group_size: null
+      return_embedding: false
       scale_score: false
+      score_threshold: null
       top_k: 3
-    type: haystack_integrations.components.retrievers.elasticsearch.bm25_retriever.ElasticsearchBM25Retriever
+    type: haystack_integrations.components.retrievers.qdrant.retriever.QdrantSparseEmbeddingRetriever
   document_joiner:
     init_parameters:
       join_mode: concatenate
@@ -35,26 +58,50 @@ components:
     init_parameters:
       document_store:
         init_parameters:
-          api_key:
-            env_vars:
-            - ELASTIC_API_KEY
-            strict: false
-            type: env_var
-          api_key_id:
-            env_vars:
-            - ELASTIC_API_KEY_ID
-            strict: false
-            type: env_var
-          custom_mapping: null
-          embedding_similarity_function: cosine
-          hosts: http://localhost:9200
-          index: small_embeddings
-        type: haystack_integrations.document_stores.elasticsearch.document_store.ElasticsearchDocumentStore
+          api_key: null
+          embedding_dim: 1536
+          force_disable_check_same_thread: false
+          grpc_port: 6334
+          hnsw_config: null
+          host: null
+          https: null
+          index: documents
+          location: null
+          metadata: *id001
+          on_disk: false
+          on_disk_payload: null
+          optimizers_config: null
+          path: ./qdrant_storage
+          payload_fields_to_index: null
+          port: 6333
+          prefer_grpc: false
+          prefix: null
+          progress_bar: true
+          quantization_config: null
+          recreate_index: false
+          replication_factor: null
+          return_embedding: false
+          scroll_size: 10000
+          shard_number: null
+          similarity: cosine
+          sparse_idf: false
+          timeout: null
+          url: null
+          use_sparse_embeddings: true
+          wait_result_from_api: true
+          wal_config: null
+          write_batch_size: 100
+          write_consistency_factor: null
+        type: haystack_integrations.document_stores.qdrant.document_store.QdrantDocumentStore
       filter_policy: replace
-      filters: {}
-      num_candidates: null
+      filters: null
+      group_by: null
+      group_size: null
+      return_embedding: false
+      scale_score: false
+      score_threshold: null
       top_k: 3
-    type: haystack_integrations.components.retrievers.elasticsearch.embedding_retriever.ElasticsearchEmbeddingRetriever
+    type: haystack_integrations.components.retrievers.qdrant.retriever.QdrantEmbeddingRetriever
   llm:
     init_parameters:
       api_base_url: null
@@ -109,6 +156,16 @@ components:
       top_k: 3
       trust_remote_code: false
     type: haystack.components.rankers.sentence_transformers_similarity.SentenceTransformersSimilarityRanker
+  sparse_text_embedder:
+    init_parameters:
+      cache_dir: null
+      local_files_only: false
+      model: prithivida/Splade_PP_en_v1
+      model_kwargs: null
+      parallel: null
+      progress_bar: true
+      threads: null
+    type: haystack_integrations.components.embedders.fastembed.fastembed_sparse_text_embedder.FastembedSparseTextEmbedder
   text_embedder:
     init_parameters:
       api_base_url: null
@@ -130,6 +187,8 @@ connection_type_validation: true
 connections:
 - receiver: embedding_retriever.query_embedding
   sender: text_embedder.embedding
+- receiver: bm25_retriever.query_sparse_embedding
+  sender: sparse_text_embedder.sparse_embedding
 - receiver: document_joiner.documents
   sender: embedding_retriever.documents
 - receiver: document_joiner.documents

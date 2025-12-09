@@ -9,10 +9,10 @@ from haystack.components.generators import OpenAIGenerator
 from haystack.components.joiners import DocumentJoiner
 from haystack.components.rankers import SentenceTransformersSimilarityRanker
 from haystack.utils import Secret
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
-from haystack_integrations.components.retrievers.elasticsearch import (
-    ElasticsearchBM25Retriever,
-    ElasticsearchEmbeddingRetriever
+from haystack.document_stores.in_memory import InMemoryDocumentStore
+from haystack.components.retrievers.in_memory import (
+    InMemoryBM25Retriever,
+    InMemoryEmbeddingRetriever
 )
 from pathlib import Path
 
@@ -22,6 +22,7 @@ class PipelineWrapper(BasePipelineWrapper):
         log.info("Setting up hybrid RAG pipeline...")
         
         pipeline_yaml = (Path(__file__).parent / "rag.yml").read_text()
+        
         self.pipeline = Pipeline.loads(pipeline_yaml)
         log.info("Hybrid RAG pipeline setup complete")
     
@@ -40,16 +41,14 @@ class PipelineWrapper(BasePipelineWrapper):
         
         try:
             # Use the correct input mapping for hybrid RAG pipeline
+            # Both text embedders need the query text as input
             pipeline_inputs = {
                 "text_embedder": {"text": query},
-                "bm25_retriever": {"query": query},
+                "sparse_text_embedder": {"text": query},
                 "ranker": {"query": query},
                 "prompt_builder": {"question": query}
             }
             
-            log.info(f"Running pipeline with inputs: {list(pipeline_inputs.keys())}")
-
-
             log.info(f"Running pipeline with inputs: {list(pipeline_inputs.keys())}")
             
             # Force include all component outputs in result

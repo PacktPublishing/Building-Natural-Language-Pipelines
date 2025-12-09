@@ -260,7 +260,6 @@ print(f"Answer: {answer['answer']}")
 ## Troubleshooting
 
 **Common Issues:**
-- **Elasticsearch not running**: `docker-compose up elasticsearch -d`
 - **Missing OpenAI key**: Check your `.env` file  
 - **Port conflicts**: Change `HAYHOOKS_PORT` in `.env`
 
@@ -272,7 +271,6 @@ print(f"Answer: {answer['answer']}")
 
 ```bash
 uv add haystack-ai
-uv add elasticsearch-haystack
 ```
 
 #### 2. OpenAI API Key Issues
@@ -289,22 +287,7 @@ echo $OPENAI_API_KEY
 source .env
 ```
 
-#### 3. Elasticsearch Connection Issues
 
-**Problem:** Connection refused to Elasticsearch
-
-**Solution:** 
-```bash
-# Check if Elasticsearch is running
-docker-compose ps
-
-# Restart if needed
-docker-compose down
-docker-compose up -d
-
-# Check logs
-docker-compose logs elasticsearch
-```
 
 #### 4. Port Already in Use
 
@@ -350,21 +333,7 @@ print("Retrieval pipeline loaded successfully")
 
 ## Advanced Configuration
 
-### Custom Elasticsearch Configuration
 
-Modify `docker-compose.yml` for production settings:
-
-```yaml
-services:
-  elasticsearch:
-    environment:
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"  # Increase memory
-      - cluster.name=production-cluster
-      - bootstrap.memory_lock=true
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-```
 
 ### Pipeline Customization
 
@@ -391,11 +360,9 @@ Create environment-specific `.env` files:
 
 ```bash
 # .env.development
-ELASTICSEARCH_INDEX=documents-dev
 HAYHOOKS_PORT=1416
 
 # .env.production  
-ELASTICSEARCH_INDEX=documents-prod
 HAYHOOKS_PORT=8000
 ```
 
