@@ -53,12 +53,7 @@ jobs:
         echo "Testing ch7 Docker build and service startup..."
         
         # Run the container in detached mode
-        docker run -d \
-          --name test-ch7-api \
-          -p 8000:8000 \
-          -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-          -e RAG_API_KEY=${{ secrets.RAG_API_KEY }} \
-          hybrid-rag-api
+        docker run -d --name test-ch7-api -p 8000:8000 -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} -e RAG_API_KEY=${{ secrets.RAG_API_KEY }} hybrid-rag-api
         
         # Wait for container to initialize
         echo "Waiting for container to initialize..."
