@@ -168,7 +168,7 @@ Each chapter contains a `pyproject.toml` file with the folder's dependencies. **
 #### **[Deploying a Retriever Pipeline as FastAPI App](./ch7/)**
 - **FastAPI REST API**: Building production-ready APIs with clean documentation and error handling
 - **Docker Containerization**: Full containerization with Docker Compose for scalable deployments
-- **Elasticsearch Integration**: Production-grade document storage and hybrid search capabilities
+- **Qdrant Integration**: Production-grade document storage and hybrid search capabilities
 - **Local Development Workflows**: Script-based development environment setup and testing
 
 #### **[Deploying Multiple Pipelines with Hayhooks](./ch7-hayhooks/)**
