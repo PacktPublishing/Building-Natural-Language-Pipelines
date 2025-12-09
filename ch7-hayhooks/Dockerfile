@@ -13,8 +13,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 
 # Copy dependency files first for better Docker layer caching
-COPY pyproject.toml ./
-COPY requirements.txt ./
+COPY pyproject.toml uv.lock ./
 
 # Create .python-version file
 RUN echo "3.11" > .python-version
@@ -28,7 +27,7 @@ COPY hayhooks.yml ./
 
 # Install dependencies using uv
 ENV UV_SYSTEM_PYTHON=1
-RUN uv pip install -r requirements.txt
+RUN uv sync --frozen --no-dev
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app
