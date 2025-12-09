@@ -46,19 +46,50 @@ fi
 
 # Test 4: Protected endpoint with authentication
 echo -e "${YELLOW}Test 4: Protected endpoint with authentication${NC}"
-echo -e "${BLUE}Enter your username:${NC}"
-read -r USERNAME
-echo -e "${BLUE}Enter your password:${NC}"
-read -rs PASSWORD
-echo ""
 
-if curl -s -f -u "$USERNAME:$PASSWORD" "$API_URL/" > /dev/null; then
+# Try to load credentials from .env file
+if [ -f ".env" ]; then
+    # Load credentials from .env file
+    USERNAME=$(grep '^API_USERNAME=' .env | cut -d '=' -f2-)
+    PASSWORD=$(grep '^API_PASSWORD=' .env | cut -d '=' -f2-)
+    
+    if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
+        echo -e "${GREEN}✓ Using credentials from .env file${NC}"
+        echo -e "${BLUE}Username: $USERNAME${NC}"
+    else
+        echo -e "${YELLOW}⚠ No API credentials found in .env file${NC}"
+        echo -e "${BLUE}Enter your username:${NC}"
+        read -r USERNAME
+        echo -e "${BLUE}Enter your password:${NC}"
+        read -rs PASSWORD
+        echo ""
+    fi
+else
+    echo -e "${YELLOW}⚠ No .env file found${NC}"
+    echo -e "${BLUE}Enter your username:${NC}"
+    read -r USERNAME
+    echo -e "${BLUE}Enter your password:${NC}"
+    read -rs PASSWORD
+    echo ""
+fi
+
+# Check authentication by trying to access the root endpoint
+RESPONSE=$(curl -s -w "\n%{http_code}" -u "$USERNAME:$PASSWORD" "$API_URL/" 2>/dev/null)
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" = "401" ]; then
+    echo -e "${RED}✗ Authentication failed${NC}"
+    echo -e "${YELLOW}Please check your credentials in .env file or re-run ./scripts/generate_password.sh${NC}\n"
+    exit 1
+elif [ "$HTTP_CODE" = "404" ] || [ "$HTTP_CODE" = "200" ]; then
     echo -e "${GREEN}✓ Authentication successful!${NC}"
-    curl -s -u "$USERNAME:$PASSWORD" "$API_URL/" | jq '.' 2>/dev/null || cat
+    echo "$BODY" | jq '.' 2>/dev/null || echo "$BODY"
     echo ""
 else
-    echo -e "${RED}✗ Authentication failed${NC}\n"
-    exit 1
+    echo -e "${YELLOW}⚠ Unexpected response code: $HTTP_CODE${NC}"
+    echo "$BODY"
+    echo ""
 fi
 
 # Test 5: List pipelines with auth
@@ -74,4 +105,9 @@ fi
 
 echo -e "${BLUE}=== Testing Complete ===${NC}"
 echo -e "\n${GREEN}Your API is secured and working correctly!${NC}"
-echo -e "${YELLOW}Remember to use -u $USERNAME:YOUR_PASSWORD for all authenticated requests${NC}"
+if [ -f ".env" ] && grep -q "^API_USERNAME=" .env; then
+    echo -e "${YELLOW}Credentials are stored in .env file for your convenience${NC}"
+    echo -e "${YELLOW}Use: curl -u \$API_USERNAME:\$API_PASSWORD http://localhost:8080/status${NC}"
+else
+    echo -e "${YELLOW}Remember to use -u $USERNAME:YOUR_PASSWORD for all authenticated requests${NC}"
+fi

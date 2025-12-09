@@ -34,8 +34,21 @@ mkdir -p nginx
 echo -e "${YELLOW}Enter username for API access:${NC}"
 read -r USERNAME
 
-echo -e "${YELLOW}Enter password:${NC}"
-read -rs PASSWORD
+# Password with confirmation
+while true; do
+    echo -e "${YELLOW}Enter password:${NC}"
+    read -rs PASSWORD
+    echo ""
+    echo -e "${YELLOW}Confirm password:${NC}"
+    read -rs PASSWORD_CONFIRM
+    echo ""
+    
+    if [ "$PASSWORD" = "$PASSWORD_CONFIRM" ]; then
+        break
+    else
+        echo -e "${RED}Passwords do not match. Please try again.${NC}\n"
+    fi
+done
 
 # Generate htpasswd file
 echo "$PASSWORD" | htpasswd -i -c nginx/.htpasswd "$USERNAME"
@@ -43,6 +56,25 @@ echo "$PASSWORD" | htpasswd -i -c nginx/.htpasswd "$USERNAME"
 echo -e "\n${GREEN}✓ Authentication file created successfully!${NC}"
 echo -e "${GREEN}✓ Location: nginx/.htpasswd${NC}"
 echo -e "${GREEN}✓ Username: $USERNAME${NC}"
+
+# Save credentials to .env file
+ENV_FILE=".env"
+if [ ! -f "$ENV_FILE" ]; then
+    touch "$ENV_FILE"
+fi
+
+# Remove old API credentials if they exist
+sed -i.bak '/^API_USERNAME=/d' "$ENV_FILE" 2>/dev/null || true
+sed -i.bak '/^API_PASSWORD=/d' "$ENV_FILE" 2>/dev/null || true
+rm -f "$ENV_FILE.bak"
+
+# Append new credentials
+echo "" >> "$ENV_FILE"
+echo "# API Authentication Credentials" >> "$ENV_FILE"
+echo "API_USERNAME=$USERNAME" >> "$ENV_FILE"
+echo "API_PASSWORD=$PASSWORD" >> "$ENV_FILE"
+
+echo -e "${GREEN}✓ Credentials saved to .env file${NC}"
 echo -e "\n${YELLOW}Keep this password secure. You'll need it to access the API.${NC}"
 echo -e "\n${YELLOW}Example curl command with authentication:${NC}"
 echo -e "curl -u ${USERNAME}:YOUR_PASSWORD http://localhost:8080/status"

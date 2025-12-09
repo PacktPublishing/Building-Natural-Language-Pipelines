@@ -595,47 +595,6 @@ wheels = [
 ]
 
 [[package]]
-name = "elastic-transport"
-version = "8.17.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "certifi" },
-    { name = "urllib3" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/54/d498a766ac8fa475f931da85a154666cc81a70f8eb4a780bc8e4e934e9ac/elastic_transport-8.17.1.tar.gz", hash = "sha256:5edef32ac864dca8e2f0a613ef63491ee8d6b8cfb52881fa7313ba9290cac6d2", size = 73425, upload-time = "2025-03-13T07:28:30.776Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/cd/b71d5bc74cde7fc6fd9b2ff9389890f45d9762cbbbf81dc5e51fd7588c4a/elastic_transport-8.17.1-py3-none-any.whl", hash = "sha256:192718f498f1d10c5e9aa8b9cf32aed405e469a7f0e9d6a8923431dbb2c59fb8", size = 64969, upload-time = "2025-03-13T07:28:29.031Z" },
-]
-
-[[package]]
-name = "elasticsearch"
-version = "8.19.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "elastic-transport" },
-    { name = "python-dateutil" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/42/7b/70b9d16069eda6f91d45fadd9e12faed8e4442f242ca8a81de84bc626f1b/elasticsearch-8.19.2.tar.gz", hash = "sha256:622efa6a3e662db45285f16ab57bf198ea73ac9e137e7ed8b1d1d1e47638959d", size = 797401, upload-time = "2025-10-28T16:36:44.953Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/01/6f77d042b83260ef9ed73ea9647dfa0ef8414eba0a3fc57a509a088ad39b/elasticsearch-8.19.2-py3-none-any.whl", hash = "sha256:c16ba20c4c76cf6952e836dae7f4e724e00ba7bf31b94b79472b873683accdd4", size = 949706, upload-time = "2025-10-28T16:36:41.003Z" },
-]
-
-[[package]]
-name = "elasticsearch-haystack"
-version = "4.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "aiohttp" },
-    { name = "elasticsearch" },
-    { name = "haystack-ai" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c1/7c/6598c79142ed61f12778ff084248e492df057a6f744f84dc6cc28357ca63/elasticsearch_haystack-4.1.0.tar.gz", hash = "sha256:cf3ebd1fbc089922de16d9172256d2e243b71d8d941018d3d83406629faf2103", size = 29028, upload-time = "2025-10-09T07:19:05.509Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/5d/4cb8d372502cfc76a1364f9b4cf839edae946c8bb5e03ef1ba0f58723b2b/elasticsearch_haystack-4.1.0-py3-none-any.whl", hash = "sha256:5226338df7af5b5aa33a2ebf133717b71294eb98f20968f5ce190612403a7c27", size = 21182, upload-time = "2025-10-09T07:19:04.595Z" },
-]
-
-[[package]]
 name = "email-validator"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3687,7 +3646,6 @@ name = "rag-with-haystack-ch7-hayhooks-dev"
 version = "0.1"
 source = { editable = "." }
 dependencies = [
-    { name = "elasticsearch-haystack" },
     { name = "fastembed-haystack" },
     { name = "hayhooks" },
     { name = "haystack-ai" },
@@ -3720,7 +3678,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "elasticsearch-haystack", specifier = ">=4.1.0" },
     { name = "fastembed-haystack", specifier = ">=1.0.0" },
     { name = "hayhooks", specifier = ">=1.5.0" },
     { name = "haystack-ai", specifier = ">=2.19.0" },
