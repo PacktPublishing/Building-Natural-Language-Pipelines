@@ -42,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:1416/status || exit 1
 
 # Default command to run hayhooks
-CMD ["hayhooks", "run", "--host", "0.0.0.0", "--port", "1416"]
+CMD ["uv", "run", "hayhooks", "run", "--host", "0.0.0.0", "--port", "1416"]
