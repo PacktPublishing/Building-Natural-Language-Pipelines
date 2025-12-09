@@ -1,6 +1,7 @@
 """Main FastAPI application for Hybrid RAG."""
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Security, Depends
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import logging
@@ -16,6 +17,18 @@ logger = logging.getLogger(__name__)
 
 # Get settings
 settings = get_settings()
+
+# API Key security scheme
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
+
+async def get_api_key(api_key: str = Security(api_key_header)):
+    """Validate API key from request header."""
+    if api_key != settings.rag_api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid API Key"
+        )
+    return api_key
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -122,8 +135,11 @@ async def health_check():
 
 
 @app.post("/query", response_model=QueryResponse)
-async def query_documents(request: QueryRequest):
-    """Query the hybrid RAG system with a question."""
+async def query_documents(
+    request: QueryRequest,
+    api_key: str = Depends(get_api_key)
+):
+    """Query the hybrid RAG system with a question. Requires valid API key."""
     if hybrid_rag_component is None:
         raise HTTPException(
             status_code=503, 

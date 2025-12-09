@@ -16,6 +16,13 @@ else
     exit 1
 fi
 
+# Verify required environment variables
+if [[ -z "${RAG_API_KEY:-}" ]]; then
+    echo "❌ RAG_API_KEY is not set in .env file"
+    echo "💡 Add RAG_API_KEY=your-secret-key to your .env file"
+    exit 1
+fi
+
 # Check Qdrant storage
 echo "🔍 Checking Qdrant storage..."
 if [[ ! -d "./qdrant_storage" ]]; then

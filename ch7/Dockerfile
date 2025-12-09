@@ -45,6 +45,11 @@ USER app
 # Expose port
 EXPOSE 8000
 
+# Environment variables that must be provided at runtime:
+# - OPENAI_API_KEY: OpenAI API key for embeddings and LLM
+# - RAG_API_KEY: Secret key for securing the /query endpoint
+# Example: docker run -e OPENAI_API_KEY=... -e RAG_API_KEY=... hybrid-rag-api
+
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1

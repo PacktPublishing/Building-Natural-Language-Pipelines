@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Optional API Keys
     tavily_api_key: Optional[str] = Field(default=None, env="TAVILY_API_KEY")
     
+    # API Security
+    rag_api_key: str = Field(..., env="RAG_API_KEY")
+    
     # Qdrant Configuration  
     qdrant_path: str = Field(default="./qdrant_storage", env="QDRANT_PATH")
     qdrant_index: str = Field(default="documents", env="QDRANT_INDEX")

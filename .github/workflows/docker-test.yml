@@ -34,6 +34,7 @@ jobs:
         cd ch7
         cat > .env << EOF
         OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+        RAG_API_KEY=${{ secrets.RAG_API_KEY }}
         QDRANT_PATH=./qdrant_storage
         QDRANT_INDEX=documents
         API_HOST=0.0.0.0
@@ -56,6 +57,7 @@ jobs:
           --name test-ch7-api \
           -p 8000:8000 \
           -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+          -e RAG_API_KEY=${{ secrets.RAG_API_KEY }} \
           hybrid-rag-api
         
         # Wait for container to initialize
