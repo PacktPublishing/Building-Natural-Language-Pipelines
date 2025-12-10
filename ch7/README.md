@@ -17,7 +17,7 @@ source .venv/bin/activate
 
 2. **Configure environment**:
 
-**Generate a secure API key** (recommended):
+**Generate a secure API key**:
 ```bash
 # macOS/Linux
 openssl rand -hex 32
