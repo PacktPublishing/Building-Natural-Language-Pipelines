@@ -49,6 +49,9 @@ HAYHOOKS_SHOW_TRACEBACKS=true
 uv run hayhooks run
 ```
 
+You can then visit [http://0.0.0.0:1416/docs#/](http://0.0.0.0:1416/docs#/) and test the endpoints.
+
+
 **Option B: Using Docker Compose with nginx Security (🔒 Recommended for production)**
 
 ```bash
@@ -63,7 +66,12 @@ docker-compose logs -f
 
 # Access protected endpoints with authentication
 curl -u username:password http://localhost:8080/status
+```
 
+You can then visit [http://localhost:8080/docs](http://localhost:8080/docs), enter your passowrd and test the endpoints.
+
+
+``` bash
 # Stop services
 docker-compose down
 ```
@@ -95,6 +103,9 @@ docker logs -f hayhooks-rag
 # Verify the server is running (unsecured)
 curl http://localhost:1416/status
 ```
+
+You can then visit [http://0.0.0.0:1416/docs#/](http://0.0.0.0:1416/docs#/) and test the endpoints.
+
 
 5. **Stop the container**:
 ```bash
@@ -162,6 +173,7 @@ docker run -d \
   -v $(pwd)/qdrant_storage:/app/qdrant_storage \
   hayhooks-index-rag
 ```
+
 
 **Run with additional environment variables:**
 ```bash
@@ -236,21 +248,23 @@ Once deployed, your pipelines are available at:
 
 ## Usage Examples
 
-### Index a Document
+### Using cURL
+
+#### Index a Document
 ```bash
 curl -X POST "http://localhost:1416/indexing/run" \
   -H "Content-Type: application/json" \
   -d '{"urls": ["https://example.com/article"]}'
 ```
 
-### Ask a Question  
+#### Ask a Question  
 ```bash
 curl -X POST "http://localhost:1416/hybrid_rag/run" \
   -H "Content-Type: application/json" \
   -d '{"query": "What are the benefits of AI?"}'
 ```
 
-### OpenAI-Style Chat
+#### OpenAI-Style Chat
 ```bash
 curl -X POST "http://localhost:1416/v1/chat/completions" \
   -H "Content-Type: application/json" \
@@ -258,6 +272,59 @@ curl -X POST "http://localhost:1416/v1/chat/completions" \
     "model": "hybrid_rag",
     "messages": [{"role": "user", "content": "Explain machine learning"}]
   }'
+```
+
+### Using Python (Programmatic Access)
+
+Hayhooks provides a Python client for programmatic access to your deployed pipelines:
+
+```python
+import requests
+
+# Base URL for your Hayhooks server
+BASE_URL = "http://localhost:1416"
+
+# Index documents
+response = requests.post(
+    f"{BASE_URL}/indexing/run",
+    json={"urls": ["https://example.com/article"]}
+)
+print(response.json())
+
+# Query the RAG pipeline
+response = requests.post(
+    f"{BASE_URL}/hybrid_rag/run",
+    json={"query": "What are the benefits of AI?"}
+)
+print(response.json())
+
+# OpenAI-compatible chat completions
+response = requests.post(
+    f"{BASE_URL}/v1/chat/completions",
+    json={
+        "model": "hybrid_rag",
+        "messages": [{"role": "user", "content": "Explain machine learning"}]
+    }
+)
+print(response.json())
+```
+
+### Using the Hayhooks CLI
+
+You can also run pipelines directly from the command line:
+
+```bash
+# Run a query through the RAG pipeline
+hayhooks pipeline run hybrid_rag --param 'query="What is AI?"'
+
+# Index documents with file upload
+hayhooks pipeline run indexing --file document.pdf
+
+# Index multiple files
+hayhooks pipeline run indexing --file file1.pdf --file file2.pdf
+
+# Index a directory of files
+hayhooks pipeline run indexing --dir ./documents
 ```
 
 ## Overview
@@ -348,6 +415,60 @@ hayhooks-mcp/
 
 **Error**: Invalid API key or authentication errors
 - **Solution**: Verify your OpenAI API key is correctly set in `.env`
+
+#### 4. Qdrant Concurrent Access Issues
+
+**Error**: `Storage folder ./qdrant_storage is already accessed by another instance of Qdrant client`
+- **Cause**: Running the indexing pipeline and then attempting to run the RAG pipeline causes a concurrent access error because both pipelines try to access the same local Qdrant storage folder
+- **Impact**: You'll see this error when trying to use the `/hybrid_rag/run` endpoint after indexing documents
+- **Solution**: Modify both pipeline serialization scripts to use cloud-based Qdrant instead of local storage:
+  
+  In `pipelines/indexing_pipeline_serialization.py` and `pipelines/rag_pipeline_serialization.py`, replace:
+  ```python
+  # Initialize document store (same path as indexing)
+  document_store = QdrantDocumentStore(
+      path="./qdrant_storage",
+      index="documents",
+      embedding_dim=1536,  # text-embedding-3-small dimension
+      recreate_index=False,
+      use_sparse_embeddings=True  # Enable sparse embeddings for BM25-like retrieval
+  )
+  ```
+  
+  With cloud-based configuration:
+  ```python
+  # Initialize document store (cloud-based for concurrent access)
+  document_store = QdrantDocumentStore(
+      url="your_qdrant_url",  # e.g., "https://xyz-example.eu-central.aws.cloud.qdrant.io:6333"
+      api_key=Secret.from_env_var("QDRANT_API_KEY"),
+      index="documents",
+      embedding_dim=1536,
+      recreate_index=False,
+      use_sparse_embeddings=True
+  )
+  ```
+  
+  Then add to your `.env` file:
+  ```bash
+  QDRANT_API_KEY=your_qdrant_api_key_here
+  QDRANT_HOST_URL=your_qdrant_url_here
+  ```
+
+#### 5. MPS Device Compatibility Issues
+
+**Warning**: `MPS backend is not available` or errors related to device configuration
+- **Cause**: The serialized pipeline YAML files may have `device: mps` set for the ranker component, but MPS (Metal Performance Shaders) is only available on Apple Silicon Macs and may not be supported in all environments
+- **Impact**: Pipeline fails to load or run with device-related errors
+- **Solution**: Modify the device configuration in the YAML files to use CPU instead:
+  
+  In `pipelines/hybrid_rag/rag.yml`, find the ranker component's device configuration and change it to:
+  ```yaml
+  device:
+    device: cpu
+    type: single
+  ```
+  
+  This ensures compatibility across all environments including Docker containers and cloud deployments.
 
 
 ## Advanced Usage

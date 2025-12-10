@@ -134,7 +134,7 @@ components:
       batch_size: 16
       config_kwargs: null
       device:
-        device: mps
+        device: cpu
         type: single
       document_prefix: ''
       embedding_separator: '

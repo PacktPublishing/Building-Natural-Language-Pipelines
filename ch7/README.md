@@ -16,19 +16,22 @@ source .venv/bin/activate
 ```
 
 2. **Configure environment**:
+
+**Generate a secure API key** (recommended):
+```bash
+# macOS/Linux
+openssl rand -hex 32
+```
+
+Enter your key in the `.env` file
+
 ```bash
 # Copy the example environment file
 cp .env.example .env
 
 # Edit .env and add your API keys:
 # OPENAI_API_KEY=your_actual_openai_key
-# RAG_API_KEY=your_secret_api_key_for_authentication
-```
-
-**Generate a secure API key** (recommended):
-```bash
-# macOS/Linux
-openssl rand -hex 32
+# RAG_API_KEY=your_secret_api_key_for_authentication 
 ```
 
 3. **Run indexing**:
