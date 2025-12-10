@@ -8,7 +8,6 @@ import requests
 import json
 import time
 import sys
-from typing import Optional
 
 # API base URL
 BASE_URL = "http://localhost:8000"

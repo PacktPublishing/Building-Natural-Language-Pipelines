@@ -1,11 +1,10 @@
 """Main FastAPI application for Hybrid RAG."""
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Security, Depends
+from fastapi import FastAPI, HTTPException, Security, Depends
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import logging
-import asyncio
 
 from .config import get_settings
 from .rag.hybridrag import HybridRAGSuperComponent

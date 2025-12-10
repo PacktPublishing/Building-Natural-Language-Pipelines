@@ -17,7 +17,6 @@ from haystack.components.writers import DocumentWriter
 from haystack_integrations.document_stores.qdrant import QdrantDocumentStore
 from haystack.utils import Secret
 from haystack.components.joiners import DocumentJoiner
-from haystack.dataclasses import Document
 
 # Import components for embedding
 from haystack.components.embedders import OpenAIDocumentEmbedder

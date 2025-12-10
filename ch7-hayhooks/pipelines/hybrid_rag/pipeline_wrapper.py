@@ -3,17 +3,6 @@ import os
 
 from hayhooks import BasePipelineWrapper, log, get_last_user_message
 from haystack import Pipeline
-from haystack.components.embedders import OpenAITextEmbedder
-from haystack.components.builders import PromptBuilder
-from haystack.components.generators import OpenAIGenerator
-from haystack.components.joiners import DocumentJoiner
-from haystack.components.rankers import SentenceTransformersSimilarityRanker
-from haystack.utils import Secret
-from haystack.document_stores.in_memory import InMemoryDocumentStore
-from haystack.components.retrievers.in_memory import (
-    InMemoryBM25Retriever,
-    InMemoryEmbeddingRetriever
-)
 from pathlib import Path
 
 class PipelineWrapper(BasePipelineWrapper):
