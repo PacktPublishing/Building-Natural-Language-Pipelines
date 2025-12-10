@@ -27,6 +27,8 @@ COPY hayhooks.yml ./
 
 # Install dependencies using uv
 ENV UV_SYSTEM_PYTHON=1
+# Force PyTorch to use CPU (avoid MPS errors on Mac Docker)
+ENV PYTORCH_ENABLE_MPS_FALLBACK=1
 RUN uv sync --frozen --no-dev
 
 # Create non-root user for security

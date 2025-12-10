@@ -6,6 +6,8 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - HAYHOOKS_HOST=0.0.0.0
       - HAYHOOKS_PORT=1416
+      - HAYSTACK_DEVICE=cpu           
+      - HAYSTACK_DEFAULT_DEVICE=cpu
     volumes:
       - ./qdrant_storage:/app/qdrant_storage
     # Don't expose port directly - only accessible via nginx

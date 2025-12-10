@@ -42,12 +42,14 @@ HAYHOOKS_SHOW_TRACEBACKS=true
 
 3. **Run Hayhooks**:
 
-**Option A: Local Development (without security)**
+**Option A: Local Development (⚠️ NOT password protected)**
 ```bash
+# Runs on http://localhost:1416 - open to anyone with network access
+# Use this for local testing only, NOT for production
 uv run hayhooks run
 ```
 
-**Option B: Using Docker Compose with nginx Security (Recommended)**
+**Option B: Using Docker Compose with nginx Security (🔒 Recommended for production)**
 
 ```bash
 # Start both Hayhooks and nginx with authentication
