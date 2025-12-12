@@ -193,6 +193,7 @@ ch6/jupyter-notebooks/wandb/*
 ch6/adding-observability/wandb/*
 ch6/adding-evaluation/wandb/*
 .pdf
+*.csv
 *.txt
 ch8/named-entity-recognition/ner_results/*.csv
 .langgraph_api
@@ -202,6 +203,7 @@ ch8/named-entity-recognition/ner_results/*.csv
 ch9/context-engineering/yelp-navigator-v3/memory.sqlite
 !epilogue/context-engineering/docs/results-temperature-1_fine-grain.json
 !epilogue/context-engineering/docs/results-temperature-0_fine-grain.json
+!epilogue/context-engineering/docs/results-gpt-4o-mini.json
 !ch6/jupyter-notebooks/data_for_eval/*
 */qdrant_storage/*
 !*/requirements.txt
