@@ -1,57 +1,45 @@
-version: '3.8'
-
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch-rag
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - bootstrap.memory_lock=true
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    networks:
-      - rag-network
-
   hayhooks:
     build: .
-    container_name: hayhooks-server
-    ports:
-      - "1416:1416"
+    container_name: hayhooks-backend
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ELASTICSEARCH_HOST=http://elasticsearch:9200
-      - HAYHOOKS_PIPELINES_DIR=pipelines
       - HAYHOOKS_HOST=0.0.0.0
       - HAYHOOKS_PORT=1416
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
+      - HAYSTACK_DEVICE=cpu           
+      - HAYSTACK_DEFAULT_DEVICE=cpu
     volumes:
-      - ./.env:/app/.env
-      - ./pipelines:/app/pipelines
+      - ./qdrant_storage:/app/qdrant_storage
+    # Don't expose port directly - only accessible via nginx
+    expose:
+      - "1416"
     networks:
-      - rag-network
+      - hayhooks-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1416/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-volumes:
-  elasticsearch_data:
-    driver: local
+  nginx:
+    image: nginx:alpine
+    container_name: hayhooks-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+    networks:
+      - hayhooks-network
+    depends_on:
+      - hayhooks
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
-  rag-network:
+  hayhooks-network:
     driver: bridge

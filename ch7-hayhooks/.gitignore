@@ -1,0 +1,41 @@
+# Ignore authentication files
+nginx/.htpasswd
+.htpasswd
+
+# Environment files with secrets
+.env
+
+# Qdrant storage
+qdrant_storage/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+nginx/logs/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/

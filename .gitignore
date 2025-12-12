@@ -166,7 +166,7 @@ course-material/_build
 
 # Data files
 *.asc
-.csv
+*.csv
 *.tsv
 *.json
 *.pkl
@@ -204,3 +204,6 @@ ch9/context-engineering/yelp-navigator-v3/memory.sqlite
 !epilogue/context-engineering/docs/results-temperature-1_fine-grain.json
 !epilogue/context-engineering/docs/results-temperature-0_fine-grain.json
 !epilogue/context-engineering/docs/results-gpt-4o-mini.json
+!ch6/jupyter-notebooks/data_for_eval/*
+*/qdrant_storage/*
+!*/requirements.txt

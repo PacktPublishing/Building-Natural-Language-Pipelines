@@ -7,8 +7,8 @@ ch7/
 ├── README.md
 ├── .env.example                     # Environment template
 ├── .env                            # Local environment (gitignored)
-├── docker-compose.yml              # Full stack with Elasticsearch
-├── docker-compose.local.yml        # Local dev with external ES
+├── docker-compose.yml              # Full stack with Qdrant storage
+├── docker-compose.local.yml        # Local dev configuration
 ├── Dockerfile                      # Application container
 ├── scripts/
 │   ├── setup_local.sh             # Local setup script

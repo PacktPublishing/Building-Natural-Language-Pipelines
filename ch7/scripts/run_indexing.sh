@@ -1,9 +1,9 @@
 #!/bin/bash
-# Script to run document indexing
+# Script to run document indexing with Qdrant
 
 set -euo pipefail
 
-echo "📚 Running document indexing pipeline..."
+echo "📚 Running document indexing pipeline with Qdrant..."
 
 # Change to project root
 cd "$(dirname "$0")/.."
@@ -16,15 +16,14 @@ else
     exit 1
 fi
 
-# Check Elasticsearch
-echo "🔍 Checking Elasticsearch connection..."
-if ! curl -f -s http://localhost:9200/_cat/health > /dev/null 2>&1; then
-    echo "❌ Elasticsearch not available on localhost:9200"
-    echo "💡 Start Elasticsearch first or use Docker: docker-compose up -d elasticsearch"
-    exit 1
+# Create Qdrant storage directory if it doesn't exist
+QDRANT_PATH="${QDRANT_PATH:-./qdrant_storage}"
+if [[ ! -d "$QDRANT_PATH" ]]; then
+    echo "📁 Creating Qdrant storage directory: $QDRANT_PATH"
+    mkdir -p "$QDRANT_PATH"
 fi
 
-echo "✅ Elasticsearch is running"
+echo "✅ Using Qdrant storage at: $QDRANT_PATH"
 
 # Run indexing
 echo "🚀 Starting indexing pipeline..."

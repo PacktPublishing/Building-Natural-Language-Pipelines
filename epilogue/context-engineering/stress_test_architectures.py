@@ -45,7 +45,7 @@ TEST_QUERIES = [
 VERSIONS = ["v1", "v2", "v3"]
 
 # Execution configuration
-MAX_WORKERS = 1  # WARNING: High values may consume the timeout budget quickly
+MAX_WORKERS = 1  # WARNING: High values may consume the timeout budget quickly if using Ollama
 TEST_TIMEOUT = 120  # Timeout in seconds (2 minutes)
 TEST_TEMPERATURE = "0.0"  # Temperature setting for models
 

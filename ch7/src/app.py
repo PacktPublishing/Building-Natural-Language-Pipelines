@@ -1,14 +1,14 @@
 """Main FastAPI application for Hybrid RAG."""
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Security, Depends
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import logging
-import asyncio
 
-from .config import get_settings, wait_for_elasticsearch
+from .config import get_settings
 from .rag.hybridrag import HybridRAGSuperComponent
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
+from haystack_integrations.document_stores.qdrant import QdrantDocumentStore
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -17,10 +17,22 @@ logger = logging.getLogger(__name__)
 # Get settings
 settings = get_settings()
 
+# API Key security scheme
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
+
+async def get_api_key(api_key: str = Security(api_key_header)):
+    """Validate API key from request header."""
+    if api_key != settings.rag_api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid API Key"
+        )
+    return api_key
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Hybrid RAG API",
-    description="A FastAPI application that provides hybrid retrieval-augmented generation using Elasticsearch and OpenAI",
+    description="A FastAPI application that provides hybrid retrieval-augmented generation using Qdrant and OpenAI",
     version="1.0.0"
 )
 
@@ -50,16 +62,15 @@ async def startup_event():
     try:
         logger.info("Starting up Hybrid RAG API...")
         
-        # Wait for Elasticsearch to be available
-        if not wait_for_elasticsearch(settings.elasticsearch_host):
-            raise ConnectionError(f"Could not connect to Elasticsearch at {settings.elasticsearch_host}")
-        
-        logger.info("Initializing Elasticsearch document store...")
+        logger.info("Initializing Qdrant document store...")
         
         # Initialize the document store
-        document_store = ElasticsearchDocumentStore(
-            hosts=settings.elasticsearch_host,
-            index=settings.elasticsearch_index
+        document_store = QdrantDocumentStore(
+            path=settings.qdrant_path,
+            index=settings.qdrant_index,
+            embedding_dim=1536,  # text-embedding-3-small dimension
+            recreate_index=False,
+            use_sparse_embeddings=True  # Enable sparse embeddings for hybrid retrieval
         )
         
         logger.info("Initializing Hybrid RAG SuperComponent...")
@@ -95,8 +106,7 @@ async def root():
         "message": "Hybrid RAG API",
         "version": "1.0.0", 
         "status": "running",
-        "elasticsearch_host": settings.elasticsearch_host,
-        "elasticsearch_available": wait_for_elasticsearch(settings.elasticsearch_host, max_retries=1),
+        "qdrant_path": settings.qdrant_path,
         "component_initialized": hybrid_rag_component is not None,
         "endpoints": {
             "query": "/query",
@@ -111,23 +121,24 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    elasticsearch_available = wait_for_elasticsearch(settings.elasticsearch_host, max_retries=1)
     component_ready = hybrid_rag_component is not None
     
-    status = "healthy" if (elasticsearch_available and component_ready) else "unhealthy"
+    status = "healthy" if component_ready else "unhealthy"
     
     return {
         "status": status,
-        "elasticsearch_available": elasticsearch_available,
-        "elasticsearch_host": settings.elasticsearch_host,
+        "qdrant_path": settings.qdrant_path,
         "component_initialized": component_ready,
         "indexing_in_progress": indexing_in_progress
     }
 
 
 @app.post("/query", response_model=QueryResponse)
-async def query_documents(request: QueryRequest):
-    """Query the hybrid RAG system with a question."""
+async def query_documents(
+    request: QueryRequest,
+    api_key: str = Depends(get_api_key)
+):
+    """Query the hybrid RAG system with a question. Requires valid API key."""
     if hybrid_rag_component is None:
         raise HTTPException(
             status_code=503, 
@@ -181,9 +192,8 @@ async def get_info():
         "llm_model": settings.llm_model,
         "top_k": settings.top_k,
         "ranker_model": settings.ranker_model,
-        "elasticsearch_host": settings.elasticsearch_host,
-        "elasticsearch_index": settings.elasticsearch_index,
-        "elasticsearch_available": wait_for_elasticsearch(settings.elasticsearch_host, max_retries=1)
+        "qdrant_path": settings.qdrant_path,
+        "qdrant_index": settings.qdrant_index
     }
 
 

@@ -5,20 +5,22 @@ from haystack.components.generators import OpenAIGenerator
 from haystack.components.joiners import DocumentJoiner
 from haystack.components.rankers import SentenceTransformersSimilarityRanker
 from haystack.utils import Secret
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
-from haystack_integrations.components.retrievers.elasticsearch import (
-    ElasticsearchBM25Retriever,
-    ElasticsearchEmbeddingRetriever
-)
+from haystack_integrations.document_stores.qdrant import QdrantDocumentStore
+from haystack_integrations.components.retrievers.qdrant import QdrantSparseEmbeddingRetriever, QdrantEmbeddingRetriever
+from haystack_integrations.components.embedders.fastembed import FastembedSparseTextEmbedder
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# Initialize document store (same as indexing)
-document_store = ElasticsearchDocumentStore(
-    hosts=os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200"),
-    index="small_embeddings"
+# Initialize document store (same path as indexing)
+document_store = QdrantDocumentStore(
+    path="./qdrant_storage",
+    index="documents",
+    embedding_dim=1536,  # text-embedding-3-small dimension
+    recreate_index=False,
+    use_sparse_embeddings=True  # Enable sparse embeddings for BM25-like retrieval
 )
+
         
 pipeline = Pipeline()
         
@@ -28,12 +30,15 @@ text_embedder = OpenAITextEmbedder(
     model="text-embedding-3-small"
 )
 
-embedding_retriever = ElasticsearchEmbeddingRetriever(
+# Add sparse embedder for BM25 retriever (using FastEmbed)
+sparse_text_embedder = FastembedSparseTextEmbedder()
+
+embedding_retriever = QdrantEmbeddingRetriever(
     document_store=document_store,
     top_k=3
 )
 
-bm25_retriever = ElasticsearchBM25Retriever(
+bm25_retriever = QdrantSparseEmbeddingRetriever(
     document_store=document_store,
     top_k=3
 )
@@ -70,6 +75,7 @@ llm = OpenAIGenerator(
 
 # Add components
 pipeline.add_component("text_embedder", text_embedder)
+pipeline.add_component("sparse_text_embedder", sparse_text_embedder)
 pipeline.add_component("embedding_retriever", embedding_retriever)
 pipeline.add_component("bm25_retriever", bm25_retriever)
 pipeline.add_component("document_joiner", document_joiner)
@@ -79,11 +85,16 @@ pipeline.add_component("llm", llm)
 
 # Connect components
 pipeline.connect("text_embedder.embedding", "embedding_retriever.query_embedding")
+pipeline.connect("sparse_text_embedder.sparse_embedding", "bm25_retriever.query_sparse_embedding")
 pipeline.connect("embedding_retriever.documents", "document_joiner.documents")
 pipeline.connect("bm25_retriever.documents", "document_joiner.documents")
 pipeline.connect("document_joiner.documents", "ranker.documents")
 pipeline.connect("ranker.documents", "prompt_builder.documents")
 pipeline.connect("prompt_builder.prompt", "llm.prompt")
 
-with open("./pipelines/hybrid_rag/rag.yml", "w") as file:
+output_path = "./pipelines/hybrid_rag/rag.yml"
+# Dump the pipeline
+with open(output_path, "w") as file:
   pipeline.dump(file)
+  
+print(f"Pipeline serialized to {output_path}")

@@ -13,7 +13,7 @@ on:
       - '.github/workflows/docker-test.yml'
 
 jobs:
-  docker-test:
+  docker-test-ch7:
     runs-on: ubuntu-latest
     
     steps:
@@ -29,95 +29,75 @@ jobs:
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
         df -h
         
-    - name: Create .env file for testing
+    - name: Create .env file for ch7
       run: |
         cd ch7
         cat > .env << EOF
         OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-        TAVILY_API_KEY=${{ secrets.TAVILY_API_KEY }}
-        ELASTICSEARCH_HOST=http://elasticsearch:9200
-        ELASTICSEARCH_INDEX=documents
+        RAG_API_KEY=${{ secrets.RAG_API_KEY }}
+        QDRANT_PATH=./qdrant_storage
+        QDRANT_INDEX=documents
         API_HOST=0.0.0.0
         API_PORT=8000
         EOF
         
-    - name: Build and start services
+    - name: Build ch7 Docker image
       run: |
         cd ch7
-        # Build with cache to save space and time
-        docker compose build
-        # Start only essential services for basic testing
-        docker compose up -d elasticsearch
-        # Wait a bit for Elasticsearch to start
+        echo "Building ch7 Docker image..."
+        docker build -t hybrid-rag-api .
+        
+    - name: Test ch7 Docker container
+      run: |
+        cd ch7
+        echo "Testing ch7 Docker build and service startup..."
+        
+        # Run the container in detached mode
+        docker run -d --name test-ch7-api -p 8000:8000 -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" -e RAG_API_KEY="${{ secrets.RAG_API_KEY }}" hybrid-rag-api
+        
+        # Wait for container to initialize
+        echo "Waiting for container to initialize..."
         sleep 30
         
-    - name: Test Elasticsearch health
-      run: |
-        cd ch7
-        echo "Testing Elasticsearch health..."
-        timeout=120
-        counter=0
-        while [ $counter -lt $timeout ]; do
-          if curl -f http://localhost:9200/_cat/health > /dev/null 2>&1; then
-            echo "Elasticsearch is healthy!"
-            break
-          fi
-          echo "Waiting for Elasticsearch... ($counter/$timeout)"
-          sleep 5
-          counter=$((counter + 5))
-        done
-        
-        if [ $counter -ge $timeout ]; then
-          echo "Elasticsearch failed to become healthy"
-          docker compose logs elasticsearch
-          exit 1
-        fi
-        
-    - name: Test Docker images can be built and run
-      run: |
-        cd ch7
-        echo "Testing Docker build and service startup..."
-        
-        # Test that we can run the API service independently (bypass indexing dependency)
-        echo "Starting API service without indexing dependency..."
-        docker compose run --rm --no-deps -p 8000:8000 -d --name test-api api &
-        API_PID=$!
-        sleep 20
-        
-        # Check if the API container is running
-        if docker ps | grep -q "test-api"; then
-          echo "✅ API container started successfully!"
+        # Check if container is still running
+        if docker ps | grep -q "test-ch7-api"; then
+          echo "✅ ch7 API container started successfully!"
           
-          # Test basic connectivity (may not be fully functional without indexing)
-          if docker exec test-api curl -f http://localhost:8000/health > /dev/null 2>&1; then
-            echo "✅ API health endpoint is accessible!"
-          else
-            echo "⚠️  API started but health endpoint not ready (expected without indexing)"
+          # Give it more time for indexing to complete
+          sleep 60
+          
+          # Test health endpoint
+          timeout=120
+          counter=0
+          while [ $counter -lt $timeout ]; do
+            if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+              echo "✅ ch7 API health endpoint is accessible!"
+              break
+            fi
+            echo "Waiting for ch7 API health endpoint... ($counter/$timeout)"
+            sleep 5
+            counter=$((counter + 5))
+          done
+          
+          if [ $counter -ge $timeout ]; then
+            echo "⚠️  ch7 API health endpoint not ready"
+            docker logs test-ch7-api
           fi
         else
-          echo "❌ API container failed to start"
-          docker logs test-api || true
+          echo "❌ ch7 API container failed to start"
+          docker logs test-ch7-api || true
           exit 1
         fi
         
-        # Clean up the test container
-        docker stop test-api || true
-        docker rm test-api || true
-        
-        echo "✅ Docker build and basic service tests completed successfully!"
-        
-    - name: Show logs on failure
+    - name: Show ch7 logs on failure
       if: failure()
       run: |
-        cd ch7
-        echo "=== Docker compose ps ==="
-        docker compose ps || true
-        echo "=== Service logs ==="
-        docker compose logs || true
+        echo "=== ch7 container logs ==="
+        docker logs test-ch7-api || true
         
-    - name: Cleanup
+    - name: Cleanup ch7
       if: always()
       run: |
-        cd ch7
-        docker compose down -v
+        docker stop test-ch7-api || true
+        docker rm test-ch7-api || true
         docker system prune -f

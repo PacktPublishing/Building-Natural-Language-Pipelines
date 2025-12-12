@@ -100,25 +100,60 @@ components:
       plain_mode_space_width: 200.0
       store_full_path: false
     type: haystack.components.converters.pypdf.PyPDFToDocument
+  sparse_doc_embedder:
+    init_parameters:
+      batch_size: 32
+      cache_dir: null
+      embedding_separator: '
+
+        '
+      local_files_only: false
+      meta_fields_to_embed: []
+      model: prithivida/Splade_PP_en_v1
+      model_kwargs: null
+      parallel: null
+      progress_bar: true
+      threads: null
+    type: haystack_integrations.components.embedders.fastembed.fastembed_sparse_document_embedder.FastembedSparseDocumentEmbedder
   writer:
     init_parameters:
       document_store:
         init_parameters:
-          api_key:
-            env_vars:
-            - ELASTIC_API_KEY
-            strict: false
-            type: env_var
-          api_key_id:
-            env_vars:
-            - ELASTIC_API_KEY_ID
-            strict: false
-            type: env_var
-          custom_mapping: null
-          embedding_similarity_function: cosine
-          hosts: http://localhost:9200
-          index: small_embeddings
-        type: haystack_integrations.document_stores.elasticsearch.document_store.ElasticsearchDocumentStore
+          api_key: null
+          embedding_dim: 1536
+          force_disable_check_same_thread: false
+          grpc_port: 6334
+          hnsw_config: null
+          host: null
+          https: null
+          index: documents
+          location: null
+          metadata: {}
+          on_disk: false
+          on_disk_payload: null
+          optimizers_config: null
+          path: ./qdrant_storage
+          payload_fields_to_index: null
+          port: 6333
+          prefer_grpc: false
+          prefix: null
+          progress_bar: true
+          quantization_config: null
+          recreate_index: false
+          replication_factor: null
+          return_embedding: false
+          scroll_size: 10000
+          shard_number: null
+          similarity: cosine
+          sparse_idf: false
+          timeout: null
+          url: null
+          use_sparse_embeddings: true
+          wait_result_from_api: true
+          wal_config: null
+          write_batch_size: 100
+          write_consistency_factor: null
+        type: haystack_integrations.document_stores.qdrant.document_store.QdrantDocumentStore
       policy: OVERWRITE
     type: haystack.components.writers.document_writer.DocumentWriter
 connection_type_validation: true
@@ -141,7 +176,9 @@ connections:
   sender: cleaner.documents
 - receiver: doc_embedder.documents
   sender: doc_splitter.documents
-- receiver: writer.documents
+- receiver: sparse_doc_embedder.documents
   sender: doc_embedder.documents
+- receiver: writer.documents
+  sender: sparse_doc_embedder.documents
 max_runs_per_component: 100
 metadata: {}

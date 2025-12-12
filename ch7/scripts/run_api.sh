@@ -16,22 +16,17 @@ else
     exit 1
 fi
 
-# Check Elasticsearch
-echo "🔍 Checking Elasticsearch connection..."
-if ! curl -f -s http://localhost:9200/_cat/health > /dev/null 2>&1; then
-    echo "❌ Elasticsearch not available on localhost:9200"
-    echo "💡 Start Elasticsearch first or use Docker: docker-compose up -d elasticsearch"
+# Verify required environment variables
+if [[ -z "${RAG_API_KEY:-}" ]]; then
+    echo "❌ RAG_API_KEY is not set in .env file"
+    echo "💡 Add RAG_API_KEY=your-secret-key to your .env file"
     exit 1
 fi
 
-echo "✅ Elasticsearch is running"
-
-# Check if documents are indexed
-echo "🔍 Checking if documents are indexed..."
-doc_count=$(curl -s "http://localhost:9200/documents/_count" | python -c "import sys, json; print(json.load(sys.stdin)['count'])" 2>/dev/null || echo "0")
-
-if [[ "$doc_count" == "0" ]]; then
-    echo "⚠️  No documents found in Elasticsearch index 'documents'"
+# Check Qdrant storage
+echo "🔍 Checking Qdrant storage..."
+if [[ ! -d "./qdrant_storage" ]]; then
+    echo "⚠️  Qdrant storage directory not found"
     echo "💡 Run indexing first: ./scripts/run_indexing.sh"
     read -p "Continue anyway? (y/N): " -n 1 -r
     echo
@@ -39,7 +34,7 @@ if [[ "$doc_count" == "0" ]]; then
         exit 1
     fi
 else
-    echo "✅ Found $doc_count documents in index"
+    echo "✅ Qdrant storage directory exists"
 fi
 
 # Start the API

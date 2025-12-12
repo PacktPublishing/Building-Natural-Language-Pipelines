@@ -21,13 +21,13 @@ fi
 echo "📦 Installing dependencies with uv..."
 uv sync
 
-# Check if Elasticsearch is running
-echo "🔍 Checking Elasticsearch..."
-if curl -f -s http://localhost:9200/_cat/health > /dev/null 2>&1; then
-    echo "✅ Elasticsearch is running on localhost:9200"
+# Create Qdrant storage directory if it doesn't exist
+echo "📁 Setting up Qdrant storage..."
+if [[ ! -d "./qdrant_storage" ]]; then
+    mkdir -p ./qdrant_storage
+    echo "✅ Created Qdrant storage directory"
 else
-    echo "❌ Elasticsearch not found on localhost:9200"
-    echo "💡 Start Elasticsearch with: docker run -d -p 9200:9200 -e discovery.type=single-node -e xpack.security.enabled=false docker.elastic.co/elasticsearch/elasticsearch:8.11.1"
+    echo "✅ Qdrant storage directory exists"
 fi
 
 # Test OpenAI API key
@@ -52,7 +52,6 @@ fi
 echo ""
 echo "🎉 Setup complete! Next steps:"
 echo "  1. Edit .env file and set your OPENAI_API_KEY"
-echo "  2. Start Elasticsearch (if not running)"
-echo "  3. Run indexing: ./scripts/run_indexing.sh"
-echo "  4. Start API: ./scripts/run_api.sh"
-echo "  5. Test API: uv run python tests/test_api.py"
+echo "  2. Run indexing: ./scripts/run_indexing.sh"
+echo "  3. Start API: ./scripts/run_api.sh"
+echo "  4. Test API: uv run python tests/test_api.py"

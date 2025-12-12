@@ -8,7 +8,6 @@ import requests
 import json
 import time
 import sys
-from typing import Optional
 
 # API base URL
 BASE_URL = "http://localhost:8000"
@@ -167,7 +166,7 @@ def run_comprehensive_test():
         print("🎉 All tests passed!")
         return True
     else:
-        print("⚠️  Some tests failed - check the API and Elasticsearch")
+        print("⚠️  Some tests failed - check the API and Qdrant storage")
         return False
 
 

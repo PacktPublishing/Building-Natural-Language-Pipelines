@@ -8,17 +8,23 @@ from haystack.components.embedders import OpenAIDocumentEmbedder
 from haystack.components.writers import DocumentWriter
 from haystack.utils import Secret
 from haystack.document_stores.types import DuplicatePolicy
-from haystack_integrations.document_stores.elasticsearch import ElasticsearchDocumentStore
+from haystack_integrations.document_stores.qdrant import QdrantDocumentStore
+from haystack_integrations.components.embedders.fastembed import FastembedSparseDocumentEmbedder
 import os
 from dotenv import load_dotenv
+import yaml
 load_dotenv()
 
-# Initialize document store
-document_store = ElasticsearchDocumentStore(
-    hosts=os.getenv("ELASTICSEARCH_HOST", "http://localhost:9200"),
-    index="small_embeddings"
+# Initialize document store with on-disk storage and sparse embeddings support
+document_store = QdrantDocumentStore(
+    path="./qdrant_storage",
+    index="documents",
+    embedding_dim=1536,  # text-embedding-3-small dimension
+    recreate_index=False,
+    use_sparse_embeddings=True  # Enable sparse embeddings for hybrid retrieval
 )
-        
+
+   
 pipeline = Pipeline()
     
 # Core components
@@ -41,6 +47,7 @@ doc_embedder = OpenAIDocumentEmbedder(
     api_key=Secret.from_env_var("OPENAI_API_KEY"),
     model="text-embedding-3-small"
 )
+sparse_doc_embedder = FastembedSparseDocumentEmbedder()
 writer = DocumentWriter(
     document_store=document_store,
     policy=DuplicatePolicy.OVERWRITE
@@ -56,6 +63,7 @@ pipeline.add_component("doc_joiner", doc_joiner)
 pipeline.add_component("cleaner", cleaner)
 pipeline.add_component("doc_splitter", splitter)
 pipeline.add_component("doc_embedder", doc_embedder)
+pipeline.add_component("sparse_doc_embedder", sparse_doc_embedder)
 pipeline.add_component("writer", writer)
 
 # Connect components
@@ -75,7 +83,13 @@ pipeline.connect("html_file_converter.documents", "doc_joiner.documents")
 pipeline.connect("doc_joiner", "cleaner")
 pipeline.connect("cleaner", "doc_splitter")
 pipeline.connect("doc_splitter", "doc_embedder")
-pipeline.connect("doc_embedder", "writer")
+pipeline.connect("doc_embedder", "sparse_doc_embedder")
+pipeline.connect("sparse_doc_embedder", "writer")
 
-with open("./pipelines/indexing/indexing.yml", "w") as file:
-  pipeline.dump(file)
+
+output_path = "./pipelines/indexing/indexing.yml"
+# Dump the pipeline
+with open(output_path, "w") as file:
+    pipeline.dump(file)
+    
+print(f"Pipeline serialized to {output_path}")
