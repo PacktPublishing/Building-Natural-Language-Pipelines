@@ -95,7 +95,7 @@ sh start_hayhooks.sh  # Leave running
 
 - **Start LangGraph Studio**:
 ```sh
-cd context-engineering/
+cd epilogue/context-engineering/
 #assumes you've already run uv sync and activated the environment
 uv run langgraph dev
 ```
@@ -172,6 +172,7 @@ uv run python measure_token_usage.py --test-query "sushi restaurants" --test-loc
 **Run all tests:**
 ```sh
 cd context-engineering/
+chmod +x test_examples.sh
 ./test_examples.sh
 ```
 

@@ -66,10 +66,7 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
             decision.search_query != state.get("search_query") or
             decision.search_location != state.get("search_location")
         )
-        
-        # This logic (from our last fix) is now correct.
-        # The problem was that `decision.detail_level` was wrong.
-        # Now, it will be correct (e.g., "reviews").
+
         if is_new_search:
             # This is a brand new search. Reset everything.
             update_dict = {
@@ -82,8 +79,6 @@ def clarify_intent_node(state: AgentState, config: RunnableConfig) -> Command[Li
             }
         else:
             # This is a follow-up. Just update the detail level.
-            # The clarifier, now state-aware, will correctly set
-            # decision.detail_level to "reviews"
             update_dict = {
                 "detail_level": decision.detail_level,
                 "messages": [AIMessage(content=f"Understood. I'll get more details for {decision.search_query}...")],
