@@ -19,7 +19,7 @@ from .nodes import (
 
 def build_graph(checkpointer=None):
     """
-    Build the V4 graph with input guardrails before clarify.
+    Build the V3 graph with input guardrails before clarify.
     
     Flow:
     1. START → input_guardrails (check prompt injection, sanitize PII)
