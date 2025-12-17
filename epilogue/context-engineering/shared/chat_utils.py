@@ -8,6 +8,10 @@ from typing import Dict, Any, Optional, Tuple
 
 def handle_general_chat(track_errors: bool = False) -> Tuple[str, Optional[Dict[str, Any]]]:
     """
+    THIS IS A PLACEHOLDER FUNCTION. 
+    Ideally, this would consist of a Chat Completion endpoint call with a prompt.
+    As this book's project was focused on testing tool usage with Hayhooks, we keep this simple.
+    
     Handle non-business chat queries with a welcoming message that redirects to business searches.
     
     It always returns a friendly welcome message that explains what the chatbot
