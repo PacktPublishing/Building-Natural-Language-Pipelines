@@ -6,7 +6,7 @@ different versions (V2, V3) with optional error tracking features.
 from typing import Dict, Any, Optional, Tuple
 
 
-def handle_general_chat(state: Dict[str, Any], track_errors: bool = False) -> Tuple[str, Optional[Dict[str, Any]]]:
+def handle_general_chat(track_errors: bool = False) -> Tuple[str, Optional[Dict[str, Any]]]:
     """
     Handle non-business chat queries with a welcoming message that redirects to business searches.
     
@@ -14,7 +14,6 @@ def handle_general_chat(state: Dict[str, Any], track_errors: bool = False) -> Tu
     is designed for (business search and analysis) and prompts the user to ask about businesses.
     
     Args:
-        state: Current agent state (not used, but kept for consistency)
         track_errors: If True, returns error tracking dict; if False, returns None
     
     Returns:
