@@ -29,7 +29,7 @@ csv_content = """Company,Model,Release Year,,Notes
 OpenAI,GPT-4,2023,,Generative Pre-trained Transformer 4
 ,,,
 Google,Gemini,2023,,A family of multimodal models
-Anthropic,Claude 3,2024,,Includes Opus, Sonnet, and Haiku models
+Anthropic,Claude 3,2024,,"Includes Opus, Sonnet, and Haiku models"
 """
 csv_file_path = data_dir / "llm_models.csv"
 csv_file_path.write_text(csv_content)
