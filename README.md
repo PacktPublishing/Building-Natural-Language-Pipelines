@@ -150,7 +150,7 @@ _Laura Funderburk_ Laura Funderburk works as a Developer Advocate for Ploomber, 
 
 
 <details>
-  <summary><h2>Note From Authors end:</h2></summary>
+  <summary><h2>Note From Author end:</h2></summary>
 <ul>
 
 
