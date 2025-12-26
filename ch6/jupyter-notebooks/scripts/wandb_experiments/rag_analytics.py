@@ -3,6 +3,7 @@ import tiktoken
 from typing import Dict, List, Any
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class RAGAnalytics:
     """Simplified analytics class for RAG evaluation results and W&B logging."""
@@ -214,8 +215,79 @@ class RAGAnalytics:
         # Log summary metrics to the run
         run.log(summary_metrics)
         
+        # Create custom plots with rotated x-axis labels
+        self._create_custom_plots(run, analysis_df, total_llm_cost, total_embedding_cost)
+        
         print(f"Analytics: Logged comprehensive analysis for {num_queries} queries.")
         print(f"Total Cost: ${total_cost:.6f} (LLM: ${total_llm_cost:.6f}, Embeddings: ${total_embedding_cost:.6f})")
         print(f"Embedding Models: {', '.join(self.embedding_models)}")
         
         return summary_metrics
+    
+    def _create_custom_plots(self, run: wandb.init, analysis_df: pd.DataFrame, 
+                            total_llm_cost: float, total_embedding_cost: float):
+        """Create custom matplotlib plots with properly rotated x-axis labels."""
+        
+        # Plot 1: Embedding Cost per Query
+        fig1, ax1 = plt.subplots(figsize=(10, 6))
+        query_indices = range(1, len(analysis_df) + 1)
+        ax1.bar(query_indices, analysis_df['embedding_cost_usd'], color='steelblue', alpha=0.7)
+        ax1.set_xlabel('Query Number', fontsize=12)
+        ax1.set_ylabel('Embedding Cost (USD)', fontsize=12)
+        ax1.set_title('Embedding Cost per Query', fontsize=14, fontweight='bold')
+        ax1.grid(axis='y', alpha=0.3)
+        plt.xticks(rotation=90)
+        plt.tight_layout()
+        run.log({"embedding_cost_per_query_chart": wandb.Image(fig1)})
+        plt.close(fig1)
+        
+        # Plot 2: Token Efficiency (TPS per Dollar)
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        token_efficiency = [
+            tokens / cost if cost > 0 else 0 
+            for tokens, cost in zip(analysis_df['total_tokens'], analysis_df['total_cost_usd'])
+        ]
+        ax2.bar(query_indices, token_efficiency, color='forestgreen', alpha=0.7)
+        ax2.set_xlabel('Query Number', fontsize=12)
+        ax2.set_ylabel('Tokens per Dollar', fontsize=12)
+        ax2.set_title('Token Efficiency (Tokens per Dollar)', fontsize=14, fontweight='bold')
+        ax2.grid(axis='y', alpha=0.3)
+        plt.xticks(rotation=90)
+        plt.tight_layout()
+        run.log({"token_efficiency_chart": wandb.Image(fig2)})
+        plt.close(fig2)
+        
+        # Plot 3: Cost Breakdown Pie Chart
+        fig3, ax3 = plt.subplots(figsize=(8, 8))
+        colors = ['#FF6B6B', '#4ECDC4']
+        explode = (0.05, 0.05)
+        ax3.pie(
+            [total_llm_cost, total_embedding_cost],
+            labels=['LLM Cost', 'Embedding Cost'],
+            autopct='%1.1f%%',
+            colors=colors,
+            explode=explode,
+            shadow=True,
+            startangle=90
+        )
+        ax3.set_title('Cost Breakdown: LLM vs Embeddings', fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        run.log({"cost_breakdown_pie_chart": wandb.Image(fig3)})
+        plt.close(fig3)
+        
+        # Plot 4: Total Cost per Query (Stacked)
+        fig4, ax4 = plt.subplots(figsize=(12, 6))
+        ax4.bar(query_indices, analysis_df['llm_cost_usd'], 
+                label='LLM Cost', color='#FF6B6B', alpha=0.8)
+        ax4.bar(query_indices, analysis_df['embedding_cost_usd'], 
+                bottom=analysis_df['llm_cost_usd'],
+                label='Embedding Cost', color='#4ECDC4', alpha=0.8)
+        ax4.set_xlabel('Query Number', fontsize=12)
+        ax4.set_ylabel('Cost (USD)', fontsize=12)
+        ax4.set_title('Total Cost per Query (Stacked: LLM + Embeddings)', fontsize=14, fontweight='bold')
+        ax4.legend()
+        ax4.grid(axis='y', alpha=0.3)
+        plt.xticks(rotation=90)
+        plt.tight_layout()
+        run.log({"total_cost_stacked_chart": wandb.Image(fig4)})
+        plt.close(fig4)
